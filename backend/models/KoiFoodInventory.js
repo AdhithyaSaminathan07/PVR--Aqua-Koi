@@ -3,10 +3,13 @@ const mongoose = require('mongoose');
 const koiFoodInventorySchema = new mongoose.Schema({
     itemName: { type: String, required: true },
     description: { type: String },
-    availableQuantity: { type: Number, required: true, default: 0 },
+    category: { type: String, default: 'General' }, // Pellet, Flake, Growth, etc.
+    totalAvailableQuantity: { type: Number, default: 0 },
+    sellingPrice: { type: Number, default: 0 },
     lowStockThreshold: { type: Number, default: 5 },
-    price: { type: Number, required: true },
-    unit: { type: String, default: 'kg' }
+    reorderLevel: { type: Number, default: 10 },
+    unit: { type: String, enum: ['kg', 'grams', 'bags'], default: 'kg' },
+    status: { type: String, enum: ['Active', 'Discontinued'], default: 'Active' }
 }, { timestamps: true });
 
 module.exports = mongoose.model('KoiFoodInventory', koiFoodInventorySchema);

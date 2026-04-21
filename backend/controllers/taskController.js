@@ -20,6 +20,19 @@ exports.getTasks = async (req, res) => {
     }
 };
 
+exports.getAssignedTasks = async (req, res) => {
+    try {
+        const { employeeId } = req.user;
+        if (!employeeId) {
+            return res.status(400).json({ message: 'User is not linked to an employee record' });
+        }
+        const tasks = await Task.find({ assignedTo: employeeId }).populate('customerId').populate('assignedTo');
+        res.json(tasks);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
 exports.updateTaskStatus = async (req, res) => {
     try {
         const { id } = req.params;

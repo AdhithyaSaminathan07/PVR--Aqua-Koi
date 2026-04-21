@@ -35,3 +35,12 @@ exports.updateCustomer = async (req, res) => {
         res.status(400).json({ message: err.message });
     }
 };
+
+exports.deleteCustomer = async (req, res) => {
+    try {
+        await KoiCustomer.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Customer deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};

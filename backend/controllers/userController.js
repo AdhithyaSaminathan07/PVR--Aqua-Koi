@@ -12,16 +12,16 @@ exports.getAllUsers = async (req, res) => {
 
 // Create a new user (Boss/Manager)
 exports.createUser = async (req, res) => {
-    const { name, email, password, role, branch, allocatedModules } = req.body;
+    const { name, email, password, role, branch, allocatedModules, employeeId } = req.body;
     try {
         // MD (BOSS) is the only one who can create a General Manager (MANAGER)
         if (role === 'MANAGER' && req.user.role !== 'BOSS') {
             return res.status(403).json({ message: 'Only the MD (BOSS) can create a General Manager' });
         }
 
-        const user = new User({ name, email, password, role, branch, allocatedModules });
+        const user = new User({ name, email, password, role, branch, allocatedModules, employeeId });
         await user.save();
-        res.status(201).json({ message: 'User created successfully', user: { id: user._id, name, email, role, branch, allocatedModules } });
+        res.status(201).json({ message: 'User created successfully', user: { id: user._id, name, email, role, branch, allocatedModules, employeeId } });
     } catch (err) {
         res.status(400).json({ message: err.message });
     }
@@ -30,7 +30,7 @@ exports.createUser = async (req, res) => {
 // Update user (Boss/Manager)
 exports.updateUser = async (req, res) => {
     const { id } = req.params;
-    const { name, email, role, branch, password, allocatedModules } = req.body;
+    const { name, email, role, branch, password, allocatedModules, employeeId } = req.body;
     
     try {
         const user = await User.findById(id);
@@ -46,6 +46,7 @@ exports.updateUser = async (req, res) => {
         user.role = role || user.role;
         user.branch = branch || user.branch;
         user.allocatedModules = allocatedModules || user.allocatedModules;
+        user.employeeId = employeeId !== undefined ? employeeId : user.employeeId;
         
         if (password) {
             user.password = password;

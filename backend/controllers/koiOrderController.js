@@ -1,6 +1,7 @@
 const KoiOrder = require('../models/KoiOrder');
 const KoiCustomer = require('../models/KoiCustomer');
 const KoiFoodInventory = require('../models/KoiFoodInventory');
+const StockTransaction = require('../models/StockTransaction');
 
 exports.createOrder = async (req, res) => {
     try {
@@ -12,12 +13,24 @@ exports.createOrder = async (req, res) => {
             $inc: { purchaseFrequency: 1 }
         });
 
-        // Reduce food stock if applicable
+        // Reduce food stock directly
         if (req.body.foodItems && req.body.foodItems.length > 0) {
             for (const item of req.body.foodItems) {
-                await KoiFoodInventory.findByIdAndUpdate(item.id, {
-                    $inc: { availableQuantity: -item.quantity }
-                });
+                const foodItem = await KoiFoodInventory.findById(item.id);
+                if (foodItem) {
+                    foodItem.totalAvailableQuantity -= Number(item.quantity);
+                    await foodItem.save();
+
+                    // Log simplified transaction
+                    await StockTransaction.create({
+                        itemId: item.id,
+                        type: 'Sale',
+                        quantity: -Number(item.quantity),
+                        remainingStockAfter: foodItem.totalAvailableQuantity,
+                        performedBy: req.user ? req.user._id : null,
+                        notes: `Order ID: ${order._id}`
+                    });
+                }
             }
         }
 

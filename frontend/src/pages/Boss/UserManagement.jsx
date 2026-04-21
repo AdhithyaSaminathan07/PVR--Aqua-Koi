@@ -3,27 +3,31 @@ import * as api from '../../services/api';
 import { Users, UserPlus, Trash2, Edit2, Shield, Search, Filter, Mail, Briefcase, MapPin, CheckCircle2 } from 'lucide-react';
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
+    const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
     const [formData, setFormData] = useState({
         name: '', email: '', password: '', role: 'admin', branch: 'Aqua Culture',
-        allocatedModules: []
+        allocatedModules: [],
+        employeeId: ''
     });
     const [currentUserRole, setCurrentUserRole] = useState(localStorage.getItem('role'));
 
     useEffect(() => {
-        fetchUsers();
+        fetchData();
     }, []);
 
-    const fetchUsers = async () => {
+    const fetchData = async () => {
         try {
-            const res = await api.getUsers();
-            setUsers(res.data);
+            setLoading(true);
+            const [userRes, empRes] = await Promise.all([api.getUsers(), api.getEmployees()]);
+            setUsers(userRes.data);
+            setEmployees(empRes.data);
             setLoading(false);
         } catch (err) {
-            console.error('Error fetching users:', err);
+            console.error('Error fetching data:', err);
             setLoading(false);
         }
     };
@@ -37,7 +41,8 @@ const UserManagement = () => {
                 password: '', 
                 role: user.role, 
                 branch: user.branch,
-                allocatedModules: user.allocatedModules || []
+                allocatedModules: user.allocatedModules || [],
+                employeeId: user.employeeId || ''
             });
         } else {
             setEditingUser(null);
@@ -47,7 +52,8 @@ const UserManagement = () => {
                 password: '', 
                 role: 'admin', 
                 branch: 'Aqua Culture',
-                allocatedModules: []
+                allocatedModules: [],
+                employeeId: ''
             });
         }
         setIsModalOpen(true);
@@ -62,7 +68,7 @@ const UserManagement = () => {
                 await api.createUser(formData);
             }
             setIsModalOpen(false);
-            fetchUsers();
+            fetchData();
         } catch (err) {
             alert(err.response?.data?.message || 'Error saving user');
         }
@@ -265,6 +271,20 @@ const UserManagement = () => {
                                         <option value="Koi Centre">Koi Centre</option>
                                     </select>
                                 </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Linked Employee (Required for Staff)</label>
+                                <select 
+                                    className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-100"
+                                    value={formData.employeeId}
+                                    onChange={(e) => setFormData({...formData, employeeId: e.target.value})}
+                                >
+                                    <option value="">Select Employee</option>
+                                    {employees.map(emp => (
+                                        <option key={emp._id} value={emp._id}>{emp.name} ({emp.designation})</option>
+                                    ))}
+                                </select>
                             </div>
                             
                             <div>

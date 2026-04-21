@@ -52,10 +52,10 @@ const KoiLayout = () => {
         { icon: ShoppingCart, label: 'Orders', path: '/koi/orders' },
         { icon: FileText, label: 'Invoices', path: '/koi/invoices' },
         { icon: CreditCard, label: 'Payments', path: '/koi/payments' },
-        { icon: Package, label: 'Food Inventory', path: '/koi/inventory' },
+        { icon: Package, label: 'Inventory', path: '/koi/inventory' },
         { icon: Users, label: 'Customers', path: '/koi/customers' },
     ].filter(item => {
-        if (role === 'BOSS' || role === 'MANAGER') return true;
+        if (role === 'BOSS' || role === 'MANAGER' || role === 'KOI_MANAGER' || role === 'BRANCH_MANAGER') return true;
         return allocatedModules.includes(`Koi:${item.label}`);
     });
 

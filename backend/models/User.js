@@ -7,7 +7,8 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     role: { type: String, default: 'admin' },
     branch: { type: String, default: 'Aqua Culture' },
-    allocatedModules: { type: [String], default: [] }
+    allocatedModules: { type: [String], default: [] },
+    employeeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee' }
 }, { timestamps: true });
 
 userSchema.pre('save', async function (next) {

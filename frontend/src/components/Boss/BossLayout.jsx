@@ -41,13 +41,13 @@ const BossLayout = () => {
     const role = localStorage.getItem('role');
 
     const [activeModule, setActiveModule] = useState(() => {
-        if (location.pathname.startsWith('/koi')) return 'KOI';
+        if (location.pathname.includes('/koi')) return 'KOI';
         if (['/boss-dashboard', '/boss/users', '/boss/reports'].includes(location.pathname)) return 'MASTER';
         return 'AQUA';
     });
 
     useEffect(() => {
-        if (location.pathname.startsWith('/koi')) {
+        if (location.pathname.includes('/koi')) {
             setActiveModule('KOI');
         } else if (['/boss-dashboard', '/boss/users', '/boss/reports'].includes(location.pathname)) {
             setActiveModule('MASTER');
@@ -73,7 +73,7 @@ const BossLayout = () => {
             id: 'AQUA',
             title: 'Aqua Management',
             items: [
-                { icon: LayoutDashboard, label: 'Aqua Stats', path: '/', color: 'bg-primary-600' },
+                { icon: LayoutDashboard, label: 'Aqua Stats', path: '/aqua-dashboard', color: 'bg-primary-600' },
                 { icon: Users, label: 'Customers', path: '/boss/customers', color: 'bg-primary-600' },
                 { icon: Package, label: 'Inventory', path: '/boss/inventory', color: 'bg-primary-600' },
                 { icon: MessageSquare, label: 'Complaints', path: '/boss/complaints', color: 'bg-primary-600' },
@@ -88,13 +88,13 @@ const BossLayout = () => {
             id: 'KOI',
             title: 'Koi Centre',
             items: [
-                { icon: Fish, label: 'Koi Dashboard', path: '/koi/dashboard', color: 'bg-orange-600' },
-                { icon: MessageSquare, label: 'Enquiries', path: '/koi/enquiries', color: 'bg-orange-600' },
-                { icon: ShoppingCart, label: 'Koi Orders', path: '/koi/orders', color: 'bg-orange-600' },
-                { icon: FileText, label: 'Invoices', path: '/koi/invoices', color: 'bg-orange-600' },
-                { icon: CreditCard, label: 'Payments', path: '/koi/payments', color: 'bg-orange-600' },
-                { icon: Package, label: 'Food Inventory', path: '/koi/inventory', color: 'bg-orange-600' },
-                { icon: Users, label: 'Customers', path: '/koi/customers', color: 'bg-orange-600' },
+                { icon: Fish, label: 'Koi Dashboard', path: '/boss/koi/dashboard', color: 'bg-orange-600' },
+                { icon: MessageSquare, label: 'Enquiries', path: '/boss/koi/enquiries', color: 'bg-orange-600' },
+                { icon: ShoppingCart, label: 'Koi Orders', path: '/boss/koi/orders', color: 'bg-orange-600' },
+                { icon: FileText, label: 'Invoices', path: '/boss/koi/invoices', color: 'bg-orange-600' },
+                { icon: CreditCard, label: 'Payments', path: '/boss/koi/payments', color: 'bg-orange-600' },
+                { icon: Package, label: 'Inventory', path: '/boss/koi/inventory', color: 'bg-orange-600' },
+                { icon: Users, label: 'Customers', path: '/boss/koi/customers', color: 'bg-orange-600' },
             ]
         }
     ];

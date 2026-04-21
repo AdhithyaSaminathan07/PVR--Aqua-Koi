@@ -52,6 +52,7 @@ export const updateOrderStatus = (id, status) => api.patch(`/orders/${id}/status
 
 // Tasks
 export const getTasks = () => api.get('/tasks');
+export const getAssignedTasks = () => api.get('/tasks/assigned');
 export const createTask = (data) => api.post('/tasks', data);
 export const updateTaskStatus = (id, status) => api.patch(`/tasks/${id}/status`, { status });
 
@@ -87,14 +88,27 @@ export const createKoiPayment = (data) => api.post('/koi/payments', data);
 export const getPendingKoiPayments = () => api.get('/koi/payments/pending');
 
 export const getKoiStock = () => api.get('/koi/inventory');
-export const addKoiStock = (data) => api.post('/koi/inventory', data);
-export const updateKoiStock = (id, data) => api.patch(`/koi/inventory/${id}`, data);
+export const createKoiFoodItem = (data) => api.post('/koi/inventory/items', data);
+export const updateKoiFoodItem = (id, data) => api.put(`/koi/inventory/items/${id}`, data);
+export const deleteKoiFoodItem = (id) => api.delete(`/koi/inventory/items/${id}`);
+export const purchaseKoiStock = (data) => api.post('/koi/inventory/purchase', data);
+export const reduceKoiStock = (data) => api.post('/koi/inventory/reduce', data);
+export const setKoiStock = (data) => api.post('/koi/inventory/set-stock', data);
 export const getLowKoiStock = () => api.get('/koi/inventory/low-stock');
+export const getKoiTransactionHistory = (itemId) => api.get(`/koi/inventory/history/${itemId}`);
+export const getKoiInventoryAnalytics = () => api.get('/koi/inventory/analytics');
+
+// Suppliers
+export const getSuppliers = () => api.get('/koi/suppliers');
+export const createSupplier = (data) => api.post('/koi/suppliers', data);
+export const updateSupplier = (id, data) => api.patch(`/koi/suppliers/${id}`, data);
+export const deleteSupplier = (id) => api.delete(`/koi/suppliers/${id}`);
 
 export const getKoiCustomers = () => api.get('/koi/customers');
 export const createKoiCustomer = (data) => api.post('/koi/customers', data);
 export const getKoiCustomerById = (id) => api.get(`/koi/customers/${id}`);
 export const updateKoiCustomer = (id, data) => api.patch(`/koi/customers/${id}`, data);
+export const deleteKoiCustomer = (id) => api.delete(`/koi/customers/${id}`);
 
 // User Management (Boss Only)
 export const getUsers = () => api.get('/users');

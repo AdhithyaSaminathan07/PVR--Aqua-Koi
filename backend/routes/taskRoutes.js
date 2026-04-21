@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { getTasks, createTask, updateTaskStatus } = require('../controllers/taskController');
+const { protect, authorize } = require('../middleware/authMiddleware');
+const { getTasks, createTask, updateTaskStatus, getAssignedTasks } = require('../controllers/taskController');
 
-router.get('/', getTasks);
-router.post('/', createTask);
-router.patch('/:id/status', updateTaskStatus);
+router.get('/', protect, getTasks);
+router.post('/', protect, createTask);
+router.get('/assigned', protect, getAssignedTasks);
+router.patch('/:id/status', protect, updateTaskStatus);
 
 module.exports = router;

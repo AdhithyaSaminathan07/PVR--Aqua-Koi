@@ -76,11 +76,11 @@ const BossDashboard = () => {
                             Quick Controls
                         </h2>
                         <div className="grid grid-cols-2 gap-4">
-                            <Link to="/" className="p-6 bg-primary-50 rounded-2xl border border-primary-100 hover:bg-primary-100 transition-all group">
+                            <Link to="/aqua-dashboard" className="p-6 bg-primary-50 rounded-2xl border border-primary-100 hover:bg-primary-100 transition-all group">
                                 <p className="font-bold text-primary-700">Aqua Manager</p>
                                 <p className="text-xs text-primary-500 mt-1">Inventory & services oversight</p>
                             </Link>
-                            <Link to="/koi/dashboard" className="p-6 bg-orange-50 rounded-2xl border border-orange-100 hover:bg-orange-100 transition-all group">
+                            <Link to="/boss/koi/dashboard" className="p-6 bg-orange-50 rounded-2xl border border-orange-100 hover:bg-orange-100 transition-all group">
                                 <p className="font-bold text-orange-700">Koi Centre</p>
                                 <p className="text-xs text-orange-500 mt-1">Orders & billing oversight</p>
                             </Link>

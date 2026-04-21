@@ -18,6 +18,7 @@ import KoiInvoices from './pages/Koi/KoiInvoices';
 import KoiPayments from './pages/Koi/KoiPayments';
 import KoiInventory from './pages/Koi/KoiInventory';
 import KoiCustomers from './pages/Koi/KoiCustomers';
+import StaffDashboard from './pages/Staff/StaffDashboard';
 
 
 
@@ -50,6 +51,7 @@ function App() {
     const getHomePath = (userRole) => {
         if (userRole === 'BOSS' || userRole === 'MANAGER') return "/boss-dashboard";
         if (userRole === 'KOI_MANAGER') return "/koi/dashboard";
+        if (userRole === 'STAFF') return "/staff/dashboard";
         return "/";
     };
 
@@ -101,13 +103,13 @@ function App() {
                     <Route path="/boss/employees" element={<Employees />} />
                     <Route path="/boss/invoices" element={<Invoices />} />
                     
-                    <Route path="/koi/dashboard" element={<KoiDashboard />} />
-                    <Route path="/koi/enquiries" element={<KoiEnquiries />} />
-                    <Route path="/koi/orders" element={<KoiOrders />} />
-                    <Route path="/koi/invoices" element={<KoiInvoices />} />
-                    <Route path="/koi/payments" element={<KoiPayments />} />
-                    <Route path="/koi/inventory" element={<KoiInventory />} />
-                    <Route path="/koi/customers" element={<KoiCustomers />} />
+                    <Route path="/boss/koi/dashboard" element={<KoiDashboard />} />
+                    <Route path="/boss/koi/enquiries" element={<KoiEnquiries />} />
+                    <Route path="/boss/koi/orders" element={<KoiOrders />} />
+                    <Route path="/boss/koi/invoices" element={<KoiInvoices />} />
+                    <Route path="/boss/koi/payments" element={<KoiPayments />} />
+                    <Route path="/boss/koi/inventory" element={<KoiInventory />} />
+                    <Route path="/boss/koi/customers" element={<KoiCustomers />} />
                 </Route>
 
                 {/* Koi Branch Experience */}
@@ -122,6 +124,14 @@ function App() {
                     <Route path="payments" element={<KoiPayments />} />
                     <Route path="inventory" element={<KoiInventory />} />
                     <Route path="customers" element={<KoiCustomers />} />
+                </Route>
+
+                {/* Staff Experience */}
+                <Route 
+                    path="/staff" 
+                    element={isAuthenticated && role === 'STAFF' ? <AquaLayout /> : <Navigate to="/login" />}
+                >
+                    <Route path="dashboard" element={<StaffDashboard />} />
                 </Route>
 
                 {/* Redirect any unknown routes */}

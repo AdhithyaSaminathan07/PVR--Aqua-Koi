@@ -28,12 +28,15 @@ app.use('/api/employees', require('./routes/employeeRoutes'));
 
 // Koi Centre Routes
 const { protect, authorize } = require('./middleware/authMiddleware');
-app.use('/api/koi/enquiries', protect, authorize('admin', 'KOI_MANAGER', 'STAFF', 'BRANCH_MANAGER'), require('./routes/koiEnquiryRoutes'));
-app.use('/api/koi/orders', protect, authorize('admin', 'KOI_MANAGER', 'STAFF', 'BRANCH_MANAGER'), require('./routes/koiOrderRoutes'));
-app.use('/api/koi/invoices', protect, authorize('admin', 'KOI_MANAGER', 'STAFF', 'BRANCH_MANAGER'), require('./routes/koiInvoiceRoutes'));
-app.use('/api/koi/payments', protect, authorize('admin', 'KOI_MANAGER', 'STAFF', 'BRANCH_MANAGER'), require('./routes/koiPaymentRoutes'));
-app.use('/api/koi/inventory', protect, authorize('admin', 'KOI_MANAGER', 'STAFF', 'BRANCH_MANAGER'), require('./routes/koiInventoryRoutes'));
-app.use('/api/koi/customers', protect, authorize('admin', 'KOI_MANAGER', 'STAFF', 'BRANCH_MANAGER'), require('./routes/koiCustomerRoutes'));
+const KOI_ROLES = ['BOSS', 'MANAGER', 'admin', 'KOI_MANAGER', 'STAFF', 'BRANCH_MANAGER'];
+
+app.use('/api/koi/enquiries', protect, authorize(...KOI_ROLES), require('./routes/koiEnquiryRoutes'));
+app.use('/api/koi/orders', protect, authorize(...KOI_ROLES), require('./routes/koiOrderRoutes'));
+app.use('/api/koi/invoices', protect, authorize(...KOI_ROLES), require('./routes/koiInvoiceRoutes'));
+app.use('/api/koi/payments', protect, authorize(...KOI_ROLES), require('./routes/koiPaymentRoutes'));
+app.use('/api/koi/inventory', protect, authorize(...KOI_ROLES), require('./routes/koiInventoryRoutes'));
+app.use('/api/koi/customers', protect, authorize(...KOI_ROLES), require('./routes/koiCustomerRoutes'));
+app.use('/api/koi/suppliers', protect, authorize(...KOI_ROLES), require('./routes/supplierRoutes'));
 
 
 // Database Connection
