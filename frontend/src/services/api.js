@@ -83,6 +83,8 @@ export const getServices = () => api.get('/services');
 export const createService = (data) => api.post('/services', data);
 export const getNearbyServices = (lat, lng) => api.get(`/services/nearby?lat=${lat}&lng=${lng}`);
 export const updateLifecycle = (id, data) => api.patch(`/services/${id}/lifecycle`, data);
+export const getServiceReminders = () => api.get('/services/reminders');
+export const addServiceLog = (id, data) => api.post(`/services/${id}/log`, data);
 
 
 // Employees

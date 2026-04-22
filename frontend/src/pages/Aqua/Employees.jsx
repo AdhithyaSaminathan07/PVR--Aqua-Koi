@@ -218,79 +218,88 @@ const Employees = () => {
             )}
 
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={isEdit ? "Edit Employee" : "Add New Employee"}>
-                <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto px-1 custom-scrollbar">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="col-span-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase ml-1">Full Name</label>
-                            <input
-                                type="text" placeholder="John Doe" required className="input-field"
-                                value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            />
-                        </div>
+                <form onSubmit={handleSubmit}>
+                    <div className="px-8 py-6 space-y-6">
+
+                        {/* ── Section 1: Basic Info ── */}
                         <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase ml-1">Designation</label>
-                            <input
-                                type="text" placeholder="e.g. Technician" required className="input-field"
-                                value={formData.designation} onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
-                            />
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="w-1 h-5 rounded-full bg-gradient-to-b from-sky-500 to-blue-600"></div>
+                                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Basic Information</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="col-span-2 space-y-1.5">
+                                    <label className="text-xs font-semibold text-gray-600 ml-0.5">Full Name <span className="text-red-400">*</span></label>
+                                    <input
+                                        type="text" placeholder="e.g. Rajan Kumar" required className="input-field text-sm"
+                                        value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-gray-600 ml-0.5">Designation <span className="text-red-400">*</span></label>
+                                    <input
+                                        type="text" placeholder="e.g. Technician" required className="input-field text-sm"
+                                        value={formData.designation} onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-gray-600 ml-0.5">Phone Number <span className="text-red-400">*</span></label>
+                                    <input
+                                        type="text" placeholder="e.g. 9876543210" required className="input-field text-sm"
+                                        value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    />
+                                </div>
+                            </div>
                         </div>
+
+                        <hr className="border-gray-100" />
+
+                        {/* ── Section 2: Salary & Status ── */}
                         <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase ml-1">Department</label>
-                            <input
-                                type="text" placeholder="e.g. Service" className="input-field"
-                                value={formData.department} onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                            />
-                        </div>
-                        <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase ml-1">Phone Number</label>
-                            <input
-                                type="text" placeholder="Phone Number" required className="input-field"
-                                value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            />
-                        </div>
-                        <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase ml-1">Email Address</label>
-                            <input
-                                type="email" placeholder="email@example.com" className="input-field"
-                                value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            />
-                        </div>
-                        <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase ml-1">Joining Date</label>
-                            <input
-                                type="date" required className="input-field"
-                                value={formData.joiningDate} onChange={(e) => setFormData({ ...formData, joiningDate: e.target.value })}
-                            />
-                        </div>
-                        <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase ml-1">Monthly Salary</label>
-                            <input
-                                type="number" placeholder="Salary in ₹" className="input-field"
-                                value={formData.salary} onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
-                            />
-                        </div>
-                        <div className="col-span-2">
-                             <label className="text-xs font-bold text-gray-500 uppercase ml-1">Status</label>
-                             <select 
-                                className="input-field"
-                                value={formData.status}
-                                onChange={(e) => setFormData({...formData, status: e.target.value})}
-                             >
-                                <option value="Active">Active</option>
-                                <option value="Inactive">Inactive</option>
-                             </select>
-                        </div>
-                        <div className="col-span-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase ml-1">Residential Address</label>
-                            <textarea
-                                placeholder="Full Address..." className="input-field min-h-[80px]"
-                                value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                            />
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="w-1 h-5 rounded-full bg-gradient-to-b from-emerald-500 to-green-600"></div>
+                                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Salary & Status</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-gray-600 ml-0.5">Monthly Salary (₹)</label>
+                                    <input
+                                        type="number" placeholder="e.g. 15000" className="input-field text-sm"
+                                        value={formData.salary} onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-gray-600 ml-0.5">Status</label>
+                                    <div className="flex gap-2">
+                                        {['Active', 'Inactive'].map(s => (
+                                            <button
+                                                key={s}
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, status: s })}
+                                                className={`flex-1 py-2.5 rounded-xl text-xs font-bold border transition-all ${formData.status === s
+                                                    ? (s === 'Active' ? 'bg-green-50 text-green-700 border-green-300 ring-2 ring-green-200' : 'bg-red-50 text-red-700 border-red-300 ring-2 ring-red-200')
+                                                    : 'bg-gray-50 text-gray-400 border-gray-200 hover:border-gray-300'
+                                                }`}
+                                            >
+                                                {s === 'Active' ? '● ' : '○ '}{s}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <button type="submit" className="btn-primary w-full py-3 mt-4 text-white">
-                        {isEdit ? "Update Employee" : "Register Employee"}
-                    </button>
+
+                    {/* Footer */}
+                    <div className="px-8 py-5 border-t border-gray-100 bg-gray-50/60">
+                        <button
+                            type="submit"
+                            className="w-full py-3 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-bold text-sm shadow-md hover:shadow-lg active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2"
+                        >
+                            <Users size={16} />
+                            {isEdit ? "Save Changes" : "Add Employee"}
+                        </button>
+                    </div>
                 </form>
             </Modal>
         </div>

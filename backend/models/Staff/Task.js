@@ -6,7 +6,8 @@ const taskSchema = new mongoose.Schema({
     type: { type: String, enum: ['Installation', 'Service', 'Client Issue', 'Rescue/Repair'], required: true },
     customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', required: false },
     assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true },
-
+    priority: { type: String, enum: ['Low', 'Medium', 'High', 'Urgent'], default: 'Medium' },
+    dueDate: { type: Date },
     status: {
         type: String,
         enum: ['Travelling', 'Arrived', 'In Progress', 'Completed', 'Returned'],
