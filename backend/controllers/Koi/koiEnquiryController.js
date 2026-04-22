@@ -11,8 +11,23 @@ exports.createEnquiry = async (req, res) => {
 
 exports.getEnquiries = async (req, res) => {
     try {
-        const enquiries = await KoiEnquiry.find().sort({ createdAt: -1 });
-        res.json(enquiries);
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const enquiries = await KoiEnquiry.find()
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const total = await KoiEnquiry.countDocuments();
+
+        res.json({
+            enquiries,
+            page,
+            pages: Math.ceil(total / limit),
+            total
+        });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

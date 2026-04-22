@@ -4,7 +4,8 @@ const Product = require('../../models/Aqua/Product');
 
 exports.createEnquiry = async (req, res) => {
     try {
-        const enquiry = await Enquiry.create(req.body);
+        const { customerId, items, status } = req.body;
+        const enquiry = await Enquiry.create({ customerId, items, status });
         res.status(201).json(enquiry);
     } catch (err) {
         res.status(400).json({ message: err.message });
@@ -22,7 +23,8 @@ exports.getEnquiries = async (req, res) => {
 
 exports.createOrderFromQuotation = async (req, res) => {
     try {
-        const order = await Order.create(req.body);
+        const { customerId, enquiryId, items, totalAmount, paidAmount, status, quotationFile, autoCADFiles, siteImages, invoiceId, isAdvancePaid, taxPhase, transportCharges, salesPerson, billingInfo } = req.body;
+        const order = await Order.create({ customerId, enquiryId, items, totalAmount, paidAmount, status, quotationFile, autoCADFiles, siteImages, invoiceId, isAdvancePaid, taxPhase, transportCharges, salesPerson, billingInfo });
         
         // Stock deduction for direct orders
         if (order.status === 'Dispatched' || order.status === 'Completed') {
@@ -47,8 +49,25 @@ exports.createOrderFromQuotation = async (req, res) => {
 
 exports.getOrders = async (req, res) => {
     try {
-        const orders = await Order.find().populate('customerId').populate('items.productId');
-        res.json(orders);
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const orders = await Order.find()
+            .populate('customerId')
+            .populate('items.productId')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const total = await Order.countDocuments();
+
+        res.json({
+            orders,
+            page,
+            pages: Math.ceil(total / limit),
+            total
+        });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

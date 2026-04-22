@@ -7,4 +7,7 @@ const complaintSchema = new mongoose.Schema({
     taskId: { type: mongoose.Schema.Types.ObjectId, ref: 'Task' },
 }, { timestamps: true });
 
+complaintSchema.index({ customerId: 1 });
+complaintSchema.index({ status: 1 });
+
 module.exports = mongoose.model('Complaint', complaintSchema);

@@ -2,8 +2,23 @@ const KoiCustomer = require('../../models/Koi/KoiCustomer');
 
 exports.getCustomers = async (req, res) => {
     try {
-        const customers = await KoiCustomer.find().sort({ name: 1 });
-        res.json(customers);
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const customers = await KoiCustomer.find()
+            .sort({ name: 1 })
+            .skip(skip)
+            .limit(limit);
+
+        const total = await KoiCustomer.countDocuments();
+
+        res.json({
+            customers,
+            page,
+            pages: Math.ceil(total / limit),
+            total
+        });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

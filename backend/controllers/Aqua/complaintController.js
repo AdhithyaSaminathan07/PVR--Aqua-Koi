@@ -4,7 +4,8 @@ const Customer = require('../../models/Aqua/Customer');
 
 exports.createComplaint = async (req, res) => {
     try {
-        const complaint = await Complaint.create(req.body);
+        const { customerId, description, siteImages } = req.body;
+        const complaint = await Complaint.create({ customerId, description, siteImages });
         
         // Auto-create task for the complaint
         const customer = await Customer.findById(req.body.customerId);

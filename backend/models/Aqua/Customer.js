@@ -13,4 +13,6 @@ const customerSchema = new mongoose.Schema({
     nextServiceDate: Date
 }, { timestamps: true });
 
+customerSchema.index({ phone: 1 }, { unique: true });
+
 module.exports = mongoose.model('Customer', customerSchema);

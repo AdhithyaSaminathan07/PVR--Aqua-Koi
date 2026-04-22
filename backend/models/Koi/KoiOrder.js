@@ -20,4 +20,8 @@ const koiOrderSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+koiOrderSchema.index({ customer: 1 });
+koiOrderSchema.index({ status: 1 });
+koiOrderSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('KoiOrder', koiOrderSchema);
