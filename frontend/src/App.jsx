@@ -1,5 +1,6 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import TopLoadingBar from './components/TopLoadingBar';
 
 // Lazy load layout components
 const AquaLayout = lazy(() => import('./components/Aqua/AquaLayout'));
@@ -24,6 +25,8 @@ const KoiSales = lazy(() => import('./pages/Koi/KoiSales'));
 const KoiPayments = lazy(() => import('./pages/Koi/KoiPayments'));
 const KoiInventory = lazy(() => import('./pages/Koi/KoiInventory'));
 const KoiCustomers = lazy(() => import('./pages/Koi/KoiCustomers'));
+const KoiInvoices = lazy(() => import('./pages/Koi/KoiInvoices'));
+
 
 // Lazy load other pages
 const Login = lazy(() => import('./pages/Login'));
@@ -67,20 +70,22 @@ function App() {
 
     return (
         <Router>
-            <Routes>
-                {/* Public Route */}
-                <Route 
-                    path="/login" 
-                    element={isAuthenticated ? <Navigate to={getHomePath(role)} /> : <Login onLogin={(userRole, userModules) => { 
-                        setIsAuthenticated(true); 
-                        setRole(userRole);
-                        setAllocatedModules(userModules || []);
-                    }} />} 
-                />
+            <TopLoadingBar />
+            <Suspense fallback={<LoadingFallback />}>
+                <Routes>
+                    {/* Public Route */}
+                    <Route
+                        path="/login"
+                        element={isAuthenticated ? <Navigate to={getHomePath(role)} /> : <Login onLogin={(userRole, userModules) => {
+                            setIsAuthenticated(true);
+                            setRole(userRole);
+                            setAllocatedModules(userModules || []);
+                        }} />}
+                    />
 
                     {/* Aqua Branch Experience */}
-                    <Route 
-                        path="/" 
+                    <Route
+                        path="/"
                         element={isAuthenticated && (role === 'admin' || role === 'STAFF' || role === 'BRANCH_MANAGER') ? <AquaLayout /> : (isAuthenticated && (role === 'BOSS' || role === 'MANAGER') ? <Navigate to="/boss-dashboard" /> : <Navigate to="/login" />)}
                     >
                         <Route index element={<Dashboard />} />
@@ -95,13 +100,13 @@ function App() {
                     </Route>
 
                     {/* BOSS & MANAGER UNIFIED EXPERIENCE */}
-                    <Route 
+                    <Route
                         element={isAuthenticated && (role === 'BOSS' || role === 'MANAGER') ? <BossLayout /> : <Navigate to="/login" />}
                     >
                         <Route path="/boss-dashboard" element={<BossDashboard />} />
                         <Route path="/boss/users" element={<UserManagement />} />
                         <Route path="/boss/reports" element={<BossReports />} />
-                        
+
                         {/* Unified Access to Branch Modules for Boss/GM */}
                         <Route path="/aqua-dashboard" element={<Dashboard />} />
                         <Route path="/boss/customers" element={<Customers />} />
@@ -112,33 +117,35 @@ function App() {
                         <Route path="/boss/services" element={<Services />} />
                         <Route path="/boss/employees" element={<Employees />} />
                         <Route path="/boss/invoices" element={<Invoices />} />
-                        
+
                         <Route path="/boss/koi/dashboard" element={<KoiDashboard />} />
                         <Route path="/boss/koi/enquiries" element={<KoiEnquiries />} />
                         <Route path="/boss/koi/orders" element={<KoiSales />} />
-                        <Route path="/boss/koi/invoices" element={<KoiSales />} />
+                        <Route path="/boss/koi/invoices" element={<KoiInvoices />} />
+
                         <Route path="/boss/koi/payments" element={<KoiPayments />} />
                         <Route path="/boss/koi/inventory" element={<KoiInventory />} />
                         <Route path="/boss/koi/customers" element={<KoiCustomers />} />
                     </Route>
 
                     {/* Koi Branch Experience */}
-                    <Route 
-                        path="/koi" 
+                    <Route
+                        path="/koi"
                         element={isAuthenticated && (role === 'KOI_MANAGER' || role === 'STAFF' || role === 'BRANCH_MANAGER') ? <KoiLayout /> : (isAuthenticated && (role === 'BOSS' || role === 'MANAGER') ? <Navigate to="/boss-dashboard" /> : <Navigate to="/login" />)}
                     >
                         <Route path="dashboard" element={<KoiDashboard />} />
                         <Route path="enquiries" element={<KoiEnquiries />} />
                         <Route path="orders" element={<KoiSales />} />
-                        <Route path="invoices" element={<KoiSales />} />
+                        <Route path="invoices" element={<KoiInvoices />} />
+
                         <Route path="payments" element={<KoiPayments />} />
                         <Route path="inventory" element={<KoiInventory />} />
                         <Route path="customers" element={<KoiCustomers />} />
                     </Route>
 
                     {/* Staff Experience */}
-                    <Route 
-                        path="/staff" 
+                    <Route
+                        path="/staff"
                         element={isAuthenticated && role === 'STAFF' ? <AquaLayout /> : <Navigate to="/login" />}
                     >
                         <Route path="dashboard" element={<StaffDashboard />} />
@@ -147,6 +154,7 @@ function App() {
                     {/* Redirect any unknown routes */}
                     <Route path="*" element={<Navigate to={isAuthenticated ? getHomePath(role) : "/login"} />} />
                 </Routes>
+            </Suspense>
         </Router>
     );
 }

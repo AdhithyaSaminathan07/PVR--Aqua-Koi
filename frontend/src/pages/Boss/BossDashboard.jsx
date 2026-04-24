@@ -36,22 +36,22 @@ const StatCard = ({ label, sub, icon: Icon, color, delay }) => (
 
 const BossDashboard = () => {
     return (
-        <div className="py-6">
+        <div className="py-4 lg:py-6">
             {/* Banner Section */}
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="relative bg-[#E6F0FF] rounded-[3rem] p-12 overflow-hidden mb-12"
+                className="relative bg-[#E6F0FF] rounded-2xl lg:rounded-[3rem] p-6 sm:p-8 lg:p-12 overflow-hidden mb-8 lg:mb-12"
             >
                 <div className="relative z-10 max-w-lg">
-                    <h1 className="text-4xl font-bold text-[#1a365d] mb-4 leading-tight">
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1a365d] mb-4 leading-tight">
                         PVR Command Centre <br />
                         <span className="text-[#2988FF]">Real-time Oversight</span>
                     </h1>
-                    <p className="text-[#1a365d]/60 font-medium mb-8">
+                    <p className="text-[#1a365d]/60 text-sm sm:text-base font-medium mb-6 lg:mb-8 text-balance">
                         Manage PVR Aqua and PVR Koi operations from a single unified workspace.
                     </p>
-                    <button className="bg-[#1a365d] text-white px-8 py-3 rounded-2xl text-sm font-bold shadow-lg shadow-blue-900/20 hover:opacity-90 transition-all active:scale-95 flex items-center gap-2">
+                    <button className="bg-[#1a365d] text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-sm font-bold shadow-lg shadow-blue-900/20 hover:opacity-90 transition-all active:scale-95 flex items-center gap-2">
                         System Audit <ArrowRight size={16} />
                     </button>
                 </div>
@@ -60,18 +60,14 @@ const BossDashboard = () => {
                 <div className="absolute right-0 top-0 w-1/2 h-full hidden lg:flex items-center justify-center opacity-20">
                     <Shield size={240} className="text-[#2988FF]" />
                 </div>
-                <div className="absolute top-10 right-10 flex gap-4 opacity-50">
-                    <div className="w-4 h-4 rounded-full bg-[#60A7FF]" />
-                    <div className="w-4 h-4 rounded-full bg-blue-400" />
-                </div>
             </motion.div>
 
             {/* Quick Access Grid */}
-            <div className="mb-12">
-                <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <div className="mb-8 lg:mb-12">
+                <h3 className="text-lg lg:text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                     Primary Modules
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                     <StatCard
                         label="Aqua Management"
                         sub="Inventory & Shop"
@@ -97,81 +93,73 @@ const BossDashboard = () => {
             </div>
 
             {/* Main Stats and Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                 {/* Activity Feed (Large Area) */}
                 <div className="lg:col-span-2">
-                    <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                        System Activity
-                        <div className="ml-auto flex gap-2">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg lg:text-xl font-bold text-gray-900">System Activity</h3>
+                        <div className="flex gap-2 scale-90 sm:scale-100">
                             <button className="px-3 py-1 bg-white text-[10px] font-bold rounded-lg shadow-sm">Today</button>
                             <button className="px-3 py-1 bg-[#2988FF] text-white text-[10px] font-bold rounded-lg shadow-sm">7d</button>
                         </div>
-                    </h3>
+                    </div>
 
-                    <div className="bg-white rounded-[2.5rem] p-8 border border-gray-50 shadow-sm relative min-h-[400px] flex flex-col justify-between overflow-hidden">
-                        {/* Mock Graph Background */}
-                        <div className="absolute inset-0 p-12 flex items-end justify-between opacity-10">
-                            {[10, 30, 20, 50, 40, 60, 30].map((h, i) => (
-                                <div key={i} className="w-8 bg-black rounded-t-xl" style={{ height: `${h}%` }} />
-                            ))}
-                        </div>
-
-                        <div className="relative z-10 space-y-6">
+                    <div className="bg-white rounded-2xl lg:rounded-[2.5rem] p-6 lg:p-8 border border-gray-50 shadow-sm relative min-h-[350px] lg:min-h-[400px] flex flex-col justify-between overflow-hidden">
+                        <div className="relative z-10 space-y-4 lg:space-y-6">
                             {[
                                 { title: 'New Aqua Order', val: '₹12,500', icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-50' },
                                 { title: 'Koi Enquiry Resolved', val: '902', icon: Zap, color: 'text-blue-500', bg: 'bg-blue-50' },
                                 { title: 'Inventory Alert', val: 'Low Stock', icon: Activity, color: 'text-orange-500', bg: 'bg-orange-50' },
                             ].map((item, i) => (
-                                <div key={i} className="flex items-center gap-4 group">
-                                    <div className={`w-12 h-12 ${item.bg} rounded-xl flex items-center justify-center ${item.color}`}>
-                                        <item.icon size={20} />
+                                <div key={i} className="flex items-center gap-3 lg:gap-4 group">
+                                    <div className={`w-10 h-10 lg:w-12 lg:h-12 ${item.bg} rounded-xl flex items-center justify-center ${item.color} shrink-0`}>
+                                        <item.icon size={18} />
                                     </div>
-                                    <div className="flex-1">
-                                        <p className="text-sm font-bold text-gray-800">{item.title}</p>
-                                        <p className="text-xs text-gray-400 font-medium tracking-tight">Active Operation</p>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-bold text-gray-800 truncate">{item.title}</p>
+                                        <p className="text-[10px] lg:text-xs text-gray-400 font-medium tracking-tight">Active Operation</p>
                                     </div>
-                                    <p className="font-bold text-black italic">{item.val}</p>
+                                    <p className="font-bold text-sm lg:text-base text-black italic shrink-0">{item.val}</p>
                                 </div>
                             ))}
                         </div>
 
                         {/* Chart labels */}
-                        <div className="relative z-10 flex justify-between text-[10px] font-bold text-gray-300 uppercase mt-auto pt-8 border-t border-gray-50">
-                            <span>Monday</span>
-                            <span>Tuesday</span>
-                            <span>Wednesday</span>
-                            <span>Thursday</span>
-                            <span>Friday</span>
-                            <span>Saturday</span>
-                            <span>Sunday</span>
+                        <div className="relative z-10 hidden sm:flex justify-between text-[10px] font-bold text-gray-300 uppercase mt-auto pt-8 border-t border-gray-50">
+                            <span>Mon</span>
+                            <span>Tue</span>
+                            <span>Wed</span>
+                            <span>Thu</span>
+                            <span>Fri</span>
+                            <span>Sat</span>
+                            <span>Sun</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Performance / Revenue */}
                 <div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-6">Financials</h3>
-                    <div className="bg-white rounded-[2.5rem] p-10 border border-gray-50 shadow-sm flex flex-col items-center gap-6">
-                        <div className="relative w-40 h-40 flex items-center justify-center">
+                    <h3 className="text-lg lg:text-xl font-bold text-gray-900 mb-6">Financials</h3>
+                    <div className="bg-white rounded-2xl lg:rounded-[2.5rem] p-6 lg:p-10 border border-gray-50 shadow-sm flex flex-col items-center gap-6">
+                        <div className="relative w-32 h-32 lg:w-40 lg:h-40 flex items-center justify-center">
                             <svg className="w-full h-full transform -rotate-90">
-                                <circle cx="80" cy="80" r="70" fill="none" stroke="#F0F7FF" strokeWidth="15" />
-                                <circle cx="80" cy="80" r="70" fill="none" stroke="#2988FF" strokeWidth="15" strokeDasharray="440" strokeDashoffset="120" strokeLinecap="round" />
-                                <circle cx="80" cy="80" r="70" fill="none" stroke="#60A7FF" strokeWidth="15" strokeDasharray="440" strokeDashoffset="380" strokeLinecap="round" />
+                                <circle cx="50%" cy="50%" r="40%" fill="none" stroke="#F0F7FF" strokeWidth="12" />
+                                <circle cx="50%" cy="50%" r="40%" fill="none" stroke="#2988FF" strokeWidth="12" strokeDasharray="250" strokeDashoffset="80" strokeLinecap="round" />
                             </svg>
                             <div className="absolute flex flex-col items-center">
-                                <p className="text-[10px] font-bold text-gray-400 uppercase">Growth</p>
-                                <p className="text-2xl font-bold italic">+24%</p>
+                                <p className="text-[8px] lg:text-[10px] font-bold text-gray-400 uppercase">Growth</p>
+                                <p className="text-xl lg:text-2xl font-bold italic">+24%</p>
                             </div>
                         </div>
 
-                        <div className="w-full space-y-4">
-                            <div className="flex justify-between items-center bg-[#F0F7FF] p-4 rounded-2xl">
-                                <span className="text-xs font-bold text-gray-500">Revenue</span>
-                                <span className="font-bold">₹18.2L</span>
+                        <div className="w-full space-y-3 lg:space-y-4">
+                            <div className="flex justify-between items-center bg-[#F0F7FF] p-3 lg:p-4 rounded-xl lg:rounded-2xl">
+                                <span className="text-[10px] lg:text-xs font-bold text-gray-500 uppercase tracking-wider">Revenue</span>
+                                <span className="font-bold text-sm lg:text-base">₹18.2L</span>
                             </div>
-                            <div className="flex justify-between items-center bg-[#F0F7FF] p-4 rounded-2xl">
-                                <span className="text-xs font-bold text-gray-500">Customers</span>
-                                <span className="font-bold">1,240</span>
+                            <div className="flex justify-between items-center bg-[#F0F7FF] p-3 lg:p-4 rounded-xl lg:rounded-2xl">
+                                <span className="text-[10px] lg:text-xs font-bold text-gray-500 uppercase tracking-wider">Customers</span>
+                                <span className="font-bold text-sm lg:text-base">1,240</span>
                             </div>
                         </div>
                     </div>

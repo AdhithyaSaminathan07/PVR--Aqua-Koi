@@ -10,7 +10,7 @@ import {
     AlertCircle,
     Loader2
 } from 'lucide-react';
-import { getComplaints, createComplaint, updateComplaint, deleteComplaint } from '../../services/api';
+import { getComplaints, createComplaint, updateComplaint, deleteComplaint, getCustomers, updateComplaintStatus } from '../../services/api';
 import Modal from '../../components/Modal';
 
 const Complaints = () => {

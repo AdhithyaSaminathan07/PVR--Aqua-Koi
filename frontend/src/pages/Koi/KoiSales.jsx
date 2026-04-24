@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-    Plus, 
-    Search, 
-    Filter, 
-    ShoppingCart, 
-    User, 
+import {
+    Plus,
+    Search,
+    Filter,
+    ShoppingCart,
+    User,
     Calendar,
     ArrowRightCircle,
     CheckCircle2,
@@ -24,10 +24,10 @@ import {
     Pencil,
     Trash2
 } from 'lucide-react';
-import { 
-    getKoiOrders, createKoiOrder, updateKoiOrder, deleteKoiOrder, updateKoiOrderStatus, 
-    getKoiCustomers, getKoiEnquiries, getKoiInvoices, 
-    createKoiInvoice, getKoiStock, createKoiCustomer 
+import {
+    getKoiOrders, createKoiOrder, updateKoiOrder, deleteKoiOrder, updateKoiOrderStatus,
+    getKoiCustomers, getKoiEnquiries, getKoiInvoices,
+    createKoiInvoice, getKoiStock, createKoiCustomer
 } from '../../services/api';
 import Modal from '../../components/Modal';
 
@@ -64,7 +64,9 @@ const KoiSales = () => {
 
     // Invoice Creator State
     const [zoom, setZoom] = useState(1);
+    const [showSuccess, setShowSuccess] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
+
     const [invoiceFormData, setInvoiceFormData] = useState({
         customer: '',
         order: '',
@@ -72,6 +74,7 @@ const KoiSales = () => {
         invoiceDate: new Date().toISOString().split('T')[0],
         type: 'Fish',
         items: [{ name: '', quantity: 1, price: 0, total: 0 }],
+        taxPhase: 'Inside TN',
         transportCharges: 0,
         totalAmount: 0,
         billingInfo: { name: '', address: '', phone: '', gstNo: '' },
@@ -196,7 +199,7 @@ const KoiSales = () => {
         if (isSaving) return;
         setIsSaving(true);
         try {
-            const payload = { 
+            const payload = {
                 ...orderFormData,
                 quantity: Number(orderFormData.quantity),
                 price: Number(orderFormData.price),
@@ -248,11 +251,11 @@ const KoiSales = () => {
                 phone: order.customer?.phone || '',
                 gstNo: order.customer?.gstNo || ''
             },
-            items: [{ 
-                name: order.fishType || (type === 'Fish' ? 'Koi Fish' : 'Koi Food'), 
-                quantity: order.quantity || 1, 
-                price: order.price || 0, 
-                total: order.totalAmount || 0 
+            items: [{
+                name: order.fishType || (type === 'Fish' ? 'Koi Fish' : 'Koi Food'),
+                quantity: order.quantity || 1,
+                price: order.price || 0,
+                total: order.totalAmount || 0
             }],
             totalAmount: order.totalAmount
         });
@@ -287,13 +290,15 @@ const KoiSales = () => {
         if (!invoiceFormData.customer) return alert('Please select a customer');
         try {
             await createKoiInvoice(invoiceFormData);
-            
+
             // Auto-complete linked order
             if (invoiceFormData.order) await updateKoiOrderStatus(invoiceFormData.order, { status: 'Completed' });
 
             fetchInitialData();
             setActiveTab('history');
-            alert('Invoice saved successfully');
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 3000);
+
         } catch (err) {
             console.error('Save failed:', err);
         }
@@ -340,7 +345,7 @@ const KoiSales = () => {
         setTimeout(() => window.print(), 300);
     };
 
-    const filteredInvoices = invoices.filter(inv => 
+    const filteredInvoices = invoices.filter(inv =>
         (inv.customer?.name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
         (inv.invoiceNumber?.toLowerCase() || "").includes(searchTerm.toLowerCase())
     );
@@ -362,21 +367,21 @@ const KoiSales = () => {
                     <h1 className="text-4xl font-black text-gray-900 font-display italic uppercase tracking-tighter">Koi Sales & Billing</h1>
                     <p className="text-gray-400 font-medium mt-1">Unified module for orders, quotations, and tax invoices</p>
                 </div>
-                
+
                 <div className="flex items-center gap-3 bg-white p-2 rounded-[2rem] shadow-xl shadow-orange-100/50 border border-orange-50">
-                    <button 
+                    <button
                         onClick={() => setActiveTab('orders')}
                         className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${activeTab === 'orders' ? 'bg-orange-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-600'}`}
                     >
                         <ShoppingCart size={16} /> Orders
                     </button>
-                    <button 
+                    <button
                         onClick={() => setActiveTab('creator')}
                         className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${activeTab === 'creator' ? 'bg-orange-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-600'}`}
                     >
                         <Receipt size={16} /> Creator
                     </button>
-                    <button 
+                    <button
                         onClick={() => setActiveTab('history')}
                         className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${activeTab === 'history' ? 'bg-orange-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-600'}`}
                     >
@@ -391,13 +396,13 @@ const KoiSales = () => {
                     <div className="flex justify-between items-center no-print">
                         <div className="relative w-96">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                            <input 
+                            <input
                                 type="text"
                                 placeholder="Search orders..."
                                 className="w-full pl-12 pr-6 py-4 bg-white border-none rounded-[1.5rem] shadow-sm focus:ring-2 focus:ring-orange-500 transition-all font-semibold"
                             />
                         </div>
-                        <button 
+                        <button
                             onClick={resetOrderForm && (() => { resetOrderForm(); setIsOrderModalOpen(true); })}
                             className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 rounded-[1.5rem] font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-orange-100 transition-all hover:-translate-y-1 active:scale-95"
                         >
@@ -423,11 +428,11 @@ const KoiSales = () => {
                                     return (
                                         <tr key={order._id} className="hover:bg-gray-50/50 transition-all group">
                                             <td className="px-8 py-6">
-                                                <div className="font-black text-gray-900 italic tracking-tighter">#{order._id.slice(-6).toUpperCase()}</div>
+                                                <div className="font-black text-gray-900 italic tracking-tighter">#{order?._id?.slice(-6).toUpperCase() || 'N/A'}</div>
+
                                                 <div className="flex gap-2 items-center mt-1">
-                                                    <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter ${
-                                                        order.orderType === 'Food' ? 'bg-blue-100 text-blue-600' : 'bg-orange-100 text-orange-600'
-                                                    }`}>
+                                                    <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter ${order.orderType === 'Food' ? 'bg-blue-100 text-blue-600' : 'bg-orange-100 text-orange-600'
+                                                        }`}>
                                                         {order.orderType || 'Fish'}
                                                     </span>
                                                     <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{new Date(order.orderDate).toLocaleDateString()}</div>
@@ -441,9 +446,8 @@ const KoiSales = () => {
                                             <td className="px-8 py-6 font-black text-gray-900 text-lg flex items-center gap-1"><IndianRupee size={16} className="text-gray-400" /> {order.totalAmount}</td>
                                             <td className="px-8 py-6">
                                                 <div className="flex flex-col gap-2">
-                                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                                                        order.status === 'Completed' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-orange-50 text-orange-600 border border-orange-100'
-                                                    }`}>
+                                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${order.status === 'Completed' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-orange-50 text-orange-600 border border-orange-100'
+                                                        }`}>
                                                         {order.status === 'Completed' ? <CheckCircle2 size={12} /> : <Clock size={12} />}
                                                         {order.status}
                                                     </span>
@@ -457,34 +461,34 @@ const KoiSales = () => {
                                             <td className="px-8 py-6 text-right">
                                                 <div className="flex gap-2 justify-end">
                                                     {linkedInvoice ? (
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleViewInvoice(linkedInvoice)}
                                                             className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-md shadow-blue-100"
                                                         >
                                                             <Eye size={14} /> View
                                                         </button>
                                                     ) : (
-                                                        <button 
+                                                        <button
                                                             onClick={() => jumpToInvoice(order)}
                                                             className="p-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-all font-black text-[10px] uppercase tracking-widest flex items-center gap-2"
                                                         >
                                                             <Receipt size={14} /> Bill
                                                         </button>
                                                     )}
-                                                    <button 
+                                                    <button
                                                         onClick={() => handleEditOrderClick(order)}
                                                         className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-gray-900 hover:text-white transition-all shadow-sm"
                                                     >
                                                         <Pencil size={14} />
                                                     </button>
-                                                    <button 
+                                                    <button
                                                         onClick={() => handleDeleteOrder(order._id)}
                                                         className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm"
                                                     >
                                                         <Trash2 size={14} />
                                                     </button>
                                                     {order.status === 'Pending' && (
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleStatusUpdate(order._id, 'Completed')}
                                                             className="p-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all font-black text-[10px] uppercase tracking-widest shadow-md shadow-emerald-100"
                                                         >
@@ -522,70 +526,147 @@ const KoiSales = () => {
                     </div>
 
                     <div className="flex justify-center bg-gray-100 rounded-[3rem] p-12 min-h-[1000px] overflow-auto shadow-inner border-4 border-white">
-                        <div 
+                        <div
                             style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}
                             className="bg-white shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] w-[800px] min-h-[1100px] p-12 flex flex-col gap-6 relative"
                             id="koi-invoice-to-print"
                         >
                             {/* PROFESSIONAL TAX INVOICE TEMPLATE */}
                             <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: '12px', width: '100%', border: '1px solid #b0b8cc' }}>
-                                <div style={{ textAlign: 'center', padding: '10px', fontWeight: '900', fontSize: '18px', background: '#fff7ed', color: '#ea580c', borderBottom: '1px solid #fed7aa', letterSpacing: '8px' }}>
+                                {/* TITLE BAR */}
+                                <div style={{ textAlign: 'center', padding: '8px', fontWeight: 'bold', fontSize: '16px', background: '#eef2fb', color: '#1e3a8a', borderBottom: '1px solid #b0b8cc', letterSpacing: '4px' }}>
                                     TAX INVOICE
                                 </div>
+
+                                {/* HEADER GRID */}
                                 <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr' }}>
-                                    <div style={{ borderRight: '1px solid #fed7aa' }}>
-                                        <div style={{ padding: '15px', borderBottom: '1px solid #fed7aa', textAlign: 'center' }}>
-                                            <h2 style={{ fontSize: '28px', fontWeight: '900', color: '#ea580c', margin: 0, letterSpacing: '-1px' }}>{invoiceFormData.companyInfo.name}</h2>
-                                            <p style={{ fontSize: '10px', color: '#666', margin: '4px 0', whiteSpace: 'pre-line' }}>{invoiceFormData.companyInfo.address}</p>
-                                            <p style={{ fontSize: '10px', color: '#666', margin: 0 }}>{invoiceFormData.companyInfo.contact}</p>
-                                            <div style={{ background: '#ea580c', padding: '6px', marginTop: '12px', fontSize: '12px', fontWeight: '900', color: 'white', borderRadius: '4px', display: 'inline-block' }}>
-                                                GSTIN: {invoiceFormData.companyInfo.gstin}
+                                    {/* Left Section: Company & Bill To */}
+                                    <div style={{ borderRight: '1px solid #b0b8cc' }}>
+                                        {/* Company Info */}
+                                        <div style={{ padding: '12px', borderBottom: '1px solid #b0b8cc', textAlign: 'center' }}>
+                                            <input
+                                                style={{ fontSize: '24px', fontWeight: '900', color: '#1e3a8a', margin: 0, textAlign: 'center', border: 'none', width: '100%' }}
+                                                value={invoiceFormData.companyInfo.name}
+                                                onChange={(e) => setInvoiceFormData({ ...invoiceFormData, companyInfo: { ...invoiceFormData.companyInfo, name: e.target.value } })}
+                                            />
+                                            <textarea
+                                                style={{ fontSize: '10px', color: '#666', margin: '4px 0', whiteSpace: 'pre-line', textAlign: 'center', border: 'none', width: '100%', resize: 'none' }}
+                                                value={invoiceFormData.companyInfo.address}
+                                                onChange={(e) => setInvoiceFormData({ ...invoiceFormData, companyInfo: { ...invoiceFormData.companyInfo, address: e.target.value } })}
+                                            />
+                                            <input
+                                                style={{ fontSize: '10px', color: '#666', margin: 0, textAlign: 'center', border: 'none', width: '100%' }}
+                                                value={invoiceFormData.companyInfo.contact}
+                                                onChange={(e) => setInvoiceFormData({ ...invoiceFormData, companyInfo: { ...invoiceFormData.companyInfo, contact: e.target.value } })}
+                                            />
+                                            <div style={{ background: '#f0f4ff', padding: '4px', marginTop: '8px', fontSize: '11px', fontWeight: 'bold', color: '#1e3a8a', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                                GSTIN:
+                                                <input
+                                                    style={{ background: 'transparent', border: 'none', fontWeight: 'bold', color: '#1e3a8a', width: '120px' }}
+                                                    value={invoiceFormData.companyInfo.gstin}
+                                                    onChange={(e) => setInvoiceFormData({ ...invoiceFormData, companyInfo: { ...invoiceFormData.companyInfo, gstin: e.target.value } })}
+                                                />
                                             </div>
                                         </div>
-                                        <div>
-                                            <div style={{ background: '#ffedd5', padding: '8px', textAlign: 'center', borderBottom: '1px solid #fed7aa', fontWeight: '900', color: '#ea580c', fontSize: '10px' }}>BILL TO</div>
-                                            <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                                <select 
-                                                    className="no-print w-full p-2 border rounded-lg bg-gray-50 font-bold"
-                                                    value={invoiceFormData.customer}
+
+                                        {/* BILL TO */}
+                                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                                            <div style={{ background: '#dde5f5', padding: '6px', textAlign: 'center', borderBottom: '1px solid #b0b8cc', fontWeight: 'bold', color: '#1e3a8a' }}>BILL TO</div>
+
+                                            <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+                                                <select
+                                                    className="no-print"
+                                                    style={{ width: '100%', padding: '6px', border: '1px solid #eee' }}
                                                     onChange={(e) => {
                                                         const c = customers.find(x => x._id === e.target.value);
-                                                        if(c) setInvoiceFormData({...invoiceFormData, customer: c._id, billingInfo: { name: c.name, address: c.address, phone: c.phone, gstNo: c.gstNo || '' } });
+                                                        if (c) setInvoiceFormData({ ...invoiceFormData, customer: c._id, billingInfo: { name: c.name, address: c.address, phone: c.phone, gstNo: c.gstNo || '' } });
                                                     }}
                                                 >
                                                     <option value="">Choose Customer</option>
                                                     {customers.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
                                                 </select>
-                                                <input style={{ fontWeight: '900', fontSize: '16px', border: 'none', color: '#111', width: '100%' }} placeholder="Customer Name" value={invoiceFormData.billingInfo.name} readOnly />
-                                                <textarea style={{ fontSize: '11px', border: 'none', resize: 'none', height: '40px', color: '#555', width: '100%' }} placeholder="Address" value={invoiceFormData.billingInfo.address} readOnly />
-                                                <p style={{ margin: 0, color: '#333' }}><b>Phone:</b> {invoiceFormData.billingInfo.phone}</p>
-                                                <p style={{ margin: 0, color: '#333' }}><b>GSTIN:</b> {invoiceFormData.billingInfo.gstNo || 'N/A'}</p>
+                                                <input
+                                                    style={{ fontWeight: 'bold', fontSize: '14px', border: 'none', color: '#111', width: '100%' }}
+                                                    placeholder="Customer Name"
+                                                    value={invoiceFormData.billingInfo.name}
+                                                    onChange={(e) => setInvoiceFormData({ ...invoiceFormData, billingInfo: { ...invoiceFormData.billingInfo, name: e.target.value } })}
+                                                />
+                                                <textarea
+                                                    style={{ fontSize: '11px', border: 'none', resize: 'none', height: '40px', color: '#555', width: '100%' }}
+                                                    placeholder="Address"
+                                                    value={invoiceFormData.billingInfo.address}
+                                                    onChange={(e) => setInvoiceFormData({ ...invoiceFormData, billingInfo: { ...invoiceFormData.billingInfo, address: e.target.value } })}
+                                                />
+                                                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                                    <b style={{ fontSize: '11px' }}>Phone:</b>
+                                                    <input
+                                                        style={{ fontSize: '11px', border: 'none', color: '#333', flex: 1 }}
+                                                        value={invoiceFormData.billingInfo.phone}
+                                                        onChange={(e) => setInvoiceFormData({ ...invoiceFormData, billingInfo: { ...invoiceFormData.billingInfo, phone: e.target.value } })}
+                                                    />
+                                                </div>
+                                                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                                    <b style={{ fontSize: '11px' }}>GSTIN:</b>
+                                                    <input
+                                                        style={{ fontSize: '11px', border: 'none', color: '#333', flex: 1 }}
+                                                        value={invoiceFormData.billingInfo.gstNo}
+                                                        placeholder="N/A"
+                                                        onChange={(e) => setInvoiceFormData({ ...invoiceFormData, billingInfo: { ...invoiceFormData.billingInfo, gstNo: e.target.value } })}
+                                                    />
+                                                </div>
+                                            </div>
+                                            {/* Sales & Tax */}
+                                            <div style={{ padding: '4px 10px', borderTop: '1px solid #eee', display: 'flex', flexDirection: 'column', gap: '3px', background: '#fcfcfc' }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
+                                                    <span style={{ color: '#888', fontWeight: 'bold' }}>TAX CATEGORY:</span>
+                                                    <select
+                                                        style={{ border: 'none', fontSize: '10px', fontWeight: 'bold', background: 'transparent' }}
+                                                        value={invoiceFormData.taxPhase}
+                                                        onChange={(e) => setInvoiceFormData({ ...invoiceFormData, taxPhase: e.target.value })}
+                                                        className="no-print-select"
+                                                    >
+                                                        <option value="Inside TN">Inside TN (CGST/SGST)</option>
+                                                        <option value="Outside TN">Outside TN (IGST)</option>
+                                                    </select>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div>
-                                        <div style={{ display: 'flex', borderBottom: '1px solid #fed7aa', height: '45px' }}>
-                                            <div style={{ flex: 1, padding: '10px', fontWeight: '900', borderRight: '1px solid #fed7aa', display: 'flex', alignItems: 'center', color: '#ea580c', fontSize: '10px' }}>INVOICE #</div>
-                                            <div style={{ flex: 1, padding: '10px', display: 'flex', alignItems: 'center', fontWeight: '900', fontSize: '14px' }}>{invoiceFormData.invoiceNumber}</div>
-                                        </div>
-                                        <div style={{ display: 'flex', borderBottom: '1px solid #fed7aa', height: '45px' }}>
-                                            <div style={{ flex: 1, padding: '10px', fontWeight: '900', borderRight: '1px solid #fed7aa', display: 'flex', alignItems: 'center', color: '#ea580c', fontSize: '10px' }}>DATE</div>
-                                            <div style={{ flex: 1, padding: '10px', display: 'flex', alignItems: 'center' }}>
-                                                <input type="date" style={{ border: 'none', fontWeight: '900', background: 'transparent' }} value={invoiceFormData.invoiceDate} onChange={(e) => setInvoiceFormData({...invoiceFormData, invoiceDate: e.target.value})} />
+
+                                    {/* Right Section: Invoice Info & Logo */}
+                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                        <div style={{ display: 'flex', borderBottom: '1px solid #b0b8cc', height: '40px' }}>
+                                            <div style={{ flex: 1, padding: '8px', fontWeight: 'bold', borderRight: '1px solid #b0b8cc', display: 'flex', alignItems: 'center', color: '#1e3a8a' }}>INVOICE NO.</div>
+                                            <div style={{ flex: 1, padding: '8px', display: 'flex', alignItems: 'center' }}>
+                                                <input
+                                                    style={{ border: 'none', fontWeight: 'bold', width: '100%' }}
+                                                    value={invoiceFormData.invoiceNumber}
+                                                    onChange={(e) => setInvoiceFormData({ ...invoiceFormData, invoiceNumber: e.target.value })}
+                                                />
                                             </div>
                                         </div>
-                                        <div style={{ padding: '25px', textAlign: 'center' }}>
-                                            <img src="/PVR.png" alt="Logo" style={{ maxHeight: '130px', maxWidth: '100%' }} />
+                                        <div style={{ display: 'flex', borderBottom: '1px solid #b0b8cc', height: '40px' }}>
+                                            <div style={{ flex: 1, padding: '8px', fontWeight: 'bold', borderRight: '1px solid #b0b8cc', display: 'flex', alignItems: 'center', color: '#1e3a8a' }}>DATE</div>
+                                            <div style={{ flex: 1, padding: '8px', display: 'flex', alignItems: 'center' }}>
+                                                <input type="date" style={{ border: 'none', fontWeight: 'bold' }} value={invoiceFormData.invoiceDate} onChange={(e) => setInvoiceFormData({ ...invoiceFormData, invoiceDate: e.target.value })} />
+                                            </div>
                                         </div>
-                                        <div style={{ borderTop: '1px solid #fed7aa', padding: '12px' }} className="no-print">
-                                            <div style={{ display: 'flex', gap: '5px' }}>
+
+                                        <div style={{ padding: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1, minHeight: '200px' }}>
+                                            <img src="/PVR.png" alt="Logo" style={{ maxHeight: '180px', maxWidth: '100%', objectFit: 'contain' }} />
+                                        </div>
+
+                                        <div style={{ borderTop: '1px solid #b0b8cc', padding: '4px 10px' }} className="no-print">
+                                            <p style={{ fontSize: '9px', fontWeight: 'bold', color: '#666', margin: '0 0 4px 0', textAlign: 'center', letterSpacing: '0.5px', opacity: 0.8 }}>INVOICE TYPE</p>
+                                            <div style={{ display: 'flex', gap: '4px' }}>
                                                 {['Fish', 'Food'].map(t => (
-                                                    <button 
+                                                    <button
                                                         key={t}
-                                                        onClick={() => setInvoiceFormData({...invoiceFormData, type: t, items: [{ name: '', quantity: 1, price: 0, total: 0 }]})}
-                                                        style={{ flex: 1, padding: '6px', fontSize: '10px', fontWeight: '900', border: '1px solid #fed7aa', background: invoiceFormData.type === t ? '#ea580c' : 'white', color: invoiceFormData.type === t ? 'white' : '#666', borderRadius: '4px' }}
+                                                        type="button"
+                                                        onClick={() => setInvoiceFormData({ ...invoiceFormData, type: t, items: [{ name: '', quantity: 1, price: 0, total: 0 }] })}
+                                                        style={{ flex: 1, padding: '3px 5px', fontSize: '10px', fontWeight: '800', border: '1px solid #eee', background: invoiceFormData.type === t ? '#1e3a8a' : 'white', color: invoiceFormData.type === t ? 'white' : '#666', borderRadius: '4px', transition: 'all 0.2s', textTransform: 'uppercase' }}
                                                     >
-                                                        {t.toUpperCase()}
+                                                        {t}
                                                     </button>
                                                 ))}
                                             </div>
@@ -593,91 +674,137 @@ const KoiSales = () => {
                                     </div>
                                 </div>
 
+                                {/* ITEMS TABLE */}
                                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                     <thead>
-                                        <tr style={{ background: '#ea580c', color: 'white' }}>
-                                            <th style={{ padding: '12px', border: '1px solid #c2410c', fontSize: '10px', fontWeight: '900' }}>SL</th>
-                                            <th style={{ padding: '12px', border: '1px solid #c2410c', textAlign: 'left', fontSize: '10px', fontWeight: '900' }}>ITEM DESCRIPTION</th>
-                                            <th style={{ padding: '12px', border: '1px solid #c2410c', fontSize: '10px', fontWeight: '900' }}>QTY</th>
-                                            <th style={{ padding: '12px', border: '1px solid #c2410c', textAlign: 'right', fontSize: '10px', fontWeight: '900' }}>PRICE (₹)</th>
-                                            <th style={{ padding: '12px', border: '1px solid #c2410c', textAlign: 'right', fontSize: '10px', fontWeight: '900' }}>TOTAL (₹)</th>
+                                        <tr style={{ background: '#1e3a8a', color: 'white' }}>
+                                            <th style={{ padding: '10px', border: '1px solid #3b5daa' }}>SL</th>
+                                            <th style={{ padding: '10px', border: '1px solid #3b5daa', textAlign: 'left' }}>ITEM DESCRIPTION</th>
+                                            <th style={{ padding: '10px', border: '1px solid #3b5daa' }}>QTY</th>
+                                            <th style={{ padding: '10px', border: '1px solid #3b5daa', textAlign: 'right' }}>PRICE</th>
+                                            <th style={{ padding: '10px', border: '1px solid #3b5daa', textAlign: 'right' }}>TOTAL</th>
+                                            <th style={{ padding: '10px', border: '1px solid #3b5daa' }} className="no-print"></th>
                                         </tr>
                                     </thead>
+
                                     <tbody>
                                         {invoiceFormData.items.map((item, i) => (
-                                            <tr key={i} style={{ height: '40px' }}>
-                                                <td style={{ textAlign: 'center', border: '1px solid #fed7aa', fontWeight: 'bold' }}>{i + 1}</td>
-                                                <td style={{ padding: '0 12px', border: '1px solid #fed7aa' }}>
+                                            <tr key={i} style={{ height: '35px' }}>
+                                                <td style={{ textAlign: 'center', border: '1px solid #eee' }}>{i + 1}</td>
+                                                <td style={{ padding: '0 10px', border: '1px solid #eee' }}>
                                                     {invoiceFormData.type === 'Food' ? (
-                                                        <select 
-                                                            style={{ width: '100%', border: 'none', fontWeight: '900', background: 'transparent' }}
+                                                        <select
+                                                            style={{ width: '100%', border: 'none', fontWeight: 'bold' }}
                                                             value={item.name}
                                                             onChange={(e) => updateItem(i, 'name', e.target.value)}
                                                         >
-                                                            <option value="">Select Product...</option>
+                                                            <option value="">Select Product</option>
                                                             {inventory.map(prod => <option key={prod._id} value={prod.itemName}>{prod.itemName}</option>)}
                                                         </select>
                                                     ) : (
-                                                        <input 
-                                                            style={{ width: '100%', border: 'none', fontWeight: '900', background: 'transparent' }} 
-                                                            placeholder="Enter Item Description..." 
-                                                            value={item.name} 
+                                                        <input
+                                                            style={{ width: '100%', border: 'none', fontWeight: 'bold' }}
+                                                            placeholder="Description"
+                                                            value={item.name}
                                                             onChange={(e) => updateItem(i, 'name', e.target.value)}
                                                         />
                                                     )}
                                                 </td>
-                                                <td style={{ border: '1px solid #fed7aa', textAlign: 'center' }}>
-                                                    <input type="number" style={{ width: '60px', textAlign: 'center', border: 'none', fontWeight: '900', background: 'transparent' }} value={item.quantity} onChange={(e) => updateItem(i, 'quantity', Number(e.target.value))} />
+                                                <td style={{ border: '1px solid #eee', textAlign: 'center' }}>
+                                                    <input type="number" style={{ width: '50px', textAlign: 'center', border: 'none' }} value={item.quantity} onChange={(e) => updateItem(i, 'quantity', Number(e.target.value))} />
                                                 </td>
-                                                <td style={{ border: '1px solid #fed7aa', textAlign: 'right', paddingRight: '12px' }}>
-                                                    <input type="number" style={{ width: '90px', textAlign: 'right', border: 'none', fontWeight: '900', background: 'transparent' }} value={item.price} onChange={(e) => updateItem(i, 'price', Number(e.target.value))} />
+                                                <td style={{ border: '1px solid #eee', textAlign: 'right', paddingRight: '10px' }}>
+                                                    <input type="number" style={{ width: '80px', textAlign: 'right', border: 'none' }} value={item.price} onChange={(e) => updateItem(i, 'price', Number(e.target.value))} />
                                                 </td>
-                                                <td style={{ border: '1px solid #fed7aa', textAlign: 'right', paddingRight: '12px', fontWeight: '900', color: '#ea580c' }}>
-                                                    ₹{(item.quantity * item.price).toLocaleString()}
+                                                <td style={{ border: '1px solid #eee', textAlign: 'right', paddingRight: '10px', fontWeight: 'bold' }}>
+                                                    ₹{item.total.toLocaleString()}
+                                                </td>
+                                                <td style={{ border: '1px solid #eee', textAlign: 'center' }} className="no-print">
+                                                    <button onClick={() => removeItem(i)} style={{ color: '#ef4444', fontWeight: 'bold', padding: '4px' }}>✕</button>
                                                 </td>
                                             </tr>
                                         ))}
                                         <tr className="no-print">
-                                            <td colSpan={5} style={{ textAlign: 'center', padding: '12px', background: '#fafafa' }}>
-                                                <button onClick={addItem} style={{ fontSize: '10px', fontWeight: '900', color: '#ea580c', letterSpacing: '2px' }}>+ ADD ANOTHER ITEM</button>
+                                            <td colSpan={6} style={{ textAlign: 'center', padding: '10px' }}>
+                                                <button onClick={addItem} style={{ fontSize: '10px', fontWeight: 'bold', color: '#1e3a8a' }}>+ ADD ITEM</button>
                                             </td>
                                         </tr>
+                                        {/* Empty rows to maintain height */}
                                         {[...Array(Math.max(0, 5 - invoiceFormData.items.length))].map((_, i) => (
-                                            <tr key={i} style={{ height: '40px' }}><td style={{ border: '1px solid #fed7aa' }}></td><td style={{ border: '1px solid #fed7aa' }}></td><td style={{ border: '1px solid #fed7aa' }}></td><td style={{ border: '1px solid #fed7aa' }}></td><td style={{ border: '1px solid #fed7aa' }}></td></tr>
+                                            <tr key={i} style={{ height: '35px' }}><td style={{ border: '1px solid #eee' }}></td><td style={{ border: '1px solid #eee' }}></td><td style={{ border: '1px solid #eee' }}></td><td style={{ border: '1px solid #eee' }}></td><td style={{ border: '1px solid #eee' }}></td><td style={{ border: '1px solid #eee' }} className="no-print"></td></tr>
                                         ))}
                                     </tbody>
                                 </table>
 
-                                <div style={{ borderTop: '2px solid #ea580c' }}>
+                                <div style={{ borderTop: '1px solid #b0b8cc' }}>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr' }}>
-                                        <div style={{ padding: '20px', borderRight: '1px solid #fed7aa', background: '#fafafa' }}>
-                                            <p style={{ margin: 0, fontSize: '10px', fontWeight: '900', color: '#888', letterSpacing: '1px' }}>TOTAL IN WORDS</p>
-                                            <p style={{ margin: '8px 0 0 0', fontWeight: '900', color: '#ea580c', fontSize: '14px', fontStyle: 'italic' }}>{numberToWords(invoiceFormData.totalAmount)}</p>
+                                        <div style={{ padding: '15px', borderRight: '1px solid #b0b8cc' }}>
+                                            <p style={{ margin: 0, fontSize: '10px', color: '#888' }}>TOTAL IN WORDS</p>
+                                            <p style={{ margin: '5px 0 0 0', fontWeight: 'bold', color: '#1e3a8a' }}>{numberToWords(invoiceFormData.totalAmount)}</p>
                                         </div>
                                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                            <div style={{ padding: '12px 20px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee' }}>
-                                                <span style={{ color: '#555', fontWeight: '900', fontSize: '10px' }}>TRANSPORT</span>
-                                                <input type="number" style={{ width: '100px', textAlign: 'right', border: 'none', fontWeight: '900', color: '#111' }} value={invoiceFormData.transportCharges} onChange={(e) => setInvoiceFormData({...invoiceFormData, transportCharges: Number(e.target.value)})} />
+                                            <div style={{ padding: '8px 15px', display: 'flex', justifyItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #eee' }}>
+                                                <span style={{ color: '#555', fontWeight: 'bold' }}>TRANSPORT</span>
+                                                <input type="number" style={{ width: '80px', textAlign: 'right', border: 'none', fontWeight: 'bold' }} value={invoiceFormData.transportCharges} onChange={(e) => setInvoiceFormData({ ...invoiceFormData, transportCharges: Number(e.target.value) })} />
                                             </div>
-                                            <div style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', background: '#ea580c', fontWeight: '900', color: 'white', fontSize: '20px', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.1)' }}>
+                                            {invoiceFormData.taxPhase === 'Outside TN' ? (
+                                                <div style={{ padding: '8px 15px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f0f0f0' }}>
+                                                    <span style={{ color: '#555', fontWeight: 'bold' }}>IGST (18%)</span>
+                                                    <span style={{ fontWeight: 'bold', color: '#333' }}>₹{(invoiceFormData.totalAmount - (invoiceFormData.items.reduce((a, c) => a + c.total, 0) + invoiceFormData.transportCharges)).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div style={{ padding: '8px 15px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee' }}>
+                                                        <span style={{ color: '#555', fontWeight: 'bold' }}>CGST (9%)</span>
+                                                        <span style={{ fontWeight: 'bold', color: '#333' }}>₹{((invoiceFormData.totalAmount - (invoiceFormData.items.reduce((a, c) => a + c.total, 0) + invoiceFormData.transportCharges)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                                    </div>
+                                                    <div style={{ padding: '8px 15px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f0f0f0' }}>
+                                                        <span style={{ color: '#555', fontWeight: 'bold' }}>SGST (9%)</span>
+                                                        <span style={{ fontWeight: 'bold', color: '#333' }}>₹{((invoiceFormData.totalAmount - (invoiceFormData.items.reduce((a, c) => a + c.total, 0) + invoiceFormData.transportCharges)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                                    </div>
+                                                </>
+                                            )}
+                                            <div style={{ padding: '15px', display: 'flex', justifyContent: 'space-between', background: '#dde5f5', fontWeight: '900', color: '#1e3a8a', fontSize: '16px' }}>
                                                 <span>GRAND TOTAL</span>
-                                                <span>₹{invoiceFormData.totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                                                <span>₹{invoiceFormData.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', borderTop: '2px solid #ea580c' }}>
-                                    <div style={{ padding: '20px', borderRight: '1px solid #fed7aa' }}>
-                                        <div style={{ background: '#ffedd5', padding: '6px 12px', fontSize: '10px', fontWeight: '900', color: '#ea580c', display: 'inline-block', borderRadius: '4px', marginBottom: '15px' }}>BANK TRANSFER DETAILS</div>
-                                        <p style={{ margin: '4px 0', color: '#111', fontSize: '13px' }}><b>ACCOUNT NO:</b> {invoiceFormData.bankDetails.accountNo}</p>
-                                        <p style={{ margin: '4px 0', color: '#111', fontSize: '13px' }}><b>IFSC CODE:</b> {invoiceFormData.bankDetails.ifscCode}</p>
-                                        <p style={{ margin: '4px 0', color: '#111', fontSize: '13px' }}><b>BANK NAME:</b> {invoiceFormData.bankDetails.bankName}</p>
+                                {/* FOOTER: BANK & SIGNATURE */}
+                                <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', borderTop: '1px solid #b0b8cc' }}>
+                                    <div style={{ padding: '15px', borderRight: '1px solid #b0b8cc' }}>
+                                        <div style={{ background: '#dde5f5', padding: '5px 10px', fontSize: '10px', fontWeight: 'bold', color: '#1e3a8a', marginBottom: '10px' }}>BANK DETAILS</div>
+
+                                        <div style={{ display: 'flex', gap: '4px', alignItems: 'center', margin: '2px 0' }}>
+                                            <b style={{ fontSize: '11px' }}>Account:</b>
+                                            <input
+                                                style={{ fontSize: '11px', border: 'none', color: '#333', flex: 1 }}
+                                                value={invoiceFormData.bankDetails.accountNo}
+                                                onChange={(e) => setInvoiceFormData({ ...invoiceFormData, bankDetails: { ...invoiceFormData.bankDetails, accountNo: e.target.value } })}
+                                            />
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '4px', alignItems: 'center', margin: '2px 0' }}>
+                                            <b style={{ fontSize: '11px' }}>IFSC:</b>
+                                            <input
+                                                style={{ fontSize: '11px', border: 'none', color: '#333', flex: 1 }}
+                                                value={invoiceFormData.bankDetails.ifscCode}
+                                                onChange={(e) => setInvoiceFormData({ ...invoiceFormData, bankDetails: { ...invoiceFormData.bankDetails, ifscCode: e.target.value } })}
+                                            />
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '4px', alignItems: 'center', margin: '2px 0' }}>
+                                            <b style={{ fontSize: '11px' }}>Bank:</b>
+                                            <input
+                                                style={{ fontSize: '11px', border: 'none', color: '#333', flex: 1 }}
+                                                value={invoiceFormData.bankDetails.bankName}
+                                                onChange={(e) => setInvoiceFormData({ ...invoiceFormData, bankDetails: { ...invoiceFormData.bankDetails, bankName: e.target.value } })}
+                                            />
+                                        </div>
                                     </div>
-                                    <div style={{ height: '160px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '20px', textAlign: 'center', background: '#fafafa' }}>
-                                        <p style={{ margin: 0, fontWeight: '900', color: '#111', fontSize: '11px', textTransform: 'uppercase' }}>for {invoiceFormData.companyInfo.name}</p>
-                                        <div style={{ borderTop: '1px dashed #ccc', width: '80%', margin: '0 auto' }}></div>
-                                        <p style={{ margin: 0, fontSize: '10px', fontWeight: '900', color: '#ea580c', letterSpacing: '1px' }}>AUTHORIZED SIGNATURE</p>
+                                    <div style={{ height: '120px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '15px', textAlign: 'center' }}>
+                                        <p style={{ margin: 0, fontWeight: 'bold', color: '#111' }}>for {invoiceFormData.companyInfo.name}</p>
+                                        <p style={{ margin: 0, fontSize: '10px', color: '#999' }}>Authorized Signature</p>
                                     </div>
                                 </div>
                             </div>
@@ -720,7 +847,8 @@ const KoiSales = () => {
                                         <td className="px-8 py-6">
                                             <div className="font-black text-gray-900 italic tracking-tighter text-lg">#{inv.invoiceNumber}</div>
                                             {inv.order && (
-                                                <div className="text-[9px] font-black text-blue-500 uppercase tracking-widest mt-1 bg-blue-50 px-1 rounded w-fit">Ref Order: #{inv.order._id?.slice(-6).toUpperCase() || inv.order.toString().slice(-6).toUpperCase()}</div>
+                                                <div className="text-[9px] font-black text-blue-500 uppercase tracking-widest mt-1 bg-blue-50 px-1 rounded w-fit">Ref Order: #{inv?.order?._id?.slice(-6).toUpperCase() || inv?.order?.toString()?.slice(-6).toUpperCase() || 'N/A'}</div>
+
                                             )}
                                         </td>
                                         <td className="px-8 py-6">
@@ -740,13 +868,13 @@ const KoiSales = () => {
                                         </td>
                                         <td className="px-8 py-6 text-right">
                                             <div className="flex gap-2 justify-end no-print">
-                                                <button 
+                                                <button
                                                     onClick={() => handleViewInvoice(inv)}
                                                     className="p-3 bg-gray-50 hover:bg-orange-50 hover:text-orange-600 text-gray-400 rounded-2xl transition-all shadow-sm"
                                                 >
                                                     <Eye size={18} />
                                                 </button>
-                                                <button 
+                                                <button
                                                     onClick={() => handlePrintHistory(inv)}
                                                     className="p-3 bg-gray-50 hover:bg-emerald-50 hover:text-emerald-600 text-gray-400 rounded-2xl transition-all shadow-sm"
                                                 >
@@ -779,13 +907,12 @@ const KoiSales = () => {
                 <form onSubmit={handleCreateOrder} className="p-10 space-y-6">
                     <div className="flex gap-2 p-1 bg-gray-100 rounded-2xl w-fit mb-4">
                         {['Fish', 'Food'].map(t => (
-                            <button 
+                            <button
                                 key={t}
                                 type="button"
                                 onClick={() => setOrderFormData({ ...orderFormData, orderType: t, fishType: '', price: 0, totalAmount: 0 })}
-                                className={`px-6 py-2 rounded-xl text-[10px] font-black tracking-widest transition-all ${
-                                    orderFormData.orderType === t ? 'bg-orange-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-600'
-                                }`}
+                                className={`px-6 py-2 rounded-xl text-[10px] font-black tracking-widest transition-all ${orderFormData.orderType === t ? 'bg-orange-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-600'
+                                    }`}
                             >
                                 {t.toUpperCase()}
                             </button>
@@ -794,16 +921,16 @@ const KoiSales = () => {
 
                     <div className="space-y-2">
                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 italic">Start from Enquiry (Optional)</label>
-                        <select 
+                        <select
                             value={orderFormData.enquiry}
                             disabled={orderFormData.orderType === 'Food'}
                             onChange={(e) => {
                                 const enq = enquiries.find(eq => eq._id === e.target.value);
                                 if (enq) {
                                     const invItem = inventory.find(i => i.itemName.toLowerCase() === (enq.requirement || '').toLowerCase());
-                                    setOrderFormData({ 
-                                        ...orderFormData, 
-                                        enquiry: e.target.value, 
+                                    setOrderFormData({
+                                        ...orderFormData,
+                                        enquiry: e.target.value,
                                         customer: enq.customerId?._id || '',
                                         fishType: enq.requirement || '',
                                         price: invItem ? invItem.sellingPrice : 0,
@@ -826,7 +953,7 @@ const KoiSales = () => {
                         <div className="space-y-2">
                             <div className="flex justify-between items-center px-1">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">Customer</label>
-                                <button 
+                                <button
                                     type="button"
                                     onClick={() => setIsCustomerModalOpen(true)}
                                     className="text-[10px] font-black text-orange-600 uppercase tracking-widest hover:underline"
@@ -834,7 +961,7 @@ const KoiSales = () => {
                                     + New Customer
                                 </button>
                             </div>
-                            <select 
+                            <select
                                 required
                                 value={orderFormData.customer}
                                 onChange={(e) => setOrderFormData({ ...orderFormData, customer: e.target.value })}
@@ -849,13 +976,13 @@ const KoiSales = () => {
                                 {orderFormData.orderType === 'Fish' ? 'Fish Specification' : 'Food Product'}
                             </label>
                             {orderFormData.orderType === 'Food' ? (
-                                <select 
+                                <select
                                     required
                                     value={orderFormData.fishType}
                                     onChange={(e) => {
                                         const item = inventory.find(i => i.itemName === e.target.value);
-                                        setOrderFormData({ 
-                                            ...orderFormData, 
+                                        setOrderFormData({
+                                            ...orderFormData,
                                             fishType: e.target.value,
                                             price: item?.sellingPrice || 0,
                                             totalAmount: orderFormData.quantity * (item?.sellingPrice || 0)
@@ -870,7 +997,7 @@ const KoiSales = () => {
                                 </select>
                             ) : (
                                 <div className="relative">
-                                    <input 
+                                    <input
                                         list="order-inventory-list"
                                         type="text"
                                         required
@@ -878,9 +1005,9 @@ const KoiSales = () => {
                                         onChange={(e) => {
                                             const val = e.target.value;
                                             const invItem = inventory.filter(i => i.category === 'Fish').find(i => i.itemName === val);
-                                            setOrderFormData({ 
-                                                ...orderFormData, 
-                                                fishType: val, 
+                                            setOrderFormData({
+                                                ...orderFormData,
+                                                fishType: val,
                                                 price: invItem ? invItem.sellingPrice : orderFormData.price,
                                                 totalAmount: orderFormData.quantity * (invItem ? invItem.sellingPrice : orderFormData.price)
                                             });
@@ -901,7 +1028,7 @@ const KoiSales = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 italic">Quantity</label>
-                            <input 
+                            <input
                                 type="number"
                                 required
                                 value={orderFormData.quantity}
@@ -912,7 +1039,7 @@ const KoiSales = () => {
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 italic">Unit Price</label>
-                            <input 
+                            <input
                                 type="number"
                                 required
                                 value={orderFormData.price}
@@ -947,7 +1074,7 @@ const KoiSales = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Full Name</label>
-                            <input 
+                            <input
                                 type="text"
                                 required
                                 value={customerFormData.name}
@@ -958,7 +1085,7 @@ const KoiSales = () => {
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Phone Number</label>
-                            <input 
+                            <input
                                 type="text"
                                 required
                                 value={customerFormData.phone}
@@ -970,7 +1097,7 @@ const KoiSales = () => {
                     </div>
                     <div className="space-y-2">
                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">GST Number (Optional)</label>
-                        <input 
+                        <input
                             type="text"
                             value={customerFormData.gstNo}
                             onChange={(e) => setCustomerFormData({ ...customerFormData, gstNo: e.target.value })}
@@ -980,7 +1107,7 @@ const KoiSales = () => {
                     </div>
                     <div className="space-y-2">
                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Address</label>
-                        <textarea 
+                        <textarea
                             value={customerFormData.address}
                             onChange={(e) => setCustomerFormData({ ...customerFormData, address: e.target.value })}
                             className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 font-bold min-h-[100px]"
@@ -1006,96 +1133,131 @@ const KoiSales = () => {
                             <div className="bg-white shadow-2xl w-[800px] min-h-[1100px] p-12 flex flex-col gap-6 relative" id="view-invoice-to-print">
                                 {/* PROFESSIONAL TAX INVOICE TEMPLATE (READ ONLY) */}
                                 <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: '12px', width: '100%', border: '1px solid #b0b8cc' }}>
-                                    <div style={{ textAlign: 'center', padding: '10px', fontWeight: '900', fontSize: '18px', background: '#fff7ed', color: '#ea580c', borderBottom: '1px solid #fed7aa', letterSpacing: '8px' }}>TAX INVOICE</div>
+                                    <div style={{ textAlign: 'center', padding: '8px', fontWeight: 'bold', fontSize: '16px', background: '#eef2fb', color: '#1e3a8a', borderBottom: '1px solid #b0b8cc', letterSpacing: '4px' }}>
+                                        TAX INVOICE
+                                    </div>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr' }}>
-                                        <div style={{ borderRight: '1px solid #fed7aa' }}>
-                                            <div style={{ padding: '15px', borderBottom: '1px solid #fed7aa', textAlign: 'center' }}>
-                                                <h2 style={{ fontSize: '28px', fontWeight: '900', color: '#ea580c', margin: 0, letterSpacing: '-1px' }}>{selectedInvoice.companyInfo?.name}</h2>
+                                        <div style={{ borderRight: '1px solid #b0b8cc' }}>
+                                            <div style={{ padding: '12px', borderBottom: '1px solid #b0b8cc', textAlign: 'center' }}>
+                                                <h2 style={{ fontSize: '24px', fontWeight: '900', color: '#1e3a8a', margin: 0 }}>{selectedInvoice.companyInfo?.name}</h2>
                                                 <p style={{ fontSize: '10px', color: '#666', margin: '4px 0', whiteSpace: 'pre-line' }}>{selectedInvoice.companyInfo?.address}</p>
                                                 <p style={{ fontSize: '10px', color: '#666', margin: 0 }}>{selectedInvoice.companyInfo?.contact}</p>
-                                                <div style={{ background: '#ea580c', padding: '6px', marginTop: '12px', fontSize: '12px', fontWeight: '900', color: 'white', borderRadius: '4px', display: 'inline-block' }}>GSTIN: {selectedInvoice.companyInfo?.gstin}</div>
+                                                <div style={{ background: '#f0f4ff', padding: '4px', marginTop: '8px', fontSize: '11px', fontWeight: 'bold', color: '#1e3a8a' }}>
+                                                    GSTIN: {selectedInvoice.companyInfo?.gstin}
+                                                </div>
                                             </div>
-                                            <div>
-                                                <div style={{ background: '#ffedd5', padding: '8px', textAlign: 'center', borderBottom: '1px solid #fed7aa', fontWeight: '900', color: '#ea580c', fontSize: '10px' }}>BILL TO</div>
-                                                <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                                    <p style={{ fontWeight: '900', fontSize: '16px', margin: 0, color: '#111' }}>{selectedInvoice.billingInfo?.name}</p>
+                                            <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                                                <div style={{ background: '#dde5f5', padding: '6px', textAlign: 'center', borderBottom: '1px solid #b0b8cc', fontWeight: 'bold', color: '#1e3a8a' }}>BILL TO</div>
+
+                                                <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+                                                    <p style={{ fontWeight: 'bold', fontSize: '14px', margin: 0, color: '#111' }}>{selectedInvoice.billingInfo?.name}</p>
                                                     <p style={{ fontSize: '11px', color: '#555', margin: 0 }}>{selectedInvoice.billingInfo?.address}</p>
                                                     <p style={{ margin: 0, color: '#333' }}><b>Phone:</b> {selectedInvoice.billingInfo?.phone}</p>
                                                     <p style={{ margin: 0, color: '#333' }}><b>GSTIN:</b> {selectedInvoice.billingInfo?.gstNo || 'N/A'}</p>
                                                 </div>
+                                                {/* Sales & Tax */}
+                                                <div style={{ padding: '4px 10px', borderTop: '1px solid #eee', display: 'flex', flexDirection: 'column', gap: '3px', background: '#fcfcfc' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
+                                                        <span style={{ color: '#888', fontWeight: 'bold' }}>TAX CATEGORY:</span>
+                                                        <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#333' }}>
+                                                            {selectedInvoice.taxPhase === 'Outside TN' ? 'Outside TN (IGST)' : 'Inside TN (CGST/SGST)'}
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div>
-                                            <div style={{ display: 'flex', borderBottom: '1px solid #fed7aa', height: '45px' }}>
-                                                <div style={{ flex: 1, padding: '10px', fontWeight: '900', borderRight: '1px solid #fed7aa', display: 'flex', alignItems: 'center', color: '#ea580c', fontSize: '10px' }}>INVOICE #</div>
-                                                <div style={{ flex: 1, padding: '10px', display: 'flex', alignItems: 'center', fontWeight: '900', fontSize: '14px' }}>{selectedInvoice.invoiceNumber}</div>
+                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                            <div style={{ display: 'flex', borderBottom: '1px solid #b0b8cc', height: '40px' }}>
+                                                <div style={{ flex: 1, padding: '8px', fontWeight: 'bold', borderRight: '1px solid #b0b8cc', display: 'flex', alignItems: 'center', color: '#1e3a8a' }}>INVOICE NO.</div>
+                                                <div style={{ flex: 1, padding: '8px', display: 'flex', alignItems: 'center', fontWeight: 'bold' }}>{selectedInvoice.invoiceNumber}</div>
                                             </div>
-                                            <div style={{ display: 'flex', borderBottom: '1px solid #fed7aa', height: '45px' }}>
-                                                <div style={{ flex: 1, padding: '10px', fontWeight: '900', borderRight: '1px solid #fed7aa', display: 'flex', alignItems: 'center', color: '#ea580c', fontSize: '10px' }}>DATE</div>
-                                                <div style={{ flex: 1, padding: '10px', display: 'flex', alignItems: 'center', fontWeight: '900' }}>{new Date(selectedInvoice.date).toLocaleDateString()}</div>
+                                            <div style={{ display: 'flex', borderBottom: '1px solid #b0b8cc', height: '40px' }}>
+                                                <div style={{ flex: 1, padding: '8px', fontWeight: 'bold', borderRight: '1px solid #b0b8cc', display: 'flex', alignItems: 'center', color: '#1e3a8a' }}>DATE</div>
+
+                                                <div style={{ flex: 1, padding: '8px', display: 'flex', alignItems: 'center' }}>{new Date(selectedInvoice.date).toLocaleDateString()}</div>
                                             </div>
-                                            <div style={{ padding: '25px', textAlign: 'center' }}>
-                                                <img src="/PVR.png" alt="Logo" style={{ maxHeight: '130px', maxWidth: '100%' }} />
+                                            <div style={{ padding: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1, minHeight: '200px' }}>
+                                                <img src="/PVR.png" alt="Logo" style={{ maxHeight: '180px', maxWidth: '100%', objectFit: 'contain' }} />
                                             </div>
-                                            <div style={{ borderTop: '1px solid #fed7aa', padding: '15px', textAlign: 'center' }}>
-                                                <span style={{ fontSize: '14px', fontWeight: '900', color: '#ea580c', letterSpacing: '2px' }}>TYPE: {selectedInvoice.type?.toUpperCase()}</span>
+                                            <div style={{ borderTop: '1px solid #b0b8cc', padding: '4px 10px', textAlign: 'center' }}>
+                                                <span style={{ fontSize: '9px', fontWeight: 'bold', color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '1px' }}>TYPE: {selectedInvoice.type}</span>
                                             </div>
+
                                         </div>
                                     </div>
                                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                         <thead>
-                                            <tr style={{ background: '#ea580c', color: 'white' }}>
-                                                <th style={{ padding: '12px', border: '1px solid #c2410c', fontSize: '10px', fontWeight: '900' }}>SL</th>
-                                                <th style={{ padding: '12px', border: '1px solid #c2410c', textAlign: 'left', fontSize: '10px', fontWeight: '900' }}>ITEM DESCRIPTION</th>
-                                                <th style={{ padding: '12px', border: '1px solid #c2410c', fontSize: '10px', fontWeight: '900' }}>QTY</th>
-                                                <th style={{ padding: '12px', border: '1px solid #c2410c', textAlign: 'right', fontSize: '10px', fontWeight: '900' }}>PRICE (₹)</th>
-                                                <th style={{ padding: '12px', border: '1px solid #c2410c', textAlign: 'right', fontSize: '10px', fontWeight: '900' }}>TOTAL (₹)</th>
+                                            <tr style={{ background: '#1e3a8a', color: 'white' }}>
+                                                <th style={{ padding: '10px', border: '1px solid #3b5daa' }}>SL</th>
+
+                                                <th style={{ padding: '10px', border: '1px solid #3b5daa', textAlign: 'left' }}>ITEM DESCRIPTION</th>
+                                                <th style={{ padding: '10px', border: '1px solid #3b5daa' }}>QTY</th>
+                                                <th style={{ padding: '10px', border: '1px solid #3b5daa', textAlign: 'right' }}>PRICE</th>
+                                                <th style={{ padding: '10px', border: '1px solid #3b5daa', textAlign: 'right' }}>TOTAL</th>
                                             </tr>
                                         </thead>
+
                                         <tbody>
                                             {selectedInvoice.items?.map((item, i) => (
-                                                <tr key={i} style={{ height: '40px' }}>
-                                                    <td style={{ textAlign: 'center', border: '1px solid #fed7aa', fontWeight: 'bold' }}>{i + 1}</td>
-                                                    <td style={{ padding: '0 12px', border: '1px solid #fed7aa', fontWeight: '900' }}>{item.name}</td>
-                                                    <td style={{ border: '1px solid #fed7aa', textAlign: 'center' }}>{item.quantity}</td>
-                                                    <td style={{ border: '1px solid #fed7aa', textAlign: 'right', paddingRight: '12px' }}>₹{item.price.toLocaleString()}</td>
-                                                    <td style={{ border: '1px solid #fed7aa', textAlign: 'right', paddingRight: '12px', fontWeight: '900', color: '#ea580c' }}>₹{item.total.toLocaleString()}</td>
+                                                <tr key={i} style={{ height: '35px' }}>
+                                                    <td style={{ textAlign: 'center', border: '1px solid #eee' }}>{i + 1}</td>
+                                                    <td style={{ padding: '0 10px', border: '1px solid #eee', fontWeight: 'bold' }}>{item.name}</td>
+                                                    <td style={{ border: '1px solid #eee', textAlign: 'center' }}>{item.quantity}</td>
+                                                    <td style={{ border: '1px solid #eee', textAlign: 'right', paddingRight: '10px' }}>₹{item.price.toLocaleString()}</td>
+                                                    <td style={{ border: '1px solid #eee', textAlign: 'right', paddingRight: '10px', fontWeight: 'bold' }}>₹{item.total.toLocaleString()}</td>
                                                 </tr>
                                             ))}
                                             {[...Array(Math.max(0, 8 - (selectedInvoice.items?.length || 0)))].map((_, i) => (
-                                                <tr key={i} style={{ height: '40px' }}><td style={{ border: '1px solid #fed7aa' }}></td><td style={{ border: '1px solid #fed7aa' }}></td><td style={{ border: '1px solid #fed7aa' }}></td><td style={{ border: '1px solid #fed7aa' }}></td><td style={{ border: '1px solid #fed7aa' }}></td></tr>
+                                                <tr key={i} style={{ height: '35px' }}><td style={{ border: '1px solid #eee' }}></td><td style={{ border: '1px solid #eee' }}></td><td style={{ border: '1px solid #eee' }}></td><td style={{ border: '1px solid #eee' }}></td><td style={{ border: '1px solid #eee' }}></td></tr>
                                             ))}
                                         </tbody>
                                     </table>
-                                    <div style={{ borderTop: '2px solid #ea580c' }}>
+                                    <div style={{ borderTop: '1px solid #b0b8cc' }}>
                                         <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr' }}>
-                                            <div style={{ padding: '20px', borderRight: '1px solid #fed7aa', background: '#fafafa' }}>
-                                                <p style={{ margin: 0, fontSize: '10px', fontWeight: '900', color: '#888', letterSpacing: '1px' }}>TOTAL IN WORDS</p>
-                                                <p style={{ margin: '8px 0 0 0', fontWeight: '900', color: '#ea580c', fontSize: '14px', fontStyle: 'italic' }}>{numberToWords(selectedInvoice.totalAmount)}</p>
+                                            <div style={{ padding: '15px', borderRight: '1px solid #b0b8cc' }}>
+                                                <p style={{ margin: 0, fontSize: '10px', color: '#888' }}>TOTAL IN WORDS</p>
+                                                <p style={{ margin: '5px 0 0 0', fontWeight: 'bold', color: '#1e3a8a' }}>{numberToWords(selectedInvoice.totalAmount)}</p>
                                             </div>
                                             <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                <div style={{ padding: '12px 20px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee' }}>
-                                                    <span style={{ color: '#555', fontWeight: '900', fontSize: '10px' }}>TRANSPORT</span>
-                                                    <span style={{ fontWeight: '900' }}>₹{(selectedInvoice.transportCharges || 0).toLocaleString()}</span>
+                                                <div style={{ padding: '8px 15px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee' }}>
+                                                    <span style={{ color: '#555', fontWeight: 'bold' }}>TRANSPORT</span>
+                                                    <span style={{ fontWeight: 'bold' }}>₹{(selectedInvoice.transportCharges || 0).toLocaleString()}</span>
                                                 </div>
-                                                <div style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', background: '#ea580c', fontWeight: '900', color: 'white', fontSize: '20px', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.1)' }}>
+                                                {selectedInvoice.taxPhase === 'Outside TN' ? (
+                                                    <div style={{ padding: '8px 15px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f0f0f0' }}>
+                                                        <span style={{ color: '#555', fontWeight: 'bold' }}>IGST (18%)</span>
+                                                        <span style={{ fontWeight: 'bold', color: '#333' }}>₹{(selectedInvoice.totalAmount - ((selectedInvoice.items?.reduce((a, c) => a + c.total, 0) || 0) + (selectedInvoice.transportCharges || 0))).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <div style={{ padding: '8px 15px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee' }}>
+                                                            <span style={{ color: '#555', fontWeight: 'bold' }}>CGST (9%)</span>
+                                                            <span style={{ fontWeight: 'bold', color: '#333' }}>₹{((selectedInvoice.totalAmount - ((selectedInvoice.items?.reduce((a, c) => a + c.total, 0) || 0) + (selectedInvoice.transportCharges || 0))) / 2).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                                        </div>
+                                                        <div style={{ padding: '8px 15px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f0f0f0' }}>
+                                                            <span style={{ color: '#555', fontWeight: 'bold' }}>SGST (9%)</span>
+                                                            <span style={{ fontWeight: 'bold', color: '#333' }}>₹{((selectedInvoice.totalAmount - ((selectedInvoice.items?.reduce((a, c) => a + c.total, 0) || 0) + (selectedInvoice.transportCharges || 0))) / 2).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                                        </div>
+                                                    </>
+                                                )}
+                                                <div style={{ padding: '15px', display: 'flex', justifyContent: 'space-between', background: '#dde5f5', fontWeight: '900', color: '#1e3a8a', fontSize: '16px' }}>
                                                     <span>GRAND TOTAL</span>
-                                                    <span>₹{selectedInvoice.totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                                                    <span>₹{selectedInvoice.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', borderTop: '2px solid #ea580c' }}>
-                                        <div style={{ padding: '20px', borderRight: '1px solid #fed7aa' }}>
-                                            <div style={{ background: '#ffedd5', padding: '6px 12px', fontSize: '10px', fontWeight: '900', color: '#ea580c', display: 'inline-block', borderRadius: '4px', marginBottom: '15px' }}>BANK TRANSFER DETAILS</div>
-                                            <p style={{ margin: '4px 0', color: '#111', fontSize: '13px' }}><b>ACCOUNT NO:</b> {selectedInvoice.bankDetails?.accountNo}</p>
-                                            <p style={{ margin: '4px 0', color: '#111', fontSize: '13px' }}><b>IFSC CODE:</b> {selectedInvoice.bankDetails?.ifscCode}</p>
-                                            <p style={{ margin: '4px 0', color: '#111', fontSize: '13px' }}><b>BANK NAME:</b> {selectedInvoice.bankDetails?.bankName}</p>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', borderTop: '1px solid #b0b8cc' }}>
+                                        <div style={{ padding: '15px', borderRight: '1px solid #b0b8cc' }}>
+                                            <div style={{ background: '#dde5f5', padding: '5px 10px', fontSize: '10px', fontWeight: 'bold', color: '#1e3a8a', marginBottom: '10px' }}>BANK DETAILS</div>
+
+                                            <p style={{ margin: '2px 0', color: '#333' }}><b>Account:</b> {selectedInvoice.bankDetails?.accountNo}</p>
+                                            <p style={{ margin: '2px 0', color: '#333' }}><b>IFSC:</b> {selectedInvoice.bankDetails?.ifscCode}</p>
+                                            <p style={{ margin: '2px 0', color: '#333' }}><b>Bank:</b> {selectedInvoice.bankDetails?.bankName}</p>
                                         </div>
-                                        <div style={{ height: '160px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '20px', textAlign: 'center', background: '#fafafa' }}>
-                                            <p style={{ margin: 0, fontWeight: '900', color: '#111', fontSize: '11px', textTransform: 'uppercase' }}>for {selectedInvoice.companyInfo?.name}</p>
-                                            <div style={{ borderTop: '1px dashed #ccc', width: '80%', margin: '0 auto' }}></div>
-                                            <p style={{ margin: 0, fontSize: '10px', fontWeight: '900', color: '#ea580c', letterSpacing: '1px' }}>AUTHORIZED SIGNATURE</p>
+                                        <div style={{ height: '120px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '15px', textAlign: 'center' }}>
+                                            <p style={{ margin: 0, fontWeight: 'bold', color: '#111' }}>for {selectedInvoice.companyInfo?.name}</p>
+                                            <p style={{ margin: 0, fontSize: '10px', color: '#999' }}>Authorized Signature</p>
                                         </div>
                                     </div>
                                 </div>
@@ -1120,7 +1282,7 @@ const KoiSales = () => {
                         <p className="text-gray-400 font-bold text-sm mt-1 uppercase tracking-widest">Order ID: #{justCreatedOrder?._id?.slice(-6).toUpperCase()}</p>
                     </div>
                     <div className="w-full space-y-3 pt-4">
-                        <button 
+                        <button
                             onClick={() => {
                                 jumpToInvoice(justCreatedOrder);
                                 setIsSuccessModalOpen(false);
@@ -1129,7 +1291,7 @@ const KoiSales = () => {
                         >
                             Generate Invoice
                         </button>
-                        <button 
+                        <button
                             onClick={() => setIsSuccessModalOpen(false)}
                             className="w-full py-4 bg-gray-100 text-gray-500 rounded-2xl font-black uppercase text-xs tracking-[0.3em] hover:bg-gray-200 transition-all"
                         >
@@ -1138,7 +1300,23 @@ const KoiSales = () => {
                     </div>
                 </div>
             </Modal>
+
+            {showSuccess && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-300 no-print">
+                    <div className="bg-white rounded-3xl p-10 shadow-2xl flex flex-col items-center gap-4 animate-in zoom-in-95 duration-300 max-w-sm w-full mx-4 border border-gray-100">
+                        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-2">
+                            <CheckCircle2 size={48} />
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-900 text-center uppercase tracking-tight italic">Success!</h2>
+                        <p className="text-gray-500 text-center font-medium">Invoice generated successfully!</p>
+                        <div className="w-full h-1.5 bg-gray-100 rounded-full mt-4 overflow-hidden">
+                            <div className="h-full bg-green-500 animate-progress origin-left"></div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
+
     );
 };
 

@@ -54,11 +54,13 @@ const Invoices = () => {
     const [editFormData, setEditFormData] = useState({ status: '', paidAmount: 0 });
     const [isExporting, setIsExporting] = useState(false);
     const [zoom, setZoom] = useState(1);
+    const [showSuccess, setShowSuccess] = useState(false);
+
 
     // New Invoice Form State
     const [newInvoice, setNewInvoice] = useState({
         customerId: '',
-        items: [{ productId: '', quantity: 1, price: 0 }],
+        items: [{ productId: '', quantity: 1, price: 0, hsnSac: '' }],
         status: 'Completed',
         paidAmount: 0,
         taxPhase: 'Inside TN',
@@ -144,8 +146,10 @@ const Invoices = () => {
                 status: 'Completed'
             };
             const response = await createOrder(orderData);
-            alert('Invoice generated successfully!');
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 3000);
             await fetchInvoices();
+
 
             // Open the newly created invoice immediately
             handleViewInvoice(response.data);
@@ -153,7 +157,7 @@ const Invoices = () => {
             // Reset form
             setNewInvoice({
                 customerId: '',
-                items: [{ productId: '', quantity: 1, price: 0 }],
+                items: [{ productId: '', quantity: 1, price: 0, hsnSac: '' }],
                 status: 'Completed',
                 paidAmount: 0,
                 taxPhase: 'Inside TN',
@@ -176,7 +180,7 @@ const Invoices = () => {
     };
 
     const addItem = () => {
-        setNewInvoice({ ...newInvoice, items: [...newInvoice.items, { productId: '', quantity: 1, price: 0 }] });
+        setNewInvoice({ ...newInvoice, items: [...newInvoice.items, { productId: '', quantity: 1, price: 0, hsnSac: '' }] });
     };
 
     const updateItem = (index, field, value) => {
@@ -185,7 +189,10 @@ const Invoices = () => {
 
         if (field === 'productId') {
             const product = products.find(p => p._id === value);
-            if (product) updatedItems[index].price = product.price;
+            if (product) {
+                updatedItems[index].price = product.price;
+                updatedItems[index].hsnSac = product.hsnSac || '';
+            }
         }
 
         setNewInvoice({ ...newInvoice, items: updatedItems });
@@ -333,13 +340,7 @@ const Invoices = () => {
                     Invoice History
                     {viewMode === 'history' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-600 rounded-full" />}
                 </button>
-                <button
-                    onClick={() => setViewMode('all')}
-                    className={`pb-4 text-sm font-bold transition-all relative ${viewMode === 'all' ? 'text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
-                >
-                    All Invoices
-                    {viewMode === 'all' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-600 rounded-full" />}
-                </button>
+
                 <button
                     onClick={() => setViewMode('deleted')}
                     className={`pb-4 text-sm font-bold transition-all relative ${viewMode === 'deleted' ? 'text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
@@ -350,7 +351,7 @@ const Invoices = () => {
             </div>
 
             {viewMode === 'creator' ? (
-                <div className="flex justify-center bg-gray-50 rounded-3xl p-8 min-h-[1000px] overflow-hidden overflow-x-auto shadow-inner border border-gray-200">
+                <div className="flex justify-center bg-gray-50 rounded-3xl p-8 min-h-[1000px] overflow-x-auto shadow-inner border border-gray-200">
                     <div
                         style={{
                             transform: `scale(${zoom})`,
@@ -576,8 +577,17 @@ const Invoices = () => {
                                                     </select>
                                                 )}
                                             </td>
-                                            <td style={{ padding: '2px 4px', textAlign: 'center', fontSize: '11px', borderRight: '1px solid #e5e5e5', color: '#666' }}>
-                                                {products.find(p => p._id === item.productId)?.hsnSac || '-'}
+                                            <td style={{ padding: '1px 4px', borderRight: '1px solid #e5e5e5', textAlign: 'center' }}>
+                                                {isExporting ? (
+                                                    <span style={{ fontSize: '11px', fontWeight: 'bold' }}>{item.hsnSac || '-'}</span>
+                                                ) : (
+                                                    <input
+                                                        style={{ width: '100%', border: 'none', outline: 'none', textAlign: 'center', fontSize: '11px', fontWeight: 'bold', background: 'transparent' }}
+                                                        value={item.hsnSac || ''}
+                                                        onChange={(e) => updateItem(idx, 'hsnSac', e.target.value)}
+                                                        className="no-print-input"
+                                                    />
+                                                )}
                                             </td>
                                             <td style={{ padding: '1px 4px', borderRight: '1px solid #e5e5e5', textAlign: 'center' }}>
                                                 {isExporting ? (
@@ -810,7 +820,8 @@ const Invoices = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-bold text-primary-600">#{order._id.slice(-6).toUpperCase()}</span>
+                                                    <span className="text-sm font-bold text-primary-600">#{order?._id?.slice(-6).toUpperCase() || 'N/A'}</span>
+
                                                     <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tight truncate w-32">
                                                         {order.items?.[0]?.productId?.name || 'Service Order'}
                                                     </span>
@@ -935,9 +946,11 @@ const Invoices = () => {
                                         </div>
                                         <div className="col-span-12 md:col-span-2">
                                             <label className="text-[10px] font-black text-gray-400 uppercase ml-1 mb-1 block text-center">HSN/SAC</label>
-                                            <div className="input-field py-2 text-sm text-center bg-gray-50 text-gray-400 font-bold h-[38px] flex items-center justify-center">
-                                                {products.find(p => p._id === item.productId)?.hsnSac || 'N/A'}
-                                            </div>
+                                            <input
+                                                type="text" className="input-field py-2 text-sm text-center font-bold"
+                                                value={item.hsnSac || ''}
+                                                onChange={(e) => updateItem(idx, 'hsnSac', e.target.value)}
+                                            />
                                         </div>
 
                                         <div className="col-span-4 md:col-span-2">
@@ -1062,219 +1075,222 @@ const Invoices = () => {
                             className="bg-white w-full p-12 flex flex-col gap-6 relative"
                             style={{ fontFamily: "'Outfit', sans-serif", fontSize: '12px' }}
                         >
-                            {/* TOP TITLE */}
-                            <div style={{ textAlign: 'center', padding: '8px', fontWeight: 'bold', fontSize: '16px', background: '#eef2fb', border: '1px solid #b0b8cc', borderBottom: '1px solid #b0b8cc', letterSpacing: '4px' }}>
-                                TAX INVOICE
-                            </div>
-
-                            {/* MAIN BOX START */}
-                            <div style={{ border: '1px solid #b0b8cc', borderTop: 'none' }}>
-
-                                {/* HEADER: (Col 1: Company & Bill To) | (Col 2: Inv No, Date, Logo) */}
-                                <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr' }}>
-                                    {/* Left Column: Company & Bill To */}
-                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                        {/* Company Info */}
-                                        <div style={{ padding: '8px 12px', borderRight: '1px solid #b0b8cc', borderBottom: '1px solid #b0b8cc' }}>
-                                            <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#1e3a8a', textAlign: 'center', width: '100%', textTransform: 'uppercase' }}>
-                                                {selectedOrder.companyInfo?.name || 'PVR AQUACULTURE'}
-                                            </div>
-                                            <div style={{ fontSize: '10.5px', color: '#444', lineHeight: '1.6', textAlign: 'center', whiteSpace: 'pre-line', marginTop: '3px' }}>
-                                                {selectedOrder.companyInfo?.address || '334E, KUMARAN NAGAR, ILLUPUR TALUK,\nPerumanadu, Pudukkottai, Tamil Nadu, 622104'}
-                                            </div>
-                                            <div style={{ fontSize: '10.5px', color: '#444', textAlign: 'center' }}>
-                                                {selectedOrder.companyInfo?.contact || '+91 9600124725, +91 9003424998'}
-                                            </div>
-                                            <div style={{ marginTop: '5px', background: '#f0f4ff', padding: '2px 6px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                                                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#1e3a8a' }}>GSTIN/UIN : </span>
-                                                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#1e3a8a', marginLeft: '4px' }}>
-                                                    {selectedOrder.companyInfo?.gstin || '33CQRPA2571H1ZW'}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        {/* BILL TO */}
-                                        <div style={{ borderRight: '1px solid #b0b8cc', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                            <div style={{ background: '#dde5f5', padding: '6px 8px', fontWeight: 'bold', color: '#1e3a8a', textAlign: 'center', borderBottom: '1px solid #b0b8cc', fontSize: '12px' }}>
-                                                BILL TO
-                                            </div>
-                                            <div style={{ padding: '10px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                                <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#1e1e1e' }}>
-                                                    {selectedOrder.billingInfo?.name || selectedOrder.customerId?.name || 'N/A'}
-                                                </div>
-                                                <div style={{ fontSize: '11px', color: '#555', lineHeight: '1.6', minHeight: '40px' }}>
-                                                    {selectedOrder.billingInfo?.address || selectedOrder.customerId?.address || ''}
-                                                </div>
-                                                <div style={{ fontSize: '11px', color: '#444' }}>
-                                                    <span style={{ fontWeight: 'bold' }}>Phone:</span> {selectedOrder.billingInfo?.phone || selectedOrder.customerId?.phone || ''}
-                                                </div>
-                                                <div style={{ fontSize: '11px', color: '#444' }}>
-                                                    <span style={{ fontWeight: 'bold' }}>GSTIN/UIN:</span> {selectedOrder.billingInfo?.gstNo || selectedOrder.customerId?.gstNo || ''}
-                                                </div>
-                                            </div>
-                                            {/* Tax Category */}
-                                            <div style={{ padding: '6px 12px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'space-between', background: '#fcfcfc', fontSize: '10px' }}>
-                                                <span style={{ color: '#888', fontWeight: 'bold' }}>TAX CATEGORY:</span>
-                                                <span style={{ fontWeight: 'bold' }}>{selectedOrder.taxPhase || 'Inside TN'}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Right Column: Inv Details & Logo */}
-                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                        <div style={{ display: 'flex', borderBottom: '1px solid #b0b8cc', height: '35px' }}>
-                                            <div style={{ padding: '4px 8px', fontWeight: 'bold', color: '#1e3a8a', fontSize: '11px', flex: 1, borderRight: '1px solid #b0b8cc', display: 'flex', alignItems: 'center' }}>INVOICE NO.</div>
-                                            <div style={{ padding: '4px 8px', fontWeight: 'bold', color: '#333', fontSize: '11px', flex: 1.5, display: 'flex', alignItems: 'center' }}>
-                                                #{selectedOrder._id.slice(-6).toUpperCase()}
-                                            </div>
-                                        </div>
-                                        <div style={{ display: 'flex', borderBottom: '1px solid #b0b8cc', height: '35px' }}>
-                                            <div style={{ padding: '4px 8px', fontWeight: 'bold', color: '#1e3a8a', fontSize: '11px', flex: 1, borderRight: '1px solid #b0b8cc', display: 'flex', alignItems: 'center' }}>DATE</div>
-                                            <div style={{ padding: '4px 8px', fontWeight: 'bold', color: '#333', fontSize: '11px', flex: 1.5, display: 'flex', alignItems: 'center' }}>
-                                                {new Date(selectedOrder.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                                            </div>
-                                        </div>
-                                        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '15px', minHeight: '200px' }}>
-                                            <img src="/PVR.png" alt="Logo" style={{ maxHeight: '180px', maxWidth: '260px', objectFit: 'contain' }} />
-                                        </div>
-                                    </div>
+                            <div style={{ border: '1px solid #b0b8cc' }}>
+                                {/* TOP TITLE */}
+                                <div style={{ textAlign: 'center', padding: '8px', fontWeight: 'bold', fontSize: '16px', background: '#eef2fb', borderBottom: '1px solid #b0b8cc', letterSpacing: '4px' }}>
+                                    TAX INVOICE
                                 </div>
 
-                                {/* ITEMS TABLE */}
-                                <table style={{ width: '100%', borderCollapse: 'collapse', borderBottom: '1px solid #b0b8cc' }}>
-                                    <thead>
-                                        <tr style={{ background: '#1e3a8a', color: 'white' }}>
-                                            <th style={{ padding: '8px 6px', textAlign: 'center', fontSize: '11px', fontWeight: 'bold', borderRight: '1px solid #3b5daa', width: '50px' }}>SL.NO</th>
-                                            <th style={{ padding: '8px 6px', textAlign: 'center', fontSize: '11px', fontWeight: 'bold', borderRight: '1px solid #3b5daa' }}>PRODUCT</th>
-                                            <th style={{ padding: '8px 6px', textAlign: 'center', fontSize: '11px', fontWeight: 'bold', borderRight: '1px solid #3b5daa', width: '80px' }}>HSN/SAC</th>
-                                            <th style={{ padding: '8px 6px', textAlign: 'center', fontSize: '11px', fontWeight: 'bold', borderRight: '1px solid #3b5daa', width: '60px' }}>QTY</th>
-                                            <th style={{ padding: '8px 6px', textAlign: 'center', fontSize: '11px', fontWeight: 'bold', borderRight: '1px solid #3b5daa', width: '100px' }}>UNIT PRICE</th>
-                                            <th style={{ padding: '8px 6px', textAlign: 'center', fontSize: '11px', fontWeight: 'bold', width: '110px' }}>AMOUNT</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {selectedOrder.items && selectedOrder.items.length > 0 ? (
-                                            selectedOrder.items.map((item, idx) => (
-                                                <tr key={idx} style={{ borderBottom: '1px solid #eee', height: '30px' }}>
-                                                    <td style={{ padding: '2px 6px', textAlign: 'center', fontSize: '11px', borderRight: '1px solid #eee', color: '#888' }}>{idx + 1}</td>
-                                                    <td style={{ padding: '2px 6px', fontSize: '11px', fontWeight: 'bold', borderRight: '1px solid #eee', textTransform: 'uppercase' }}>{item.productId?.name || 'Order Item'}</td>
-                                                    <td style={{ padding: '2px 6px', textAlign: 'center', fontSize: '11px', borderRight: '1px solid #eee', color: '#666' }}>{item.productId?.hsnSac || '-'}</td>
-                                                    <td style={{ padding: '2px 6px', textAlign: 'center', fontSize: '11px', fontWeight: 'bold', borderRight: '1px solid #eee' }}>{item.quantity}</td>
-                                                    <td style={{ padding: '2px 6px', textAlign: 'right', fontSize: '11px', fontWeight: 'bold', borderRight: '1px solid #eee' }}>₹{item.price?.toLocaleString()}</td>
-                                                    <td style={{ padding: '2px 6px', textAlign: 'right', fontSize: '11px', fontWeight: 'bold', color: '#1e1e1e' }}>₹{(item.quantity * item.price).toLocaleString()}</td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr style={{ height: '30px', borderBottom: '1px solid #ddd' }}>
-                                                <td colSpan={6} style={{ padding: '2px 6px', textAlign: 'center', fontSize: '11px', color: '#aaa' }}>No items found</td>
-                                            </tr>
-                                        )}
-                                        {/* Empty rows to fill the table */}
-                                        {[...Array(Math.max(0, 10 - (selectedOrder.items?.length || 0)))].map((_, i) => (
-                                            <tr key={`empty-${i}`} style={{ height: '24px', borderBottom: '1px solid #f9f9f9' }}>
-                                                <td style={{ borderRight: '1px solid #eee' }}></td>
-                                                <td style={{ borderRight: '1px solid #eee' }}></td>
-                                                <td style={{ borderRight: '1px solid #eee' }}></td>
-                                                <td style={{ borderRight: '1px solid #eee' }}></td>
-                                                <td style={{ borderRight: '1px solid #eee' }}></td>
-                                                <td></td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                {/* MAIN BOX START */}
+                                <div>
 
-                                {/* TOTALS SECTION */}
-                                {(() => {
-                                    const subTotal = selectedOrder.items?.reduce((acc, item) => acc + (item.quantity * item.price), 0) || 0;
-                                    const transport = selectedOrder.transportCharges || 0;
-                                    const taxBase = subTotal + transport;
-                                    const cgst = taxBase * 0.09;
-                                    const sgst = taxBase * 0.09;
-                                    const igst = taxBase * 0.18;
-                                    return (
-                                        <div style={{ border: '1px solid #b0b8cc', borderTop: 'none' }}>
-                                            <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr' }}>
-                                                <div style={{ borderRight: '1px solid #b0b8cc', padding: '12px', display: 'flex', alignItems: 'flex-end' }}>
-                                                    <div style={{ fontSize: '10px', color: '#666' }}>
-                                                        <span style={{ fontWeight: 'bold', color: '#1e3a8a' }}>Total In Words: </span>
-                                                        <span style={{ textTransform: 'capitalize' }}>{numberToWords(selectedOrder.totalAmount)}</span>
-                                                    </div>
+                                    {/* HEADER: (Col 1: Company & Bill To) | (Col 2: Inv No, Date, Logo) */}
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr' }}>
+                                        {/* Left Column: Company & Bill To */}
+                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                            {/* Company Info */}
+                                            <div style={{ padding: '8px 12px', borderRight: '1px solid #b0b8cc', borderBottom: '1px solid #b0b8cc' }}>
+                                                <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#1e3a8a', textAlign: 'center', width: '100%', textTransform: 'uppercase' }}>
+                                                    {selectedOrder.companyInfo?.name || 'PVR AQUACULTURE'}
                                                 </div>
-                                                <div>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderBottom: '1px solid #f0f0f0', fontSize: '11px' }}>
-                                                        <span style={{ color: '#555', fontWeight: 'bold' }}>TRANSPORT & INSTALLATION</span>
-                                                        <span style={{ fontWeight: 'bold' }}>₹{transport.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                                                    </div>
-                                                    {selectedOrder.taxPhase === 'Outside TN' ? (
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderBottom: '1px solid #f0f0f0', fontSize: '11px' }}>
-                                                            <span style={{ color: '#555', fontWeight: 'bold' }}>IGST 18%</span>
-                                                            <span style={{ fontWeight: 'bold' }}>₹{igst.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                                                        </div>
-                                                    ) : (
-                                                        <>
-                                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderBottom: '1px solid #f0f0f0', fontSize: '11px' }}>
-                                                                <span style={{ color: '#555', fontWeight: 'bold' }}>CGST 9%</span>
-                                                                <span style={{ fontWeight: 'bold' }}>₹{cgst.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                                                            </div>
-                                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderBottom: '1px solid #f0f0f0', fontSize: '11px' }}>
-                                                                <span style={{ color: '#555', fontWeight: 'bold' }}>SGST 9%</span>
-                                                                <span style={{ fontWeight: 'bold' }}>₹{sgst.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                                                            </div>
-                                                        </>
-                                                    )}
+                                                <div style={{ fontSize: '10.5px', color: '#444', lineHeight: '1.6', textAlign: 'center', whiteSpace: 'pre-line', marginTop: '3px' }}>
+                                                    {selectedOrder.companyInfo?.address || '334E, KUMARAN NAGAR, ILLUPUR TALUK,\nPerumanadu, Pudukkottai, Tamil Nadu, 622104'}
+                                                </div>
+                                                <div style={{ fontSize: '10.5px', color: '#444', textAlign: 'center' }}>
+                                                    {selectedOrder.companyInfo?.contact || '+91 9600124725, +91 9003424998'}
+                                                </div>
+                                                <div style={{ marginTop: '5px', background: '#f0f4ff', padding: '2px 6px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                                    <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#1e3a8a' }}>GSTIN/UIN : </span>
+                                                    <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#1e3a8a', marginLeft: '4px' }}>
+                                                        {selectedOrder.companyInfo?.gstin || '33CQRPA2571H1ZW'}
+                                                    </span>
                                                 </div>
                                             </div>
-                                            {/* Total Amount Bar */}
-                                            <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', background: '#dde5f5', borderTop: '1px solid #b0b8cc', borderBottom: '1px solid #b0b8cc' }}>
-                                                <div style={{ borderRight: '1px solid #b0b8cc' }}></div>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 12px', fontSize: '16px', fontWeight: '900', color: '#1e3a8a' }}>
-                                                    <span>TOTAL AMOUNT</span>
-                                                    <span>₹{(selectedOrder.totalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+
+                                            {/* BILL TO */}
+                                            <div style={{ borderRight: '1px solid #b0b8cc', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                                <div style={{ background: '#dde5f5', padding: '6px 8px', fontWeight: 'bold', color: '#1e3a8a', textAlign: 'center', borderBottom: '1px solid #b0b8cc', fontSize: '12px' }}>
+                                                    BILL TO
+                                                </div>
+                                                <div style={{ padding: '10px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                    <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#1e1e1e' }}>
+                                                        {selectedOrder.billingInfo?.name || selectedOrder.customerId?.name || 'N/A'}
+                                                    </div>
+                                                    <div style={{ fontSize: '11px', color: '#555', lineHeight: '1.6', minHeight: '40px' }}>
+                                                        {selectedOrder.billingInfo?.address || selectedOrder.customerId?.address || ''}
+                                                    </div>
+                                                    <div style={{ fontSize: '11px', color: '#444' }}>
+                                                        <span style={{ fontWeight: 'bold' }}>Phone:</span> {selectedOrder.billingInfo?.phone || selectedOrder.customerId?.phone || ''}
+                                                    </div>
+                                                    <div style={{ fontSize: '11px', color: '#444' }}>
+                                                        <span style={{ fontWeight: 'bold' }}>GSTIN/UIN:</span> {selectedOrder.billingInfo?.gstNo || selectedOrder.customerId?.gstNo || ''}
+                                                    </div>
+                                                </div>
+                                                {/* Tax Category */}
+                                                <div style={{ padding: '6px 12px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'space-between', background: '#fcfcfc', fontSize: '10px' }}>
+                                                    <span style={{ color: '#888', fontWeight: 'bold' }}>TAX CATEGORY:</span>
+                                                    <span style={{ fontWeight: 'bold' }}>{selectedOrder.taxPhase || 'Inside TN'}</span>
                                                 </div>
                                             </div>
                                         </div>
-                                    );
-                                })()}
 
-                                {/* BANK DETAILS + SIGNATURE */}
-                                <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', border: '1px solid #b0b8cc', borderTop: 'none' }}>
-                                    {/* Left Section: Bank Details */}
-                                    <div style={{ borderRight: '1px solid #b0b8cc' }}>
-                                        <div style={{ background: '#dde5f5', color: '#1e3a8a', padding: '6px 8px', fontSize: '11px', fontWeight: 'bold', borderBottom: '1px solid #b0b8cc' }}>BANK DETAILS</div>
-                                        <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
-                                            <tbody>
-                                                {[
-                                                    ['ACCOUNT NO', 'accountNo', '7037881010'],
-                                                    ['IFSC CODE', 'ifscCode', 'IDIB000N140'],
-                                                    ['BANK NAME', 'bankName', 'INDIAN BANK'],
-                                                    ['BRANCH', 'branch', 'NATHAMPANNAI']
-                                                ].map(([label, field, defaultValue]) => (
-                                                    <tr key={label}>
-                                                        <td style={{ padding: '4px 8px', fontWeight: 'bold', color: '#1e3a8a', width: '120px' }}>{label}</td>
-                                                        <td style={{ padding: '4px 8px', fontWeight: 'bold', color: '#333' }}>
-                                                            {selectedOrder.bankDetails?.[field] || defaultValue}
-                                                        </td>
+                                        {/* Right Column: Inv Details & Logo */}
+                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                            <div style={{ display: 'flex', borderBottom: '1px solid #b0b8cc', height: '35px' }}>
+                                                <div style={{ padding: '4px 8px', fontWeight: 'bold', color: '#1e3a8a', fontSize: '11px', flex: 1, borderRight: '1px solid #b0b8cc', display: 'flex', alignItems: 'center' }}>INVOICE NO.</div>
+                                                <div style={{ padding: '4px 8px', fontWeight: 'bold', color: '#333', fontSize: '11px', flex: 1.5, display: 'flex', alignItems: 'center' }}>
+                                                    #{selectedOrder?._id?.slice(-6).toUpperCase() || 'NEW'}
+
+                                                </div>
+                                            </div>
+                                            <div style={{ display: 'flex', borderBottom: '1px solid #b0b8cc', height: '35px' }}>
+                                                <div style={{ padding: '4px 8px', fontWeight: 'bold', color: '#1e3a8a', fontSize: '11px', flex: 1, borderRight: '1px solid #b0b8cc', display: 'flex', alignItems: 'center' }}>DATE</div>
+                                                <div style={{ padding: '4px 8px', fontWeight: 'bold', color: '#333', fontSize: '11px', flex: 1.5, display: 'flex', alignItems: 'center' }}>
+                                                    {new Date(selectedOrder.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                </div>
+                                            </div>
+                                            <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '15px', minHeight: '200px' }}>
+                                                <img src="/PVR.png" alt="Logo" style={{ maxHeight: '180px', maxWidth: '260px', objectFit: 'contain' }} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* ITEMS TABLE */}
+                                    <table style={{ width: '100%', borderCollapse: 'collapse', borderBottom: '1px solid #b0b8cc' }}>
+                                        <thead>
+                                            <tr style={{ background: '#1e3a8a', color: 'white' }}>
+                                                <th style={{ padding: '8px 6px', textAlign: 'center', fontSize: '11px', fontWeight: 'bold', borderRight: '1px solid #3b5daa', width: '50px' }}>SL.NO</th>
+                                                <th style={{ padding: '8px 6px', textAlign: 'center', fontSize: '11px', fontWeight: 'bold', borderRight: '1px solid #3b5daa' }}>PRODUCT</th>
+                                                <th style={{ padding: '8px 6px', textAlign: 'center', fontSize: '11px', fontWeight: 'bold', borderRight: '1px solid #3b5daa', width: '80px' }}>HSN/SAC</th>
+                                                <th style={{ padding: '8px 6px', textAlign: 'center', fontSize: '11px', fontWeight: 'bold', borderRight: '1px solid #3b5daa', width: '60px' }}>QTY</th>
+                                                <th style={{ padding: '8px 6px', textAlign: 'center', fontSize: '11px', fontWeight: 'bold', borderRight: '1px solid #3b5daa', width: '100px' }}>UNIT PRICE</th>
+                                                <th style={{ padding: '8px 6px', textAlign: 'center', fontSize: '11px', fontWeight: 'bold', width: '110px' }}>AMOUNT</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {selectedOrder.items && selectedOrder.items.length > 0 ? (
+                                                selectedOrder.items.map((item, idx) => (
+                                                    <tr key={idx} style={{ borderBottom: '1px solid #eee', height: '30px' }}>
+                                                        <td style={{ padding: '2px 6px', textAlign: 'center', fontSize: '11px', borderRight: '1px solid #eee', color: '#888' }}>{idx + 1}</td>
+                                                        <td style={{ padding: '2px 6px', fontSize: '11px', fontWeight: 'bold', borderRight: '1px solid #eee', textTransform: 'uppercase' }}>{item.productId?.name || 'Order Item'}</td>
+                                                        <td style={{ padding: '2px 6px', textAlign: 'center', fontSize: '11px', borderRight: '1px solid #eee', color: '#666' }}>{item.hsnSac || item.productId?.hsnSac || '-'}</td>
+                                                        <td style={{ padding: '2px 6px', textAlign: 'center', fontSize: '11px', fontWeight: 'bold', borderRight: '1px solid #eee' }}>{item.quantity}</td>
+                                                        <td style={{ padding: '2px 6px', textAlign: 'right', fontSize: '11px', fontWeight: 'bold', borderRight: '1px solid #eee' }}>₹{item.price?.toLocaleString()}</td>
+                                                        <td style={{ padding: '2px 6px', textAlign: 'right', fontSize: '11px', fontWeight: 'bold', color: '#1e1e1e' }}>₹{(item.quantity * item.price).toLocaleString()}</td>
                                                     </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    {/* Right Section: Signature */}
-                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                        <div style={{ background: '#dde5f5', color: '#1e3a8a', padding: '6px 8px', fontSize: '11px', fontWeight: 'bold', borderBottom: '1px solid #b0b8cc', textAlign: 'center' }}>
-                                            for PVR AQUACULTURE
-                                        </div>
-                                        <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: '15px' }}>
-                                            <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#444' }}>Authorized Signature</div>
-                                        </div>
-                                    </div>
-                                </div>
+                                                ))
+                                            ) : (
+                                                <tr style={{ height: '30px', borderBottom: '1px solid #ddd' }}>
+                                                    <td colSpan={6} style={{ padding: '2px 6px', textAlign: 'center', fontSize: '11px', color: '#aaa' }}>No items found</td>
+                                                </tr>
+                                            )}
+                                            {/* Empty rows to fill the table */}
+                                            {[...Array(Math.max(0, 10 - (selectedOrder.items?.length || 0)))].map((_, i) => (
+                                                <tr key={`empty-${i}`} style={{ height: '24px', borderBottom: '1px solid #f9f9f9' }}>
+                                                    <td style={{ borderRight: '1px solid #eee' }}></td>
+                                                    <td style={{ borderRight: '1px solid #eee' }}></td>
+                                                    <td style={{ borderRight: '1px solid #eee' }}></td>
+                                                    <td style={{ borderRight: '1px solid #eee' }}></td>
+                                                    <td style={{ borderRight: '1px solid #eee' }}></td>
+                                                    <td></td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
 
-                                {/* FOOTER */}
-                                <div style={{ textAlign: 'center', padding: '16px', fontSize: '13px', fontWeight: 'bold', color: '#1e3a8a', fontStyle: 'italic' }}>
-                                    Thank You For Business!
-                                </div>
-                            </div> {/* MAIN BOX END */}
+                                    {/* TOTALS SECTION */}
+                                    {(() => {
+                                        const subTotal = selectedOrder.items?.reduce((acc, item) => acc + (item.quantity * item.price), 0) || 0;
+                                        const transport = selectedOrder.transportCharges || 0;
+                                        const taxBase = subTotal + transport;
+                                        const cgst = taxBase * 0.09;
+                                        const sgst = taxBase * 0.09;
+                                        const igst = taxBase * 0.18;
+                                        return (
+                                            <div style={{ border: '1px solid #b0b8cc', borderTop: 'none' }}>
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr' }}>
+                                                    <div style={{ borderRight: '1px solid #b0b8cc', padding: '12px', display: 'flex', alignItems: 'flex-end' }}>
+                                                        <div style={{ fontSize: '10px', color: '#666' }}>
+                                                            <span style={{ fontWeight: 'bold', color: '#1e3a8a' }}>Total In Words: </span>
+                                                            <span style={{ textTransform: 'capitalize' }}>{numberToWords(selectedOrder.totalAmount)}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderBottom: '1px solid #f0f0f0', fontSize: '11px' }}>
+                                                            <span style={{ color: '#555', fontWeight: 'bold' }}>TRANSPORT & INSTALLATION</span>
+                                                            <span style={{ fontWeight: 'bold' }}>₹{transport.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                                        </div>
+                                                        {selectedOrder.taxPhase === 'Outside TN' ? (
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderBottom: '1px solid #f0f0f0', fontSize: '11px' }}>
+                                                                <span style={{ color: '#555', fontWeight: 'bold' }}>IGST 18%</span>
+                                                                <span style={{ fontWeight: 'bold' }}>₹{igst.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                                            </div>
+                                                        ) : (
+                                                            <>
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderBottom: '1px solid #f0f0f0', fontSize: '11px' }}>
+                                                                    <span style={{ color: '#555', fontWeight: 'bold' }}>CGST 9%</span>
+                                                                    <span style={{ fontWeight: 'bold' }}>₹{cgst.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                                                </div>
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderBottom: '1px solid #f0f0f0', fontSize: '11px' }}>
+                                                                    <span style={{ color: '#555', fontWeight: 'bold' }}>SGST 9%</span>
+                                                                    <span style={{ fontWeight: 'bold' }}>₹{sgst.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                {/* Total Amount Bar */}
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', background: '#dde5f5', borderTop: '1px solid #b0b8cc', borderBottom: '1px solid #b0b8cc' }}>
+                                                    <div style={{ borderRight: '1px solid #b0b8cc' }}></div>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 12px', fontSize: '16px', fontWeight: '900', color: '#1e3a8a' }}>
+                                                        <span>TOTAL AMOUNT</span>
+                                                        <span>₹{(selectedOrder.totalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
+
+                                    {/* BANK DETAILS + SIGNATURE */}
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', border: '1px solid #b0b8cc', borderTop: 'none' }}>
+                                        {/* Left Section: Bank Details */}
+                                        <div style={{ borderRight: '1px solid #b0b8cc' }}>
+                                            <div style={{ background: '#dde5f5', color: '#1e3a8a', padding: '6px 8px', fontSize: '11px', fontWeight: 'bold', borderBottom: '1px solid #b0b8cc' }}>BANK DETAILS</div>
+                                            <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
+                                                <tbody>
+                                                    {[
+                                                        ['ACCOUNT NO', 'accountNo', '7037881010'],
+                                                        ['IFSC CODE', 'ifscCode', 'IDIB000N140'],
+                                                        ['BANK NAME', 'bankName', 'INDIAN BANK'],
+                                                        ['BRANCH', 'branch', 'NATHAMPANNAI']
+                                                    ].map(([label, field, defaultValue]) => (
+                                                        <tr key={label}>
+                                                            <td style={{ padding: '4px 8px', fontWeight: 'bold', color: '#1e3a8a', width: '120px' }}>{label}</td>
+                                                            <td style={{ padding: '4px 8px', fontWeight: 'bold', color: '#333' }}>
+                                                                {selectedOrder.bankDetails?.[field] || defaultValue}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        {/* Right Section: Signature */}
+                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                            <div style={{ background: '#dde5f5', color: '#1e3a8a', padding: '6px 8px', fontSize: '11px', fontWeight: 'bold', borderBottom: '1px solid #b0b8cc', textAlign: 'center' }}>
+                                                for PVR AQUACULTURE
+                                            </div>
+                                            <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: '15px' }}>
+                                                <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#444' }}>Authorized Signature</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* FOOTER */}
+                                    <div style={{ textAlign: 'center', padding: '16px', fontSize: '13px', fontWeight: 'bold', color: '#1e3a8a', fontStyle: 'italic' }}>
+                                        Thank You For Business!
+                                    </div>
+                                </div> {/* MAIN BOX END */}
+                            </div>
                         </div>
 
                         {/* Modal Actions */}
@@ -1348,6 +1364,9 @@ const Invoices = () => {
             <style>
                 {`
                 @media print {
+                    @page { 
+                        margin: 0; 
+                    }
                     /* Hide everything by default */
                     body * {
                         visibility: hidden !important;
@@ -1437,7 +1456,23 @@ const Invoices = () => {
                 }
                 `}
             </style>
+
+            {showSuccess && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white rounded-3xl p-10 shadow-2xl flex flex-col items-center gap-4 animate-in zoom-in-95 duration-300 max-w-sm w-full mx-4 border border-gray-100">
+                        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-2">
+                            <CheckCircle2 size={48} />
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-900 text-center">Success!</h2>
+                        <p className="text-gray-500 text-center font-medium">Invoice generated successfully!</p>
+                        <div className="w-full h-1.5 bg-gray-100 rounded-full mt-4 overflow-hidden">
+                            <div className="h-full bg-green-500 animate-progress origin-left"></div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div >
+
     );
 };
 

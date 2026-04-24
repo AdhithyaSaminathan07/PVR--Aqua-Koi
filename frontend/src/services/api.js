@@ -24,16 +24,18 @@ api.interceptors.response.use(
     (response) => {
         const data = response.data;
         if (data && typeof data === 'object' && !Array.isArray(data)) {
-            // Find the first array property which likely contains the list data
-            const listKey = Object.keys(data).find(key => Array.isArray(data[key]));
-            if (listKey) {
-                // Attach the full paginated object as a non-enumerable property for future use
-                const flattenedData = data[listKey];
-                Object.defineProperty(flattenedData, '_pagination', {
-                    value: data,
-                    enumerable: false
-                });
-                return { ...response, data: flattenedData };
+            // Only flatten if we see pagination metadata, indicating a list response
+            const hasPagination = 'total' in data || 'pages' in data || 'page' in data;
+            if (hasPagination) {
+                const listKey = Object.keys(data).find(key => Array.isArray(data[key]));
+                if (listKey) {
+                    const flattenedData = data[listKey];
+                    Object.defineProperty(flattenedData, '_pagination', {
+                        value: data,
+                        enumerable: false
+                    });
+                    return { ...response, data: flattenedData };
+                }
             }
         }
         return response;
