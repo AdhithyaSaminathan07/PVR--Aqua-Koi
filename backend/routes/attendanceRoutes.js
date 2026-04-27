@@ -3,7 +3,7 @@ const router = express.Router();
 const attendanceController = require('../controllers/attendanceController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
-const ADMIN_ROLES = ['BOSS', 'MANAGER', 'admin', 'KOI_MANAGER', 'STAFF', 'BRANCH_MANAGER'];
+const ADMIN_ROLES = ['BOSS', 'MANAGER', 'admin', 'KOI_MANAGER', 'STAFF', 'BRANCH_MANAGER', 'GENERAL_STAFF', 'GENERAL_EMPLOYEE'];
 
 router.get('/my-attendance', protect, attendanceController.getMyAttendanceData);
 router.get('/', protect, authorize(...ADMIN_ROLES), attendanceController.getAttendanceData);

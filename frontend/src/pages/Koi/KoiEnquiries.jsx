@@ -91,7 +91,7 @@ const KoiEnquiries = () => {
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-900/20 active:scale-95"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-orange-900/20 active:scale-95"
                 >
                     <Plus size={18} />
                     <span>Add Enquiry</span>
@@ -106,12 +106,12 @@ const KoiEnquiries = () => {
                         placeholder="Search by name, contact or requirement..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-100 transition-all font-medium"
+                        className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-100 transition-all font-medium"
                     />
                 </div>
                 <div className="flex items-center gap-4 text-sm">
                     <span className="font-bold text-gray-400 uppercase tracking-widest text-[10px]">Total Enquiries</span>
-                    <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full font-bold">{enquiries.length}</span>
+                    <span className="px-3 py-1 bg-orange-50 text-orange-600 rounded-full font-bold">{enquiries.length}</span>
                 </div>
             </div>
 
@@ -132,7 +132,7 @@ const KoiEnquiries = () => {
                                 <tr>
                                     <td colSpan="5" className="px-8 py-20 text-center">
                                         <div className="flex flex-col items-center gap-3">
-                                            <Loader2 className="animate-spin text-blue-500" size={32} />
+                                            <Loader2 className="animate-spin text-orange-500" size={32} />
                                             <p className="text-gray-400 font-medium italic">Loading enquiries...</p>
                                         </div>
                                     </td>
@@ -141,7 +141,7 @@ const KoiEnquiries = () => {
                                 <tr key={enquiry._id} className="hover:bg-gray-50/50 transition-colors group">
                                     <td className="px-8 py-5">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-11 h-11 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center font-bold text-lg">
+                                            <div className="w-11 h-11 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center font-bold text-lg">
                                                 {enquiry.customerName[0]}
                                             </div>
                                             <div>
@@ -160,7 +160,7 @@ const KoiEnquiries = () => {
                                         </div>
                                     </td>
                                     <td className="px-8 py-5">
-                                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${enquiry.status === 'New' ? 'bg-blue-100 text-blue-600' :
+                                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${enquiry.status === 'New' ? 'bg-orange-100 text-orange-600' :
                                             enquiry.status === 'Follow-up' ? 'bg-indigo-100 text-indigo-600' : 'bg-emerald-100 text-emerald-600'
                                             }`}>
                                             {enquiry.status}
@@ -220,7 +220,7 @@ const KoiEnquiries = () => {
                                 required
                                 value={formData.customerName}
                                 onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                                className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-semibold"
+                                className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 transition-all font-semibold"
                                 placeholder="e.g. Rahul Sharma"
                             />
                         </div>
@@ -231,7 +231,7 @@ const KoiEnquiries = () => {
                                 required
                                 value={formData.contact}
                                 onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
-                                className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-semibold"
+                                className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 transition-all font-semibold"
                                 placeholder="+91 98765 43210"
                             />
                         </div>
@@ -243,7 +243,7 @@ const KoiEnquiries = () => {
                             rows="4"
                             value={formData.requirement}
                             onChange={(e) => setFormData({ ...formData, requirement: e.target.value })}
-                            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-semibold resize-none"
+                            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 transition-all font-semibold resize-none"
                             placeholder="Describe fish or food requirement..."
                         ></textarea>
                     </div>
@@ -253,7 +253,7 @@ const KoiEnquiries = () => {
                             type="text"
                             value={formData.notes}
                             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-semibold"
+                            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 transition-all font-semibold"
                             placeholder="Optional follow-up notes"
                         />
                     </div>
@@ -267,7 +267,7 @@ const KoiEnquiries = () => {
                         </button>
                         <button
                             type="submit"
-                            className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
+                            className="flex-1 py-4 bg-orange-600 text-white rounded-2xl font-bold uppercase tracking-widest hover:bg-orange-700 transition-all shadow-lg shadow-orange-100"
                         >
                             Save Enquiry
                         </button>

@@ -265,24 +265,24 @@ const KoiInvoices = () => {
             <div className="flex gap-8 border-b border-gray-100 no-print">
                 <button
                     onClick={() => setViewMode('creator')}
-                    className={`pb-4 text-sm font-bold transition-all relative ${viewMode === 'creator' ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`pb-4 text-sm font-bold transition-all relative ${viewMode === 'creator' ? 'text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
                 >
                     Advanced Invoice
-                    {viewMode === 'creator' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-full" />}
+                    {viewMode === 'creator' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-600 rounded-full" />}
                 </button>
                 <button
                     onClick={() => setViewMode('history')}
-                    className={`pb-4 text-sm font-bold transition-all relative ${viewMode === 'history' ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`pb-4 text-sm font-bold transition-all relative ${viewMode === 'history' ? 'text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
                 >
                     Invoice History
-                    {viewMode === 'history' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-full" />}
+                    {viewMode === 'history' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-600 rounded-full" />}
                 </button>
                 <button
                     onClick={() => setViewMode('delete_history')}
-                    className={`pb-4 text-sm font-bold transition-all relative ${viewMode === 'delete_history' ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`pb-4 text-sm font-bold transition-all relative ${viewMode === 'delete_history' ? 'text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
                 >
                     Delete History
-                    {viewMode === 'delete_history' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-full" />}
+                    {viewMode === 'delete_history' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-600 rounded-full" />}
                 </button>
             </div>
 
@@ -322,7 +322,7 @@ const KoiInvoices = () => {
                                             value={formData.companyInfo.contact}
                                             onChange={(e) => setFormData({ ...formData, companyInfo: { ...formData.companyInfo, contact: e.target.value } })}
                                         />
-                                        <div style={{ background: '#f0f4ff', padding: '4px', marginTop: '8px', fontSize: '11px', fontWeight: 'bold', color: '#1e3a8a', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                        <div style={{ background: '#eef2fb', padding: '4px', marginTop: '8px', fontSize: '11px', fontWeight: 'bold', color: '#1e3a8a', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                                             GSTIN:
                                             <input
                                                 style={{ background: 'transparent', border: 'none', fontWeight: 'bold', color: '#1e3a8a', width: '120px' }}
@@ -499,77 +499,94 @@ const KoiInvoices = () => {
                                 </tbody>
                             </table>
 
+                            {/* FOOTER SECTION */}
                             <div style={{ borderTop: '1px solid #b0b8cc' }}>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr' }}>
-                                    <div style={{ padding: '15px', borderRight: '1px solid #b0b8cc' }}>
-                                        <p style={{ margin: 0, fontSize: '10px', color: '#888' }}>TOTAL IN WORDS</p>
-                                        <p style={{ margin: '5px 0 0 0', fontWeight: 'bold', color: '#1e3a8a' }}>{numberToWords(formData.totalAmount)}</p>
+                                    {/* Left: Total in Words */}
+                                    <div style={{ padding: '15px', borderRight: '1px solid #b0b8cc', display: 'flex', alignItems: 'flex-end', minHeight: '100px' }}>
+                                        <div style={{ display: 'flex', gap: '4px', alignItems: 'baseline' }}>
+                                            <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#1e3a8a' }}>Total In Words:</span>
+                                            <span style={{ fontSize: '10px', color: '#666', fontWeight: 'bold' }}>{numberToWords(formData.totalAmount)}</span>
+                                        </div>
                                     </div>
+
+                                    {/* Right: Calculations */}
                                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                        <div style={{ padding: '8px 15px', display: 'flex', justifyItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #eee' }}>
-                                            <span style={{ color: '#555', fontWeight: 'bold' }}>TRANSPORT</span>
-                                            <input type="number" style={{ width: '80px', textAlign: 'right', border: 'none', fontWeight: 'bold' }} value={formData.transportCharges} onChange={(e) => setFormData({ ...formData, transportCharges: Number(e.target.value) })} />
+                                        <div style={{ padding: '8px 15px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee' }}>
+                                            <span style={{ color: '#1e3a8a', fontWeight: 'bold', fontSize: '10px' }}>TRANSPORT & INSTALLATION</span>
+                                            <input type="number" style={{ width: '80px', textAlign: 'right', border: 'none', fontWeight: 'bold', fontSize: '12px' }} value={formData.transportCharges} onChange={(e) => setFormData({ ...formData, transportCharges: Number(e.target.value) })} />
                                         </div>
                                         {formData.taxPhase === 'Outside TN' ? (
-                                            <div style={{ padding: '8px 15px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f0f0f0' }}>
-                                                <span style={{ color: '#555', fontWeight: 'bold' }}>IGST (18%)</span>
-                                                <span style={{ fontWeight: 'bold', color: '#333' }}>₹{(formData.totalAmount - (formData.items.reduce((a, c) => a + c.total, 0) + formData.transportCharges)).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                            <div style={{ padding: '8px 15px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee' }}>
+                                                <span style={{ color: '#1e3a8a', fontWeight: 'bold', fontSize: '10px' }}>IGST 18%</span>
+                                                <span style={{ fontWeight: 'bold', color: '#333', fontSize: '12px' }}>₹{(formData.totalAmount - (formData.items.reduce((a, b) => a + (b.total || 0), 0) + formData.transportCharges)).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                                             </div>
                                         ) : (
                                             <>
                                                 <div style={{ padding: '8px 15px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee' }}>
-                                                    <span style={{ color: '#555', fontWeight: 'bold' }}>CGST (9%)</span>
-                                                    <span style={{ fontWeight: 'bold', color: '#333' }}>₹{((formData.totalAmount - (formData.items.reduce((a, c) => a + c.total, 0) + formData.transportCharges)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                                    <span style={{ color: '#1e3a8a', fontWeight: 'bold', fontSize: '10px' }}>CGST 9%</span>
+                                                    <span style={{ fontWeight: 'bold', color: '#333', fontSize: '12px' }}>₹{((formData.totalAmount - (formData.items.reduce((a, b) => a + (b.total || 0), 0) + formData.transportCharges)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                                                 </div>
-                                                <div style={{ padding: '8px 15px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f0f0f0' }}>
-                                                    <span style={{ color: '#555', fontWeight: 'bold' }}>SGST (9%)</span>
-                                                    <span style={{ fontWeight: 'bold', color: '#333' }}>₹{((formData.totalAmount - (formData.items.reduce((a, c) => a + c.total, 0) + formData.transportCharges)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                                <div style={{ padding: '8px 15px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee' }}>
+                                                    <span style={{ color: '#1e3a8a', fontWeight: 'bold', fontSize: '10px' }}>SGST 9%</span>
+                                                    <span style={{ fontWeight: 'bold', color: '#333', fontSize: '12px' }}>₹{((formData.totalAmount - (formData.items.reduce((a, b) => a + (b.total || 0), 0) + formData.transportCharges)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                                                 </div>
                                             </>
                                         )}
-                                        <div style={{ padding: '15px', display: 'flex', justifyContent: 'space-between', background: '#dde5f5', fontWeight: '900', color: '#1e3a8a', fontSize: '16px' }}>
-                                            <span>GRAND TOTAL</span>
-                                            <span>₹{formData.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                        <div style={{ padding: '15px', display: 'flex', justifyContent: 'space-between', background: '#dde5f5', color: '#1e3a8a', borderTop: '1px solid #b0b8cc' }}>
+                                            <span style={{ fontWeight: 'bold', fontSize: '14px' }}>TOTAL AMOUNT</span>
+                                            <span style={{ fontWeight: '900', fontSize: '18px' }}>₹{formData.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* FOOTER: BANK & SIGNATURE */}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', borderTop: '1px solid #b0b8cc' }}>
-                                <div style={{ padding: '15px', borderRight: '1px solid #b0b8cc' }}>
-                                    <div style={{ background: '#dde5f5', padding: '5px 10px', fontSize: '10px', fontWeight: 'bold', color: '#1e3a8a', marginBottom: '10px' }}>BANK DETAILS</div>
+                            {/* BANK & SIGNATURE HEADERS */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', borderTop: '1px solid #b0b8cc', borderBottom: '1px solid #b0b8cc' }}>
+                                <div style={{ background: '#dde5f5', color: '#1e3a8a', padding: '8px 15px', fontSize: '11px', fontWeight: 'bold', borderRight: '1px solid #b0b8cc' }}>BANK DETAILS</div>
+                                <div style={{ background: '#dde5f5', color: '#1e3a8a', padding: '8px 15px', fontSize: '11px', fontWeight: 'bold', textAlign: 'center' }}>for PVR AQUACULTURE</div>
+                            </div>
 
-                                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center', margin: '2px 0' }}>
-                                        <b style={{ fontSize: '11px' }}>Account:</b>
-                                        <input
-                                            style={{ fontSize: '11px', border: 'none', color: '#333', flex: 1 }}
-                                            value={formData.bankDetails.accountNo}
-                                            onChange={(e) => setFormData({ ...formData, bankDetails: { ...formData.bankDetails, accountNo: e.target.value } })}
-                                        />
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center', margin: '2px 0' }}>
-                                        <b style={{ fontSize: '11px' }}>IFSC:</b>
-                                        <input
-                                            style={{ fontSize: '11px', border: 'none', color: '#333', flex: 1 }}
-                                            value={formData.bankDetails.ifscCode}
-                                            onChange={(e) => setFormData({ ...formData, bankDetails: { ...formData.bankDetails, ifscCode: e.target.value } })}
-                                        />
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center', margin: '2px 0' }}>
-                                        <b style={{ fontSize: '11px' }}>Bank:</b>
-                                        <input
-                                            style={{ fontSize: '11px', border: 'none', color: '#333', flex: 1 }}
-                                            value={formData.bankDetails.bankName}
-                                            onChange={(e) => setFormData({ ...formData, bankDetails: { ...formData.bankDetails, bankName: e.target.value } })}
-                                        />
-                                    </div>
+                            {/* BANK & SIGNATURE CONTENT */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', minHeight: '120px' }}>
+                                <div style={{ borderRight: '1px solid #b0b8cc' }}>
+                                    <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
+                                        <tbody>
+                                            {[
+                                                ['ACCOUNT NO', 'accountNo'],
+                                                ['IFSC CODE', 'ifscCode'],
+                                                ['BANK NAME', 'bankName'],
+                                                ['BRANCH', 'branch']
+                                            ].map(([label, field]) => (
+                                                <tr key={label}>
+                                                    <td style={{ padding: '6px 15px', fontWeight: 'bold', color: '#1e3a8a', width: '140px' }}>{label}</td>
+                                                    <td style={{ padding: '6px 15px' }}>
+                                                        <input
+                                                            type="text"
+                                                            style={{ width: '100%', border: 'none', outline: 'none', fontSize: '11px', background: 'transparent', color: '#333', fontWeight: 'bold' }}
+                                                            value={formData.bankDetails[field]}
+                                                            onChange={(e) => setFormData({
+                                                                ...formData,
+                                                                bankDetails: { ...formData.bankDetails, [field]: e.target.value }
+                                                            })}
+                                                        />
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 </div>
-                                <div style={{ height: '120px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '15px', textAlign: 'center' }}>
-                                    <p style={{ margin: 0, fontWeight: 'bold', color: '#111' }}>for {formData.companyInfo.name}</p>
-                                    <p style={{ margin: 0, fontSize: '10px', color: '#999' }}>Authorized Signature</p>
+                                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '15px', textAlign: 'center' }}>
+                                    <p style={{ margin: 0, fontSize: '11px', color: '#1e3a8a', fontWeight: 'bold' }}>Authorized Signature</p>
                                 </div>
                             </div>
+
+                            {/* THANK YOU BAR */}
+                            <div style={{ borderTop: '1px solid #b0b8cc', padding: '12px', textAlign: 'center', background: 'white' }}>
+                                <p style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: '#1e3a8a', fontStyle: 'italic' }}>Thank You For Business!</p>
+                            </div>
+
+
                         </div>
                     </div>
                 </div>
@@ -610,7 +627,7 @@ const KoiInvoices = () => {
                                             <div className="text-[10px] text-gray-400 font-medium italic">{inv.customer?.phone}</div>
                                         </td>
                                         <td className="px-8 py-6">
-                                            <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${inv.type === 'Fish' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
+                                            <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${inv.type === 'Fish' ? 'bg-orange-50 text-orange-600 border border-orange-100' : 'bg-orange-50 text-orange-600 border border-orange-100'}`}>
                                                 {inv.type}
                                             </span>
                                         </td>
@@ -678,7 +695,7 @@ const KoiInvoices = () => {
                                     window.html2pdf().set(opt).from(element).save().then(() => setIsExporting(false));
                                 }, 300);
                             }}
-                            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-700 transition-all"
+                            className="flex items-center gap-2 bg-orange-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-orange-700 transition-all"
                         >
                             <Download size={14} /> Download PDF
                         </button>
@@ -698,7 +715,7 @@ const KoiInvoices = () => {
                                                 <h2 style={{ fontSize: '24px', fontWeight: '900', color: '#1e3a8a', margin: 0 }}>{selectedInvoice.companyInfo?.name}</h2>
                                                 <p style={{ fontSize: '10px', color: '#666', margin: '4px 0', whiteSpace: 'pre-line' }}>{selectedInvoice.companyInfo?.address}</p>
                                                 <p style={{ fontSize: '10px', color: '#666', margin: 0 }}>{selectedInvoice.companyInfo?.contact}</p>
-                                                <div style={{ background: '#f0f4ff', padding: '4px', marginTop: '8px', fontSize: '11px', fontWeight: 'bold', color: '#1e3a8a' }}>
+                                                <div style={{ background: '#eef2fb', padding: '4px', marginTop: '8px', fontSize: '11px', fontWeight: 'bold', color: '#1e3a8a' }}>
                                                     GSTIN: {selectedInvoice.companyInfo?.gstin}
                                                 </div>
                                             </div>
@@ -767,54 +784,84 @@ const KoiInvoices = () => {
                                             ))}
                                         </tbody>
                                     </table>
+                                    {/* FOOTER SECTION */}
                                     <div style={{ borderTop: '1px solid #b0b8cc' }}>
                                         <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr' }}>
-                                            <div style={{ padding: '15px', borderRight: '1px solid #b0b8cc' }}>
-                                                <p style={{ margin: 0, fontSize: '10px', color: '#888' }}>TOTAL IN WORDS</p>
-                                                <p style={{ margin: '5px 0 0 0', fontWeight: 'bold', color: '#1e3a8a' }}>{numberToWords(selectedInvoice.totalAmount)}</p>
+                                            {/* Left: Total in Words */}
+                                            <div style={{ padding: '15px', borderRight: '1px solid #b0b8cc', display: 'flex', alignItems: 'flex-end', minHeight: '100px' }}>
+                                                <div style={{ display: 'flex', gap: '4px', alignItems: 'baseline' }}>
+                                                    <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#1e3a8a' }}>Total In Words:</span>
+                                                    <span style={{ fontSize: '10px', color: '#666', fontWeight: 'bold' }}>{numberToWords(selectedInvoice.totalAmount)}</span>
+                                                </div>
                                             </div>
+
+                                            {/* Right: Calculations */}
                                             <div style={{ display: 'flex', flexDirection: 'column' }}>
                                                 <div style={{ padding: '8px 15px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee' }}>
-                                                    <span style={{ color: '#555', fontWeight: 'bold' }}>TRANSPORT</span>
-                                                    <span style={{ fontWeight: 'bold' }}>₹{(selectedInvoice.transportCharges || 0).toLocaleString()}</span>
+                                                    <span style={{ color: '#1e3a8a', fontWeight: 'bold', fontSize: '10px' }}>TRANSPORT & INSTALLATION</span>
+                                                    <span style={{ fontWeight: 'bold', fontSize: '12px' }}>₹{(selectedInvoice.transportCharges || 0).toLocaleString()}</span>
                                                 </div>
                                                 {selectedInvoice.taxPhase === 'Outside TN' ? (
-                                                    <div style={{ padding: '8px 15px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f0f0f0' }}>
-                                                        <span style={{ color: '#555', fontWeight: 'bold' }}>IGST (18%)</span>
-                                                        <span style={{ fontWeight: 'bold', color: '#333' }}>₹{(selectedInvoice.totalAmount - ((selectedInvoice.items?.reduce((a, c) => a + c.total, 0) || 0) + (selectedInvoice.transportCharges || 0))).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                                    <div style={{ padding: '8px 15px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee' }}>
+                                                        <span style={{ color: '#1e3a8a', fontWeight: 'bold', fontSize: '10px' }}>IGST 18%</span>
+                                                        <span style={{ fontWeight: 'bold', color: '#333', fontSize: '12px' }}>₹{(selectedInvoice.totalAmount - ((selectedInvoice.items?.reduce((a, c) => a + (c.total || 0), 0) || 0) + (selectedInvoice.transportCharges || 0))).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                                                     </div>
                                                 ) : (
                                                     <>
                                                         <div style={{ padding: '8px 15px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee' }}>
-                                                            <span style={{ color: '#555', fontWeight: 'bold' }}>CGST (9%)</span>
-                                                            <span style={{ fontWeight: 'bold', color: '#333' }}>₹{((selectedInvoice.totalAmount - ((selectedInvoice.items?.reduce((a, c) => a + c.total, 0) || 0) + (selectedInvoice.transportCharges || 0))) / 2).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                                            <span style={{ color: '#1e3a8a', fontWeight: 'bold', fontSize: '10px' }}>CGST 9%</span>
+                                                            <span style={{ fontWeight: 'bold', color: '#333', fontSize: '12px' }}>₹{((selectedInvoice.totalAmount - ((selectedInvoice.items?.reduce((a, c) => a + (c.total || 0), 0) || 0) + (selectedInvoice.transportCharges || 0))) / 2).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                                                         </div>
-                                                        <div style={{ padding: '8px 15px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f0f0f0' }}>
-                                                            <span style={{ color: '#555', fontWeight: 'bold' }}>SGST (9%)</span>
-                                                            <span style={{ fontWeight: 'bold', color: '#333' }}>₹{((selectedInvoice.totalAmount - ((selectedInvoice.items?.reduce((a, c) => a + c.total, 0) || 0) + (selectedInvoice.transportCharges || 0))) / 2).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                                        <div style={{ padding: '8px 15px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee' }}>
+                                                            <span style={{ color: '#1e3a8a', fontWeight: 'bold', fontSize: '10px' }}>SGST 9%</span>
+                                                            <span style={{ fontWeight: 'bold', color: '#333', fontSize: '12px' }}>₹{((selectedInvoice.totalAmount - ((selectedInvoice.items?.reduce((a, c) => a + (c.total || 0), 0) || 0) + (selectedInvoice.transportCharges || 0))) / 2).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                                                         </div>
                                                     </>
                                                 )}
-                                                <div style={{ padding: '15px', display: 'flex', justifyContent: 'space-between', background: '#dde5f5', fontWeight: '900', color: '#1e3a8a', fontSize: '16px' }}>
-                                                    <span>GRAND TOTAL</span>
-                                                    <span>₹{selectedInvoice.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                                <div style={{ padding: '15px', display: 'flex', justifyContent: 'space-between', background: '#dde5f5', color: '#1e3a8a', borderTop: '1px solid #b0b8cc' }}>
+                                                    <span style={{ fontWeight: 'bold', fontSize: '14px' }}>TOTAL AMOUNT</span>
+                                                    <span style={{ fontWeight: '900', fontSize: '18px' }}>₹{selectedInvoice.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', borderTop: '1px solid #b0b8cc' }}>
-                                        <div style={{ padding: '15px', borderRight: '1px solid #b0b8cc' }}>
-                                            <div style={{ background: '#eef2fb', padding: '5px 10px', fontSize: '10px', fontWeight: 'bold', color: '#1e3a8a', marginBottom: '10px' }}>BANK DETAILS</div>
 
-                                            <p style={{ margin: '2px 0', color: '#333' }}><b>Account:</b> {selectedInvoice.bankDetails?.accountNo}</p>
-                                            <p style={{ margin: '2px 0', color: '#333' }}><b>IFSC:</b> {selectedInvoice.bankDetails?.ifscCode}</p>
-                                            <p style={{ margin: '2px 0', color: '#333' }}><b>Bank:</b> {selectedInvoice.bankDetails?.bankName}</p>
+                                    {/* BANK & SIGNATURE HEADERS */}
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', borderTop: '1px solid #b0b8cc', borderBottom: '1px solid #b0b8cc' }}>
+                                        <div style={{ background: '#dde5f5', color: '#1e3a8a', padding: '8px 15px', fontSize: '11px', fontWeight: 'bold', borderRight: '1px solid #b0b8cc' }}>BANK DETAILS</div>
+                                        <div style={{ background: '#dde5f5', color: '#1e3a8a', padding: '8px 15px', fontSize: '11px', fontWeight: 'bold', textAlign: 'center' }}>for PVR AQUACULTURE</div>
+                                    </div>
+
+                                    {/* BANK & SIGNATURE CONTENT */}
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', minHeight: '120px' }}>
+                                        <div style={{ borderRight: '1px solid #b0b8cc' }}>
+                                            <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
+                                                <tbody>
+                                                    {[
+                                                        ['ACCOUNT NO', selectedInvoice.bankDetails?.accountNo],
+                                                        ['IFSC CODE', selectedInvoice.bankDetails?.ifscCode],
+                                                        ['BANK NAME', selectedInvoice.bankDetails?.bankName],
+                                                        ['BRANCH', selectedInvoice.bankDetails?.branch]
+                                                    ].map(([label, value]) => (
+                                                        <tr key={label}>
+                                                            <td style={{ padding: '6px 15px', fontWeight: 'bold', color: '#1e3a8a', width: '140px' }}>{label}</td>
+                                                            <td style={{ padding: '6px 15px', color: '#333', fontWeight: 'bold' }}>{value}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
                                         </div>
-                                        <div style={{ height: '120px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '15px', textAlign: 'center' }}>
-                                            <p style={{ margin: 0, fontWeight: 'bold', color: '#111' }}>for {selectedInvoice.companyInfo?.name}</p>
-                                            <p style={{ margin: 0, fontSize: '10px', color: '#999' }}>Authorized Signature</p>
+                                        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '15px', textAlign: 'center' }}>
+                                            <p style={{ margin: 0, fontSize: '11px', color: '#1e3a8a', fontWeight: 'bold' }}>Authorized Signature</p>
                                         </div>
                                     </div>
+
+                                    {/* THANK YOU BAR */}
+                                    <div style={{ borderTop: '1px solid #b0b8cc', padding: '12px', textAlign: 'center', background: 'white' }}>
+                                        <p style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: '#1e3a8a', fontStyle: 'italic' }}>Thank You For Business!</p>
+                                    </div>
+
+
                                 </div>
                             </div>
                         )}

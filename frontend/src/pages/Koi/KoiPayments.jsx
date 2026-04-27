@@ -76,7 +76,7 @@ const KoiPayments = () => {
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-900/20 active:scale-95"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-900/20 active:scale-95"
                 >
                     <Plus size={18} />
                     <span>Record Payment</span>
@@ -117,7 +117,7 @@ const KoiPayments = () => {
                                 <tr>
                                     <td colSpan="5" className="px-8 py-20 text-center">
                                         <div className="flex flex-col items-center gap-3">
-                                            <Loader2 className="animate-spin text-blue-500" size={32} />
+                                            <Loader2 className="animate-spin text-primary-500" size={32} />
                                             <p className="text-gray-400 font-medium italic">Loading payments...</p>
                                         </div>
                                     </td>
@@ -194,7 +194,7 @@ const KoiPayments = () => {
                                 const ord = pendingOrders.find(o => o._id === e.target.value);
                                 setFormData({ ...formData, order: e.target.value, customer: ord?.customer?._id, amount: ord?.totalAmount });
                             }}
-                            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-semibold appearance-none"
+                            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-primary-500 transition-all font-semibold appearance-none"
                         >
                             <option value="">Select Order</option>
                             {pendingOrders.map(o => <option key={o._id} value={o._id}>#{o._id.slice(-6).toUpperCase()} - {o.customer?.name} (₹{o.totalAmount})</option>)}
@@ -209,7 +209,7 @@ const KoiPayments = () => {
                                 required
                                 value={formData.amount}
                                 onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                                className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-semibold"
+                                className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-primary-500 transition-all font-semibold"
                                 placeholder="0.00"
                             />
                         </div>
@@ -219,7 +219,7 @@ const KoiPayments = () => {
                                 required
                                 value={formData.paymentMethod}
                                 onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
-                                className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-semibold appearance-none"
+                                className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-primary-500 transition-all font-semibold appearance-none"
                             >
                                 <option value="UPI">UPI / GPay</option>
                                 <option value="Cash">Cash</option>
@@ -239,7 +239,7 @@ const KoiPayments = () => {
                         </button>
                         <button
                             type="submit"
-                            className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
+                            className="flex-1 py-4 bg-primary-600 text-white rounded-2xl font-bold uppercase tracking-widest hover:bg-primary-700 transition-all shadow-lg shadow-blue-100"
                         >
                             Save Record
                         </button>

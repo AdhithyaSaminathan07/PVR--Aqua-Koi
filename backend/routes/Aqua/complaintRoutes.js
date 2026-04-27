@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getComplaints, createComplaint, updateComplaintStatus, updateComplaint, deleteComplaint } = require('../../controllers/Aqua/complaintController');
+const { getComplaints, createComplaint, updateComplaintStatus, updateComplaint, deleteComplaint, convertToTask } = require('../../controllers/Aqua/complaintController');
 
 router.get('/', getComplaints);
 router.post('/', createComplaint);

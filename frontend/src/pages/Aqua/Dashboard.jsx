@@ -30,8 +30,8 @@ const StatCard = ({ title, value, icon: Icon, color, loading, delay }) => (
             <Icon size={24} />
         </div>
         <div>
-            <h3 className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">{title}</h3>
-            <p className="text-2xl font-bold text-gray-900 mt-1">
+            <h3 className="text-[#2988FF] text-[10px] font-bold uppercase tracking-widest opacity-70 group-hover:opacity-100 transition-opacity">{title}</h3>
+            <p className="text-2xl font-black text-[#1a365d] mt-1 italic tracking-tight">
                 {loading ? <Loader2 className="animate-spin text-gray-200" size={20} /> : value}
             </p>
         </div>
@@ -82,6 +82,31 @@ const Dashboard = () => {
 
     return (
         <div className="py-4 lg:py-6">
+            {/* Banner */}
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="relative bg-[#E6F0FF] rounded-2xl lg:rounded-[3rem] p-6 sm:p-8 lg:p-12 overflow-hidden mb-8 lg:mb-12"
+            >
+                <div className="relative z-10 max-w-lg text-center sm:text-left">
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2988FF] mb-4 leading-tight">
+                        Aqua Hub <br />
+                        <span className="text-[#2988FF]">Operations Manager</span>
+                    </h1>
+                    <p className="text-[#1a365d]/60 text-sm sm:text-base font-medium mb-6 lg:mb-8 text-balance">
+                        Monitor aquaculture operations, inventory health, and field task distribution.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center sm:justify-start">
+                        <button className="bg-[#1a365d] text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-sm font-bold shadow-lg shadow-blue-900/20 hover:opacity-90 transition-all active:scale-95 flex items-center justify-center gap-2">
+                            New Task <ArrowRight size={16} />
+                        </button>
+                    </div>
+                </div>
+
+                <div className="absolute right-0 top-0 w-1/2 h-full hidden lg:flex items-center justify-center opacity-20">
+                    <Droplets size={240} className="text-[#2988FF]" />
+                </div>
+            </motion.div>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8 lg:mb-12">
@@ -130,7 +155,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                 <div className="lg:col-span-2">
                     <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-lg lg:text-xl font-bold text-gray-900">Recent Tasks</h2>
+                        <h2 className="text-lg lg:text-xl font-bold text-[#1a365d]">Recent Tasks</h2>
                         <Link to="/tasks" className="text-[#2988FF] text-[10px] sm:text-xs font-bold uppercase tracking-widest hover:underline">View All</Link>
                     </div>
 
@@ -148,8 +173,8 @@ const Dashboard = () => {
                                         <Wrench size={18} />
                                     </div>
                                     <div className="min-w-0">
-                                        <h4 className="font-bold text-gray-900 text-xs sm:text-sm truncate">{task.description}</h4>
-                                        <p className="text-[9px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-tight mt-0.5 truncate">{task.assignedStaff}</p>
+                                        <h4 className="font-bold text-[#1a365d] text-xs sm:text-sm truncate">{task.description}</h4>
+                                        <p className="text-[9px] lg:text-[10px] text-[#2988FF] font-bold uppercase tracking-tight mt-0.5 truncate">{task.assignedStaff}</p>
                                     </div>
                                 </div>
                                 <span className={`px-2 sm:px-4 py-1 rounded-full text-[8px] lg:text-[10px] font-bold uppercase tracking-widest bg-blue-50 text-blue-600 shrink-0`}>
@@ -162,25 +187,25 @@ const Dashboard = () => {
                 </div>
 
                 <div>
-                    <h2 className="text-lg lg:text-xl font-bold text-gray-900 mb-6">Inventory Health</h2>
-                    <div className="bg-indigo-900 rounded-2xl lg:rounded-[2.5rem] p-6 lg:p-10 text-white relative overflow-hidden min-h-[250px] lg:h-[300px] flex flex-col justify-between shadow-xl shadow-indigo-900/20">
-                        <div className="absolute -right-10 -bottom-10 opacity-10">
-                            <Package size={200} />
+                    <h2 className="text-lg lg:text-xl font-bold text-[#2988FF] mb-6">Inventory Health</h2>
+                    <div className="bg-[#E6F0FF] rounded-2xl lg:rounded-[2.5rem] p-6 lg:p-10 text-[#1a365d] relative overflow-hidden min-h-[250px] lg:h-[300px] flex flex-col justify-between shadow-xl shadow-blue-900/10 border border-white/50">
+                        <div className="absolute -right-10 -bottom-10 opacity-20">
+                            <Package size={200} className="text-[#2988FF]" />
                         </div>
 
                         <div className="relative z-10 flex justify-between items-start">
-                            <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                                <AlertCircle size={18} className={stats.lowStock > 0 ? "text-red-400 animate-pulse" : "text-white/40"} />
+                            <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                                <AlertCircle size={18} className={stats.lowStock > 0 ? "text-red-500 animate-pulse" : "text-[#2988FF]/40"} />
                             </div>
-                            <span className="text-[8px] lg:text-[10px] font-bold opacity-50 uppercase tracking-widest">Global Stock</span>
+                            <span className="text-[8px] lg:text-[10px] font-bold text-[#2988FF] uppercase tracking-widest opacity-60">Global Stock</span>
                         </div>
 
                         <div className="relative z-10 flex flex-col items-center">
-                            <p className="text-4xl lg:text-5xl font-bold italic">{stats.lowStock}</p>
-                            <p className="text-[8px] lg:text-[10px] font-bold opacity-50 uppercase tracking-widest mt-2">Low Stock Alerts</p>
+                            <p className="text-4xl lg:text-5xl font-black italic text-[#2988FF] tracking-tighter shadow-sm">{stats.lowStock}</p>
+                            <p className="text-[8px] lg:text-[10px] font-bold text-[#2988FF] uppercase tracking-widest mt-2 opacity-60">Low Stock Alerts</p>
                         </div>
 
-                        <Link to="/inventory" className="relative z-10 w-full py-2.5 sm:py-3 bg-white/10 hover:bg-white/20 rounded-xl lg:rounded-2xl text-[8px] lg:text-[10px] font-bold uppercase tracking-widest transition-all text-center mt-4">
+                        <Link to="/inventory" className="relative z-10 w-full py-2.5 sm:py-3 bg-[#1a365d] text-white hover:opacity-90 rounded-xl lg:rounded-2xl text-[8px] lg:text-[10px] font-bold uppercase tracking-widest transition-all text-center mt-4 shadow-lg shadow-blue-900/20">
                             Manage Storage
                         </Link>
                     </div>

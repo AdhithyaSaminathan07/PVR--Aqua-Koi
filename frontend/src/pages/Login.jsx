@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { Users, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../services/api';
 
 const Login = ({ onLogin }) => {
     const [loginId, setLoginId] = useState('');
     const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
@@ -31,8 +29,7 @@ const Login = ({ onLogin }) => {
 
             if (onLogin) onLogin(role, user?.allocatedModules || []);
 
-            // Role-based redirection using robust key
-            if (roleKey === 'BOSS' || roleKey === 'MANAGER') {
+            if (role === 'BOSS') {
                 navigate('/boss-dashboard');
             } else if (roleKey.includes('KOI')) {
                 navigate('/koi/dashboard');
@@ -50,96 +47,59 @@ const Login = ({ onLogin }) => {
     };
 
     return (
-        <div className="min-h-screen bg-[#F0F7FF] flex items-center justify-center p-4 font-sans selection:bg-blue-100 italic-none overflow-hidden">
-            {/* Main Rounded Container - Responsive Adjustments */}
-            <div className="w-full max-w-6xl h-fit md:h-[650px] bg-white rounded-[2.5rem] md:rounded-[3rem] shadow-[0_50px_100px_rgba(41,136,255,0.1)] overflow-hidden flex flex-col md:flex-row relative mx-auto">
+        <div className="min-h-screen bg-[url('/koi.png')] bg-cover bg-center flex items-center justify-center md:justify-end p-4 md:pr-20 lg:pr-32 font-sans selection:bg-blue-100 overflow-hidden relative">
+            {/* Minimalist Card with lightly sharp corners, positioned to the right */}
+            <div className="w-full max-w-[400px] bg-white rounded-2xl p-10 md:p-14 shadow-2xl flex flex-col items-center z-10 transition-all duration-500">
 
-                {/* Left Side: Video (Full Display) - Hidden on small screens for better responsiveness */}
-                <div className="hidden md:flex md:w-[45%] bg-[#A5B4FC] relative overflow-hidden">
-                    {/* Video Background */}
-                    <div className="absolute inset-0 z-0">
-                        <video
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            className="w-full h-full object-cover"
+                {/* Brand Logo - Styled like the 'Lovebirds' script */}
+                <div className="mb-12">
+                    <img src="/PVR.png" alt="PVR Logo" className="h-24 w-auto object-contain" />
+                </div>
+
+                {/* Welcome Text */}
+                <h2 className="text-[#1a365d] text-xl font-bold mb-12 uppercase tracking-tight">Welcome to PVR Systems</h2>
+
+                <form onSubmit={handleLogin} className="w-full space-y-10">
+                    {/* Access ID - Underline Style */}
+                    <div className="relative">
+                        <label className="text-[10px] text-[#1a365d] font-bold absolute -top-5 left-0 uppercase tracking-widest">Users name or Email</label>
+                        <input
+                            type="text"
+                            value={loginId}
+                            onChange={(e) => setLoginId(e.target.value)}
+                            className="w-full py-2 bg-transparent border-b border-[#EEEEEE] focus:border-[#1a365d] outline-none transition-all text-[#1a365d] text-lg font-medium placeholder:text-[#1a365d]/40"
+                            placeholder="Manager ID"
+                            required
+                        />
+                    </div>
+
+                    {/* Password - Underline Style */}
+                    <div className="relative">
+                        <label className="text-[10px] text-[#1a365d] font-bold absolute -top-5 left-0 uppercase tracking-widest">Password</label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full py-2 bg-transparent border-b border-[#EEEEEE] focus:border-[#1a365d] outline-none transition-all text-[#1a365d] text-lg font-medium placeholder:text-[#1a365d]/40"
+                            placeholder="********"
+                            required
+                        />
+                        <div className="flex justify-end mt-2">
+                            <button type="button" className="text-[10px] text-[#2988FF] hover:underline font-bold">Forgot password?</button>
+                        </div>
+                    </div>
+
+                    {/* Sign In Button - Charcoal Rounded Style */}
+                    <div className="pt-4 flex justify-center">
+                        <button
+                            type="submit"
+                            className="w-full max-w-[200px] py-4 bg-[#1a365d] hover:bg-[#60A7FF] text-white font-bold rounded-xl transition-all text-lg shadow-lg shadow-blue-900/20 active:scale-95 uppercase tracking-widest"
                         >
-                            <source src="/koi.mp4" type="video/mp4" />
-                        </video>
-                        {/* Soft brand-aligned overlay */}
-                        <div className="absolute inset-0 bg-[#A5B4FC]/20 mix-blend-multiply"></div>
-                        <div className="absolute inset-0 bg-gradient-to-tr from-[#A5B4FC]/30 via-transparent to-transparent"></div>
+                            Sign in
+                        </button>
                     </div>
-                </div>
-
-                {/* Right Side: Login Form - Centered on Mobile, Curved on Desktop */}
-                <div className="flex-1 bg-white relative p-6 md:p-14 lg:p-16 flex flex-col justify-center items-center md:-ml-24 md:rounded-l-[5rem] z-20 shadow-[-40px_0_80px_rgba(0,0,0,0.03)] border-l border-white/5 overflow-hidden">
-                    <div className="max-w-md w-full">
-                        {/* PVR Logo - Centered Focal Point */}
-                        <div className="flex justify-center mb-8 md:mb-12 transition-all duration-500 hover:scale-105 select-none md:pt-4">
-                            <img src="/PVR.png" alt="PVR Logo" className="h-24 md:h-40 w-auto object-contain drop-shadow-2xl" />
-                        </div>
-
-                        <form onSubmit={handleLogin} className="space-y-5 md:space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Manager Access ID</label>
-                                <div className="relative group">
-                                    <Users className="absolute left-5 md:left-6 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#A5B4FC] transition-colors" size={22} />
-                                    <input
-                                        type="text"
-                                        value={loginId}
-                                        onChange={(e) => setLoginId(e.target.value)}
-                                        className="w-full pl-14 md:pl-16 pr-6 py-4 md:py-5.5 bg-gray-50/50 border-2 border-transparent rounded-[1.5rem] md:rounded-[2rem] focus:border-[#A5B4FC]/30 focus:bg-white outline-none transition-all font-semibold text-gray-900 placeholder:text-gray-300 text-base md:text-lg shadow-inner"
-                                        placeholder="Enter your ID"
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Secure Password</label>
-                                <div className="relative group">
-                                    <Lock className="absolute left-5 md:left-6 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#A5B4FC] transition-colors" size={22} />
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full pl-14 md:pl-16 pr-14 md:pr-16 py-4 md:py-5.5 bg-gray-50/50 border-2 border-transparent rounded-[1.5rem] md:rounded-[2rem] focus:border-[#A5B4FC]/30 focus:bg-white outline-none transition-all font-semibold text-gray-900 placeholder:text-gray-300 text-base md:text-lg shadow-inner"
-                                        placeholder="••••••••"
-                                        required
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-5 md:right-6 top-1/2 -translate-y-1/2 text-gray-300 hover:text-[#A5B4FC] transition-colors p-2"
-                                    >
-                                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <button
-                                type="submit"
-                                className="w-full py-4 md:py-6 bg-[#A5B4FC] hover:bg-[#91A1FA] text-white font-black rounded-[1.5rem] md:rounded-[2rem] transition-all shadow-xl hover:shadow-[#A5B4FC]/30 active:scale-[0.98] mt-4 md:mt-6 flex items-center justify-center gap-3 md:gap-4 text-base md:text-xl tracking-tight"
-                            >
-                                Sign In
-                                <ArrowRight size={22} />
-                            </button>
-                        </form>
-
-                        <div className="mt-10 md:mt-12 text-center border-t border-gray-100 pt-6 md:pt-8">
-                            <p className="text-[9px] md:text-[10px] text-gray-400 font-black tracking-[0.2em] uppercase">
-                                Powered & Secured by <span className="text-gray-900">PVR Systems India</span>
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                </form>
             </div>
-
-            {/* Background Atmosphere */}
-            <div className="fixed top-[-15%] right-[-5%] w-[50%] h-[50%] bg-[#A5B4FC]/10 rounded-full blur-[160px] -z-10"></div>
-            <div className="fixed bottom-[-15%] left-[-5%] w-[50%] h-[50%] bg-blue-50 rounded-full blur-[160px] -z-10"></div>
         </div>
     );
 };

@@ -268,7 +268,7 @@ const BossLayout = ({ role: initialRole, allocatedModules: initialModules }) => 
                 {/* User Profile Section */}
                 <div className="w-full px-4 pt-4 mt-auto border-t border-[#F8FAFC]">
                     <div className={`flex items-center ${(isHovered || isMobileMenuOpen) ? 'px-2 gap-3' : 'justify-center'} h-16 rounded-xl hover:bg-[#F8FAFC] transition-colors cursor-pointer relative group`}>
-                        <div className="w-10 h-10 rounded-full bg-[#2988FF] flex items-center justify-center text-white text-sm font-bold shadow-sm shrink-0 border-2 border-white">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm shrink-0 border-2 border-white ${activeModule === 'KOI' ? 'bg-[#F97316]' : 'bg-[#2988FF]'}`}>
                             {role?.charAt(0) || 'B'}
                         </div>
                         <AnimatePresence>
@@ -313,11 +313,11 @@ const BossLayout = ({ role: initialRole, allocatedModules: initialModules }) => 
                         </button>
 
                         <div className="flex-1 relative max-w-xl group hidden md:block">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2988FF] transition-colors" size={20} />
+                            <Search className={`absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors ${activeModule === 'KOI' ? 'group-focus-within:text-[#F97316]' : 'group-focus-within:text-[#2988FF]'}`} size={20} />
                             <input
                                 type="text"
                                 placeholder="Search everything..."
-                                className="w-full bg-[#F5F9FC] border-none rounded-2xl py-3 pl-12 pr-6 focus:ring-2 focus:ring-[#2988FF]/50 transition-all text-sm font-medium"
+                                className={`w-full bg-[#F5F9FC] border-none rounded-2xl py-3 pl-12 pr-6 transition-all text-sm font-medium ${activeModule === 'KOI' ? 'focus:ring-2 focus:ring-[#F97316]/50' : 'focus:ring-2 focus:ring-[#2988FF]/50'}`}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
@@ -333,7 +333,7 @@ const BossLayout = ({ role: initialRole, allocatedModules: initialModules }) => 
                                 <button
                                     key={mod.id}
                                     onClick={() => { setActiveModule(mod.id); navigate(mod.path); }}
-                                    className={`flex items-center gap-2 px-3 sm:px-6 py-2 rounded-full transition-all duration-300 ${activeModule === mod.id ? 'bg-white text-[#2988FF] shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                    className={`flex items-center gap-2 px-3 sm:px-6 py-2 rounded-full transition-all duration-300 ${activeModule === mod.id ? `bg-white shadow-sm ${activeModule === 'KOI' ? 'text-[#F97316]' : 'text-[#2988FF]'}` : 'text-gray-400 hover:text-gray-600'}`}
                                 >
                                     <mod.icon size={18} />
                                     <span className={`text-[10px] sm:text-xs font-bold ${activeModule === mod.id ? 'block' : 'hidden lg:block'}`}>{mod.label}</span>
@@ -345,22 +345,30 @@ const BossLayout = ({ role: initialRole, allocatedModules: initialModules }) => 
                         <div className="flex items-center gap-2 sm:gap-4 pl-4 border-l border-gray-100 ml-auto">
                             <div className="flex flex-col items-end hidden xs:flex">
                                 <p className="text-xs lg:text-sm font-bold text-gray-900 leading-tight whitespace-nowrap">{role === 'BOSS' ? 'PVR Boss' : 'General Manager'}</p>
-                                <p className="text-[9px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-widest text-right">{role}</p>
+                                <p className="text-[10px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-widest">{role}</p>
                             </div>
-                            <div className="w-9 h-9 lg:w-11 lg:h-11 rounded-full bg-gradient-to-tr from-[#2988FF] to-[#1d4ed8] flex items-center justify-center text-white text-xs lg:text-sm font-bold shadow-md shrink-0 border-2 border-white">
-                                {role?.charAt(0) || 'B'}
+                            <div className={`w-8 h-8 lg:w-10 lg:h-10 rounded-full flex items-center justify-center text-white text-xs lg:text-sm font-bold shadow-sm shrink-0 ${activeModule === 'KOI' ? 'bg-[#F97316]' : 'bg-[#2988FF]'}`}>
+                                {role?.charAt(0) || 'A'}
                             </div>
                         </div>
                     </header>
 
                     {/* Scrollable Content */}
                     <main className="flex-1 overflow-y-auto custom-scrollbar px-4 sm:px-8 lg:px-12 pb-8 sm:pb-12">
-                        <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2988FF]"></div></div>}>
+                        <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className={`animate-spin rounded-full h-8 w-8 border-b-2 ${activeModule === 'KOI' ? 'border-[#F97316]' : 'border-[#2988FF]'}`}></div></div>}>
                             <Outlet />
                         </React.Suspense>
                     </main>
                 </div>
             </div>
+
+            {/* Persistent Mobile Toggle Button (Right Side) */}
+            <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className={`fixed top-1/2 right-0 -translate-y-1/2 text-white p-4 rounded-l-2xl shadow-2xl z-[100] lg:hidden active:scale-95 transition-all duration-300 flex items-center justify-center border-l border-t border-b border-white/20 no-print ${activeModule === 'KOI' ? 'bg-[#F97316]' : 'bg-[#2988FF]'}`}
+            >
+                {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
         </div>
     );
 };

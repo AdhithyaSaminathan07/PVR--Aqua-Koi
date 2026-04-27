@@ -54,7 +54,7 @@ app.use('/api/settings', require('./routes/settingsRoutes'));
 // Koi Centre Routes
 const { protect, authorize } = require('./middleware/authMiddleware');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
-const KOI_ROLES = ['BOSS', 'MANAGER', 'admin', 'KOI', 'KOIMANAGER', 'KOI_MANAGER', 'STAFF', 'BRANCH_MANAGER'];
+const KOI_ROLES = ['BOSS', 'MANAGER', 'admin', 'KOI', 'KOIMANAGER', 'KOI_MANAGER', 'STAFF', 'BRANCH_MANAGER', 'GENERAL_STAFF', 'GENERAL_EMPLOYEE'];
 
 app.use('/api/koi/enquiries', protect, authorize(...KOI_ROLES), require('./routes/Koi/koiEnquiryRoutes'));
 app.use('/api/koi/orders', protect, authorize(...KOI_ROLES), require('./routes/Koi/koiOrderRoutes'));
