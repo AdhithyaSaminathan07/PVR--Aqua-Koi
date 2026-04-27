@@ -11,6 +11,7 @@ import {
     Wrench,
     LogOut,
     Bell,
+    Clock,
     Search,
     Menu,
     X,
@@ -23,61 +24,89 @@ import {
     BarChart3,
     Calendar,
     ChevronRight,
-    Plus
+    Plus,
+    Settings
 } from 'lucide-react';
 
-const SidebarIcon = ({ icon: Icon, path, label, active, onClick, expanded }) => (
+const SidebarIcon = ({ icon: Icon, path, label, active, onClick, expanded, color }) => (
     <Link
         to={path}
         onClick={onClick}
-        className={`relative group flex items-center ${expanded ? 'justify-start px-4 gap-4 w-[90%]' : 'justify-center w-12'} h-12 rounded-2xl transition-all duration-300 ${active
-            ? 'bg-white text-[#2988FF] shadow-lg'
-            : 'text-white hover:bg-white/10'} border-transparent`}
+        className="relative group flex items-center h-12 w-full px-5 mb-1 no-underline transition-colors duration-500"
     >
-        <Icon size={24} strokeWidth={2} className="shrink-0" />
-        <AnimatePresence>
-            {expanded && (
-                <motion.span
-                    initial={{ opacity: 0, width: 0, x: -10 }}
-                    animate={{ opacity: 1, width: 'auto', x: 0 }}
-                    exit={{ opacity: 0, width: 0, x: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="text-sm font-bold whitespace-nowrap overflow-hidden"
-                >
-                    {label}
-                </motion.span>
-            )}
-        </AnimatePresence>
-        {active && !expanded && (
+        <div
+            className={`
+                flex items-center h-12 w-12 shrink-0 justify-center rounded-xl transition-all duration-700
+                ${active
+                    ? 'shadow-sm'
+                    : 'hover:bg-[#F8FAFC]'}
+            `}
+            style={{
+                backgroundColor: active ? `${color}15` : 'transparent',
+                color: active ? color : '#64748B'
+            }}
+        >
+            <Icon
+                size={20}
+                strokeWidth={active ? 2.5 : 2}
+                className="shrink-0 transition-colors duration-300"
+                style={{ color: active ? color : (expanded ? color : '#64748B') }}
+            />
+        </div>
+
+        <div className="flex-1 overflow-hidden">
+            <AnimatePresence mode="wait">
+                {expanded && (
+                    <motion.div
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
+                        className="flex items-center justify-between ml-4"
+                    >
+                        <span
+                            className="text-[13px] font-semibold whitespace-nowrap transition-colors duration-300"
+                            style={{ color: active ? '#0F172A' : '#64748B' }}
+                        >
+                            {label}
+                        </span>
+                        {active && <ChevronRight size={14} style={{ color: color }} />}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+
+        {active && (
             <motion.div
-                layoutId="activeSide"
-                className="absolute -right-4 w-1.5 h-8 bg-white rounded-l-full"
+                layoutId="activeIndicator"
+                className="absolute right-0 w-1.5 h-6 rounded-l-full"
+                style={{ backgroundColor: color }}
             />
         )}
     </Link>
 );
 
-const BossLayout = () => {
+const BossLayout = ({ role: initialRole, allocatedModules: initialModules }) => {
     const [isHovered, setIsHovered] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
-    const role = localStorage.getItem('role');
+    const role = initialRole || localStorage.getItem('role');
     const [searchQuery, setSearchQuery] = useState('');
 
     const [activeModule, setActiveModule] = useState(() => {
         if (location.pathname.includes('/koi')) return 'KOI';
-        if (['/boss-dashboard', '/boss/users', '/boss/reports'].includes(location.pathname)) return 'MASTER';
+        if (['/boss-dashboard', '/boss/users', '/boss/reports', '/boss/modules'].includes(location.pathname)) return 'MASTER';
         return 'AQUA';
     });
 
     useEffect(() => {
         if (location.pathname.includes('/koi')) {
             setActiveModule('KOI');
-        } else if (['/boss-dashboard', '/boss/users', '/boss/reports'].includes(location.pathname)) {
+        } else if (['/boss-dashboard', '/boss/users', '/boss/reports', '/boss/modules'].includes(location.pathname)) {
             setActiveModule('MASTER');
         } else if (location.pathname === '/' || location.pathname.startsWith('/boss/')) {
-            if (!['/boss/users', '/boss/reports'].includes(location.pathname)) {
+            if (!['/boss-dashboard', '/boss/users', '/boss/reports', '/boss/modules'].includes(location.pathname)) {
                 setActiveModule('AQUA');
             }
         }
@@ -92,29 +121,35 @@ const BossLayout = () => {
 
     const modules = {
         MASTER: [
-            { icon: Shield, label: 'Dashboard', path: '/boss-dashboard' },
-            { icon: Users, label: 'Users', path: '/boss/users' },
-            { icon: BarChart3, label: 'Reports', path: '/boss/reports' },
+            { icon: Shield, label: 'Dashboard', path: '/boss-dashboard', color: '#3B82F6' },
+            { icon: Users, label: 'Users', path: '/boss/users', color: '#A855F7' },
+            { icon: Shield, label: 'Module Allocation', path: '/boss/modules', color: '#EF4444' },
+            { icon: BarChart3, label: 'Reports', path: '/boss/reports', color: '#0EA5E9' },
         ],
         AQUA: [
-            { icon: LayoutDashboard, label: 'Stats', path: '/aqua-dashboard' },
-            { icon: Users, label: 'Customers', path: '/boss/customers' },
-            { icon: Package, label: 'Inventory', path: '/boss/inventory' },
-            { icon: MessageSquare, label: 'Complaints', path: '/boss/complaints' },
-            { icon: ShoppingCart, label: 'Orders', path: '/boss/orders' },
-            { icon: CheckSquare, label: 'Tasks', path: '/boss/tasks' },
-            { icon: Wrench, label: 'Services', path: '/boss/services' },
-            { icon: Contact, label: 'Employees', path: '/boss/employees' },
-            { icon: FileText, label: 'Invoices', path: '/boss/invoices' },
+            { icon: LayoutDashboard, label: 'Stats', path: '/boss/aqua/dashboard', color: '#3B82F6' },
+            { icon: Clock, label: 'Attendance', path: '/boss/aqua/attendance', color: '#8B5CF6' },
+            { icon: Contact, label: 'Employees', path: '/boss/employees', color: '#10B981' },
+            { icon: Users, label: 'Customers', path: '/boss/customers', color: '#F59E0B' },
+            { icon: Package, label: 'Inventory', path: '/boss/inventory', color: '#EC4899' },
+            { icon: MessageSquare, label: 'Complaints', path: '/boss/complaints', color: '#F43F5E' },
+            { icon: ShoppingCart, label: 'Orders', path: '/boss/orders', color: '#06B6D4' },
+            { icon: CheckSquare, label: 'Tasks', path: '/boss/tasks', color: '#6366F1' },
+            { icon: Wrench, label: 'Services', path: '/boss/services', color: '#84CC16' },
+            { icon: FileText, label: 'Invoices', path: '/boss/invoices', color: '#14B8A6' },
+            { icon: Settings, label: 'Settings', path: '/boss/aqua/settings', color: '#64748B' },
         ],
         KOI: [
-            { icon: Fish, label: 'Dashboard', path: '/boss/koi/dashboard' },
-            { icon: MessageSquare, label: 'Enquiries', path: '/boss/koi/enquiries' },
-            { icon: ShoppingCart, label: 'Sales', path: '/boss/koi/orders' },
-            { icon: CreditCard, label: 'Payments', path: '/boss/koi/payments' },
-            { icon: Package, label: 'Inventory', path: '/boss/koi/inventory' },
-            { icon: Users, label: 'Customers', path: '/boss/koi/customers' },
-            { icon: FileText, label: 'Invoices', path: '/boss/koi/invoices' },
+            { icon: Fish, label: 'Dashboard', path: '/boss/koi/dashboard', color: '#F97316' },
+            { icon: Clock, label: 'Attendance', path: '/boss/koi/attendance', color: '#8B5CF6' },
+            { icon: Contact, label: 'Employees', path: '/boss/koi/employees', color: '#10B981' },
+            { icon: MessageSquare, label: 'Enquiries', path: '/boss/koi/enquiries', color: '#F43F5E' },
+            { icon: ShoppingCart, label: 'Sales', path: '/boss/koi/orders', color: '#06B6D4' },
+            { icon: CreditCard, label: 'Payments', path: '/boss/koi/payments', color: '#F97316' },
+            { icon: Package, label: 'Inventory', path: '/boss/koi/inventory', color: '#EC4899' },
+            { icon: Users, label: 'Customers', path: '/boss/koi/customers', color: '#F59E0B' },
+            { icon: FileText, label: 'Invoices', path: '/boss/koi/invoices', color: '#14B8A6' },
+            { icon: Settings, label: 'Settings', path: '/boss/koi/settings', color: '#64748B' },
         ]
 
     };
@@ -136,88 +171,132 @@ const BossLayout = () => {
                 )}
             </AnimatePresence>
 
-            {/* Sidebar (Expandable Blue Bar) */}
+            {/* Sidebar (Modern White Design) */}
             <motion.aside
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
                 initial={false}
                 animate={{
-                    width: (isHovered || isMobileMenuOpen) ? 240 : 96,
-                    x: isMobileMenuOpen ? 0 : (window.innerWidth < 1024 ? -240 : 0)
+                    width: (isHovered || isMobileMenuOpen) ? 260 : 88,
+                    x: isMobileMenuOpen ? 0 : (window.innerWidth < 1024 ? -260 : 0)
                 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className={`fixed lg:relative bg-[#2988FF] flex flex-col items-center py-8 gap-8 z-[70] shadow-2xl no-print h-full ${isMobileMenuOpen ? 'w-[240px]' : ''}`}
+                transition={{ duration: 1.0, ease: [0.32, 0.72, 0, 1] }}
+                className={`fixed lg:relative bg-white flex flex-col items-center py-6 z-[70] border-r border-[#F1F5F9] no-print h-full ${isMobileMenuOpen ? 'w-[260px]' : ''}`}
             >
-                <motion.div
-                    layout
-                    className="flex flex-col items-center gap-4 transition-all duration-300 relative group"
-                >
-                    <div className={`
-                        ${(isHovered || isMobileMenuOpen) ? 'w-24 h-24' : 'w-16 h-16'} 
-                        bg-white rounded-full p-3 flex items-center justify-center shadow-2xl transition-all duration-500 transform hover:scale-110 relative
-                    `}>
-                        <div className="logo-gradient-ring"></div>
-                        <img src="/PVR.png" alt="PVR" className="w-full h-full object-contain relative z-10" />
-                    </div>
-
-                    <AnimatePresence>
+                {/* Logo Section */}
+                <div className="w-full flex flex-col items-center justify-center mb-10 h-auto overflow-hidden transition-all duration-300">
+                    <Link to="/boss-dashboard" className="shrink-0 transition-transform duration-300 hover:scale-110 mb-2">
+                        <img
+                            src="/PVR.png"
+                            alt="PVR"
+                            className="w-14 h-14 object-contain"
+                        />
+                    </Link>
+                    <AnimatePresence mode="wait">
                         {(isHovered || isMobileMenuOpen) && (
                             <motion.div
-                                initial={{ opacity: 0, y: -10 }}
+                                initial={{ opacity: 0, y: -5 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                className="flex flex-col items-center"
+                                exit={{ opacity: 0, y: -5 }}
+                                transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}
+                                className="flex flex-col items-center min-w-0"
                             >
-                                <span className="text-white font-black tracking-[0.2em] text-lg uppercase text-center">
-                                    {activeModule === 'MASTER' ? 'BOSS' : activeModule}
+                                <span
+                                    className="font-black text-xl tracking-tighter truncate bg-clip-text text-transparent"
+                                    style={{
+                                        backgroundImage: activeModule === 'MASTER'
+                                            ? 'linear-gradient(to right, #ef4444, #991b1b)'
+                                            : activeModule === 'AQUA'
+                                                ? 'linear-gradient(to right, #3b82f6, #1d4ed8)'
+                                                : 'linear-gradient(to right, #f97316, #c2410c)',
+                                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                                    }}
+                                >
+                                    PVR {activeModule === 'MASTER' ? 'BOSS' : activeModule}
                                 </span>
-                                <span className="text-white text-[10px] font-bold tracking-[0.3em] uppercase">
-                                    Panel
-                                </span>
+                                <div
+                                    className="h-1 w-12 rounded-full mt-1"
+                                    style={{
+                                        background: activeModule === 'MASTER'
+                                            ? 'linear-gradient(to right, #ef4444, #991b1b)'
+                                            : activeModule === 'AQUA'
+                                                ? 'linear-gradient(to right, #3b82f6, #1d4ed8)'
+                                                : 'linear-gradient(to right, #f97316, #c2410c)'
+                                    }}
+                                />
                             </motion.div>
                         )}
                     </AnimatePresence>
-                </motion.div>
-
-
-                <div className="flex-1 flex flex-col items-center gap-2 w-full overflow-y-auto custom-scrollbar px-2">
-                    {currentItems.map((item, idx) => (
-                        <SidebarIcon
-                            key={idx}
-                            icon={item.icon}
-                            path={item.path}
-                            label={item.label}
-                            active={location.pathname === item.path}
-                            expanded={isHovered || isMobileMenuOpen}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        />
-                    ))}
                 </div>
 
-                <button
-                    onClick={handleLogout}
-                    className={`flex items-center ${(isHovered || isMobileMenuOpen) ? 'justify-start px-6 gap-4 w-[85%]' : 'justify-center w-12'} h-12 rounded-2xl text-white hover:bg-white/10 transition-all mb-4`}
-                >
-                    <LogOut size={24} className="shrink-0" />
-                    <AnimatePresence>
-                        {(isHovered || isMobileMenuOpen) && (
-                            <motion.span
-                                initial={{ opacity: 0, width: 0 }}
-                                animate={{ opacity: 1, width: 'auto' }}
-                                exit={{ opacity: 0, width: 0 }}
-                                className="text-sm font-bold overflow-hidden"
-                            >
-                                Logout
-                            </motion.span>
-                        )}
-                    </AnimatePresence>
-                </button>
+                {/* Navigation Items */}
+                <div className="flex-1 w-full overflow-y-auto custom-scrollbar no-print">
+                    <div className="space-y-4">
+                        <div>
+                            {(isHovered || isMobileMenuOpen) && (
+                                <motion.h3
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-[0.15em] mb-4 px-8"
+                                >
+                                    {activeModule}
+                                </motion.h3>
+                            )}
+                            <div className="flex flex-col">
+                                {currentItems.map((item, idx) => (
+                                    <SidebarIcon
+                                        key={idx}
+                                        icon={item.icon}
+                                        path={item.path}
+                                        label={item.label}
+                                        color={item.color}
+                                        active={location.pathname === item.path}
+                                        expanded={isHovered || isMobileMenuOpen}
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* User Profile Section */}
+                <div className="w-full px-4 pt-4 mt-auto border-t border-[#F8FAFC]">
+                    <div className={`flex items-center ${(isHovered || isMobileMenuOpen) ? 'px-2 gap-3' : 'justify-center'} h-16 rounded-xl hover:bg-[#F8FAFC] transition-colors cursor-pointer relative group`}>
+                        <div className="w-10 h-10 rounded-full bg-[#2988FF] flex items-center justify-center text-white text-sm font-bold shadow-sm shrink-0 border-2 border-white">
+                            {role?.charAt(0) || 'B'}
+                        </div>
+                        <AnimatePresence>
+                            {(isHovered || isMobileMenuOpen) && (
+                                <motion.div
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -10 }}
+                                    transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+                                    className="flex-1 flex items-center justify-between overflow-hidden"
+                                >
+                                    <div className="flex flex-col min-w-0">
+                                        <p className="text-[#0F172A] font-bold text-[13px] leading-tight truncate">
+                                            {role === 'BOSS' ? 'PVR Boss' : 'Admin'}
+                                        </p>
+                                        <p className="text-[#94A3B8] text-[11px] truncate">
+                                            {role?.toLowerCase()}@pvr.systems
+                                        </p>
+                                    </div>
+                                    <button onClick={handleLogout} title="Logout">
+                                        <LogOut size={16} className="text-[#94A3B8] hover:text-[#F43F5E] transition-colors" />
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                </div>
             </motion.aside>
 
             {/* Main Wrapper */}
             <div className="flex-1 flex bg-[#F0F7FF] relative overflow-hidden">
                 {/* Main Content Area */}
-                <div className="flex-1 flex flex-col overflow-hidden bg-white m-0 lg:m-4 lg:rounded-[3rem] shadow-xl shadow-blue-900/5 relative">
+                <div className="flex-1 flex flex-col overflow-hidden bg-white m-0 lg:m-4 lg:rounded-2xl shadow-xl shadow-blue-900/5 relative">
                     {/* Top Header */}
                     <header className="h-20 flex items-center px-4 lg:px-12 gap-4 lg:gap-8 no-print border-b border-gray-50">
                         <div className="flex-1 relative max-w-xl group hidden md:block">
@@ -235,7 +314,7 @@ const BossLayout = () => {
                         <div className="flex bg-[#F5F9FC] p-1 rounded-full shadow-inner border border-gray-100/50 scale-90 sm:scale-100">
                             {[
                                 { id: 'MASTER', icon: Shield, label: 'Master', path: '/boss-dashboard' },
-                                { id: 'AQUA', icon: Droplets, label: 'Aqua', path: '/aqua-dashboard' },
+                                { id: 'AQUA', icon: Droplets, label: 'Aqua', path: '/boss/aqua/dashboard' },
                                 { id: 'KOI', icon: Fish, label: 'Koi', path: '/boss/koi/dashboard' }
                             ].map((mod) => (
                                 <button

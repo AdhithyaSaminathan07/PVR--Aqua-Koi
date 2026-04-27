@@ -90,7 +90,7 @@ export const addServiceLog = (id, data) => api.post(`/services/${id}/log`, data)
 
 
 // Employees
-export const getEmployees = () => api.get('/employees');
+export const getEmployees = (branch = 'Aqua') => api.get(`/employees?branch=${branch}`);
 export const createEmployee = (data) => api.post('/employees', data);
 export const updateEmployee = (id, data) => api.put(`/employees/${id}`, data);
 export const deleteEmployee = (id) => api.delete(`/employees/${id}`);
@@ -147,4 +147,27 @@ export const deleteUser = (id) => api.delete(`/users/${id}`);
 export const getBossStats = () => api.get('/boss/stats');
 export const getBossAuditLogs = () => api.get('/boss/audit-logs');
 
+// Roles
+export const getRoles = () => api.get('/system-roles');
+export const createRole = (data) => api.post('/system-roles', data);
+export const updateRole = (id, data) => api.put(`/system-roles/${id}`, data);
+export const deleteRole = (id) => api.delete(`/system-roles/${id}`);
+
+// Departments
+export const getDepartments = (branch = 'Aqua') => api.get(`/departments?branch=${branch}`);
+export const createDepartment = (data) => api.post('/departments', data);
+export const deleteDepartment = (id) => api.delete(`/departments/${id}`);
+
+// Attendance
+export const getAttendance = (branch = 'Aqua') => api.get(`/attendance?branch=${branch}`);
+export const recordRFIDAttendance = (rfid, branch = 'Aqua', latitude = null, longitude = null) => api.post('/attendance/rfid-attendance', { rfid, branch, latitude, longitude });
+export const recognizeFace = (faceDescriptor, branch = 'Aqua') => api.post('/attendance/recognize-face', { faceDescriptor, branch });
+export const getEmployeesWithFace = (branch = 'Aqua') => api.get(`/attendance/employees-with-face?branch=${branch}`);
+export const correctMissingPunch = (data) => api.post('/attendance/correct-missing-punch', data);
+
+// Settings
+export const getSettings = (branch = 'Aqua') => api.get(`/settings?branch=${branch}`);
+export const updateSettings = (data, branch = 'Aqua') => api.put(`/settings?branch=${branch}`, data);
+
 export default api;
+

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -13,8 +13,10 @@ import {
     ArrowRight,
     Briefcase,
     Globe,
-    Zap
+    Zap,
+    Loader2
 } from 'lucide-react';
+import { getBossStats } from '../../services/api';
 
 const StatCard = ({ label, sub, icon: Icon, color, delay }) => (
     <motion.div
@@ -35,6 +37,33 @@ const StatCard = ({ label, sub, icon: Icon, color, delay }) => (
 );
 
 const BossDashboard = () => {
+    const [stats, setStats] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchStats();
+    }, []);
+
+    const fetchStats = async () => {
+        try {
+            const res = await getBossStats();
+            setStats(res.data);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+                <Loader2 className="animate-spin text-indigo-600" size={40} />
+                <p className="text-gray-400 font-bold italic animate-pulse">Aggregating Global Systems Data...</p>
+            </div>
+        );
+    }
+
     return (
         <div className="py-4 lg:py-6">
             {/* Banner Section */}
@@ -51,9 +80,9 @@ const BossDashboard = () => {
                     <p className="text-[#1a365d]/60 text-sm sm:text-base font-medium mb-6 lg:mb-8 text-balance">
                         Manage PVR Aqua and PVR Koi operations from a single unified workspace.
                     </p>
-                    <button className="bg-[#1a365d] text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-sm font-bold shadow-lg shadow-blue-900/20 hover:opacity-90 transition-all active:scale-95 flex items-center gap-2">
+                    <Link to="/boss/reports" className="bg-[#1a365d] text-white w-fit px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-sm font-bold shadow-lg shadow-blue-900/20 hover:opacity-90 transition-all active:scale-95 flex items-center gap-2">
                         System Audit <ArrowRight size={16} />
-                    </button>
+                    </Link>
                 </div>
 
                 {/* Decorative Elements */}
@@ -68,27 +97,33 @@ const BossDashboard = () => {
                     Primary Modules
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-                    <StatCard
-                        label="Aqua Management"
-                        sub="Inventory & Shop"
-                        icon={Briefcase}
-                        color="bg-[#2988FF]"
-                        delay={0.1}
-                    />
-                    <StatCard
-                        label="Koi Centre"
-                        sub="Enquiries & Sales"
-                        icon={Globe}
-                        color="bg-[#60A7FF]"
-                        delay={0.2}
-                    />
-                    <StatCard
-                        label="User Controls"
-                        sub="Access & Permissions"
-                        icon={Users}
-                        color="bg-indigo-500"
-                        delay={0.3}
-                    />
+                    <Link to="/boss/aqua/dashboard">
+                        <StatCard
+                            label="Aqua Management"
+                            sub={`${stats?.branches.aqua.orders} Active Orders`}
+                            icon={Briefcase}
+                            color="bg-[#2988FF]"
+                            delay={0.1}
+                        />
+                    </Link>
+                    <Link to="/boss/koi/dashboard">
+                        <StatCard
+                            label="Koi Centre"
+                            sub={`${stats?.branches.koi.orders} Active Orders`}
+                            icon={Globe}
+                            color="bg-[#60A7FF]"
+                            delay={0.2}
+                        />
+                    </Link>
+                    <Link to="/boss/users">
+                        <StatCard
+                            label="User Controls"
+                            sub="Access & Permissions"
+                            icon={Users}
+                            color="bg-indigo-500"
+                            delay={0.3}
+                        />
+                    </Link>
                 </div>
             </div>
 
@@ -97,42 +132,29 @@ const BossDashboard = () => {
                 {/* Activity Feed (Large Area) */}
                 <div className="lg:col-span-2">
                     <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg lg:text-xl font-bold text-gray-900">System Activity</h3>
-                        <div className="flex gap-2 scale-90 sm:scale-100">
-                            <button className="px-3 py-1 bg-white text-[10px] font-bold rounded-lg shadow-sm">Today</button>
-                            <button className="px-3 py-1 bg-[#2988FF] text-white text-[10px] font-bold rounded-lg shadow-sm">7d</button>
-                        </div>
+                        <h3 className="text-lg lg:text-xl font-bold text-gray-900">Recent Activity</h3>
                     </div>
 
                     <div className="bg-white rounded-2xl lg:rounded-[2.5rem] p-6 lg:p-8 border border-gray-50 shadow-sm relative min-h-[350px] lg:min-h-[400px] flex flex-col justify-between overflow-hidden">
                         <div className="relative z-10 space-y-4 lg:space-y-6">
-                            {[
-                                { title: 'New Aqua Order', val: '₹12,500', icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-                                { title: 'Koi Enquiry Resolved', val: '902', icon: Zap, color: 'text-blue-500', bg: 'bg-blue-50' },
-                                { title: 'Inventory Alert', val: 'Low Stock', icon: Activity, color: 'text-orange-500', bg: 'bg-orange-50' },
-                            ].map((item, i) => (
+                            {stats?.recentActivity.map((item, i) => (
                                 <div key={i} className="flex items-center gap-3 lg:gap-4 group">
-                                    <div className={`w-10 h-10 lg:w-12 lg:h-12 ${item.bg} rounded-xl flex items-center justify-center ${item.color} shrink-0`}>
-                                        <item.icon size={18} />
+                                    <div className={`w-10 h-10 lg:w-12 lg:h-12 ${item.type === 'Aqua' ? 'bg-blue-50 text-blue-500' : 'bg-orange-50 text-orange-500'} rounded-xl flex items-center justify-center shrink-0`}>
+                                        {item.type === 'Aqua' ? <Briefcase size={18} /> : <Globe size={18} />}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-bold text-gray-800 truncate">{item.title}</p>
-                                        <p className="text-[10px] lg:text-xs text-gray-400 font-medium tracking-tight">Active Operation</p>
+                                        <p className="text-[10px] lg:text-xs text-gray-400 font-medium tracking-tight whitespace-nowrap">{item.type} Branch Operation</p>
                                     </div>
                                     <p className="font-bold text-sm lg:text-base text-black italic shrink-0">{item.val}</p>
                                 </div>
                             ))}
+                            {stats?.recentActivity.length === 0 && <p className="text-center py-20 text-gray-400 italic">No recent activity detected.</p>}
                         </div>
 
                         {/* Chart labels */}
                         <div className="relative z-10 hidden sm:flex justify-between text-[10px] font-bold text-gray-300 uppercase mt-auto pt-8 border-t border-gray-50">
-                            <span>Mon</span>
-                            <span>Tue</span>
-                            <span>Wed</span>
-                            <span>Thu</span>
-                            <span>Fri</span>
-                            <span>Sat</span>
-                            <span>Sun</span>
+                            <span>Performance monitoring active across all nodes</span>
                         </div>
                     </div>
                 </div>
@@ -144,22 +166,22 @@ const BossDashboard = () => {
                         <div className="relative w-32 h-32 lg:w-40 lg:h-40 flex items-center justify-center">
                             <svg className="w-full h-full transform -rotate-90">
                                 <circle cx="50%" cy="50%" r="40%" fill="none" stroke="#F0F7FF" strokeWidth="12" />
-                                <circle cx="50%" cy="50%" r="40%" fill="none" stroke="#2988FF" strokeWidth="12" strokeDasharray="250" strokeDashoffset="80" strokeLinecap="round" />
+                                <circle cx="50%" cy="50%" r="40%" fill="none" stroke="#2988FF" strokeWidth="12" strokeDasharray="250" strokeDashoffset={250 - (250 * (stats?.resolutionRate || 0) / 100)} strokeLinecap="round" />
                             </svg>
                             <div className="absolute flex flex-col items-center">
-                                <p className="text-[8px] lg:text-[10px] font-bold text-gray-400 uppercase">Growth</p>
-                                <p className="text-xl lg:text-2xl font-bold italic">+24%</p>
+                                <p className="text-[8px] lg:text-[10px] font-bold text-gray-400 uppercase">Resolution</p>
+                                <p className="text-xl lg:text-2xl font-bold italic">{stats?.resolutionRate}%</p>
                             </div>
                         </div>
 
                         <div className="w-full space-y-3 lg:space-y-4">
                             <div className="flex justify-between items-center bg-[#F0F7FF] p-3 lg:p-4 rounded-xl lg:rounded-2xl">
                                 <span className="text-[10px] lg:text-xs font-bold text-gray-500 uppercase tracking-wider">Revenue</span>
-                                <span className="font-bold text-sm lg:text-base">₹18.2L</span>
+                                <span className="font-bold text-sm lg:text-base">₹{(stats?.totalRevenue / 100000).toFixed(1)}L</span>
                             </div>
                             <div className="flex justify-between items-center bg-[#F0F7FF] p-3 lg:p-4 rounded-xl lg:rounded-2xl">
                                 <span className="text-[10px] lg:text-xs font-bold text-gray-500 uppercase tracking-wider">Customers</span>
-                                <span className="font-bold text-sm lg:text-base">1,240</span>
+                                <span className="font-bold text-sm lg:text-base">{stats?.totalCustomers}</span>
                             </div>
                         </div>
                     </div>

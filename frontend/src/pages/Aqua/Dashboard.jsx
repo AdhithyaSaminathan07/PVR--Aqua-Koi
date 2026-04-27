@@ -85,7 +85,7 @@ const Dashboard = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 className="relative bg-[#E6F0FF] rounded-2xl lg:rounded-[3rem] p-6 sm:p-8 lg:p-12 overflow-hidden mb-8 lg:mb-12"
             >
-                <div className="relative z-10 max-w-lg">
+                <div className="relative z-10 max-w-lg text-center sm:text-left">
                     <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1a365d] mb-4 leading-tight">
                         Aqua Hub <br />
                         <span className="text-[#2988FF]">Operations Manager</span>
@@ -93,8 +93,8 @@ const Dashboard = () => {
                     <p className="text-[#1a365d]/60 text-sm sm:text-base font-medium mb-6 lg:mb-8 text-balance">
                         Monitor aquaculture operations, inventory health, and field task distribution.
                     </p>
-                    <div className="flex gap-4">
-                        <button className="bg-[#1a365d] text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-sm font-bold shadow-lg shadow-blue-900/20 hover:opacity-90 transition-all active:scale-95 flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center sm:justify-start">
+                        <button className="bg-[#1a365d] text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-sm font-bold shadow-lg shadow-blue-900/20 hover:opacity-90 transition-all active:scale-95 flex items-center justify-center gap-2">
                             New Task <ArrowRight size={16} />
                         </button>
                     </div>

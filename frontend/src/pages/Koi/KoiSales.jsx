@@ -353,39 +353,39 @@ const KoiSales = () => {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-                <Loader2 className="animate-spin text-orange-600" size={40} />
+                <Loader2 className="animate-spin text-blue-600" size={40} />
                 <p className="text-gray-400 font-bold italic animate-pulse">Synchronizing Sales Data...</p>
             </div>
         );
     }
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
-            {/* Unified Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 no-print">
+        <div className="space-y-6 animate-in fade-in duration-500">
+            {/* Standardized Header */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 no-print">
                 <div>
-                    <h1 className="text-4xl font-black text-gray-900 font-display italic uppercase tracking-tighter">Koi Sales & Billing</h1>
-                    <p className="text-gray-400 font-medium mt-1">Unified module for orders, quotations, and tax invoices</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Sales & Billing</h1>
+                    <p className="text-gray-500 mt-1">Unified module for orders, quotations, and tax invoices</p>
                 </div>
 
-                <div className="flex items-center gap-3 bg-white p-2 rounded-[2rem] shadow-xl shadow-orange-100/50 border border-orange-50">
+                <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100">
                     <button
                         onClick={() => setActiveTab('orders')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${activeTab === 'orders' ? 'bg-orange-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-600'}`}
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${activeTab === 'orders' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
                     >
-                        <ShoppingCart size={16} /> Orders
+                        <ShoppingCart size={14} /> Orders
                     </button>
                     <button
                         onClick={() => setActiveTab('creator')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${activeTab === 'creator' ? 'bg-orange-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-600'}`}
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${activeTab === 'creator' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
                     >
-                        <Receipt size={16} /> Creator
+                        <Receipt size={14} /> Creator
                     </button>
                     <button
                         onClick={() => setActiveTab('history')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${activeTab === 'history' ? 'bg-orange-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-600'}`}
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${activeTab === 'history' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
                     >
-                        <History size={16} /> History
+                        <History size={14} /> History
                     </button>
                 </div>
             </div>
@@ -393,118 +393,138 @@ const KoiSales = () => {
             {/* Content Tabs */}
             {activeTab === 'orders' && (
                 <div className="space-y-6">
-                    <div className="flex justify-between items-center no-print">
-                        <div className="relative w-96">
+                    <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-white p-5 rounded-[1.5rem] border border-gray-100 shadow-sm no-print">
+                        <div className="relative w-full md:w-96">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                             <input
                                 type="text"
-                                placeholder="Search orders..."
-                                className="w-full pl-12 pr-6 py-4 bg-white border-none rounded-[1.5rem] shadow-sm focus:ring-2 focus:ring-orange-500 transition-all font-semibold"
+                                placeholder="Search by customer or order details..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-100 transition-all font-medium"
                             />
                         </div>
-                        <button
-                            onClick={resetOrderForm && (() => { resetOrderForm(); setIsOrderModalOpen(true); })}
-                            className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 rounded-[1.5rem] font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-orange-100 transition-all hover:-translate-y-1 active:scale-95"
-                        >
-                            <Plus size={18} /> Record Sale
-                        </button>
+                        <div className="flex items-center gap-3 w-full md:w-auto">
+                            <div className="flex items-center gap-4 text-sm px-4">
+                                <span className="font-bold text-gray-400 uppercase tracking-widest text-[10px]">Total Sales</span>
+                                <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full font-bold">{orders.length}</span>
+                            </div>
+                            <button
+                                onClick={() => { resetOrderForm(); setIsOrderModalOpen(true); }}
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-900/20 active:scale-95"
+                            >
+                                <Plus size={18} />
+                                <span>Record Sale</span>
+                            </button>
+                        </div>
                     </div>
 
-                    <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
-                        <table className="w-full text-left">
-                            <thead className="bg-gray-50/50">
-                                <tr>
-                                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Order Info</th>
-                                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Customer</th>
-                                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Item / Qty</th>
-                                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Total</th>
-                                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
-                                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50">
-                                {orders.map(order => {
-                                    const linkedInvoice = invoices.find(inv => inv.order === order._id || (inv.order?._id === order._id));
-                                    return (
-                                        <tr key={order._id} className="hover:bg-gray-50/50 transition-all group">
-                                            <td className="px-8 py-6">
-                                                <div className="font-black text-gray-900 italic tracking-tighter">#{order?._id?.slice(-6).toUpperCase() || 'N/A'}</div>
-
-                                                <div className="flex gap-2 items-center mt-1">
-                                                    <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter ${order.orderType === 'Food' ? 'bg-blue-100 text-blue-600' : 'bg-orange-100 text-orange-600'
-                                                        }`}>
-                                                        {order.orderType || 'Fish'}
-                                                    </span>
-                                                    <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{new Date(order.orderDate).toLocaleDateString()}</div>
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-6 font-bold text-gray-900 uppercase tracking-tight">{order.customer?.name}</td>
-                                            <td className="px-8 py-6">
-                                                <div className="font-bold text-gray-900">{order.fishType}</div>
-                                                <div className="text-[10px] font-black text-orange-600 uppercase tracking-widest bg-orange-50 w-fit px-1 rounded mt-1">{order.quantity} Units</div>
-                                            </td>
-                                            <td className="px-8 py-6 font-black text-gray-900 text-lg flex items-center gap-1"><IndianRupee size={16} className="text-gray-400" /> {order.totalAmount}</td>
-                                            <td className="px-8 py-6">
-                                                <div className="flex flex-col gap-2">
-                                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${order.status === 'Completed' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-orange-50 text-orange-600 border border-orange-100'
-                                                        }`}>
-                                                        {order.status === 'Completed' ? <CheckCircle2 size={12} /> : <Clock size={12} />}
-                                                        {order.status}
-                                                    </span>
-                                                    {linkedInvoice && (
-                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[9px] font-black uppercase tracking-widest w-fit border border-blue-100">
-                                                            <Receipt size={10} /> Invoiced
+                    <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left min-w-[1000px]">
+                                <thead className="bg-gray-50/50">
+                                    <tr className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-gray-100">
+                                        <th className="px-8 py-6">Order Info</th>
+                                        <th className="px-8 py-6">Customer</th>
+                                        <th className="px-8 py-6">Item / Qty</th>
+                                        <th className="px-8 py-6">Total Amount</th>
+                                        <th className="px-8 py-6">Status</th>
+                                        <th className="px-8 py-6 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-50">
+                                    {orders.filter(o =>
+                                        (o.customer?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                        (o.fishType || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                        (o._id || '').includes(searchTerm)
+                                    ).map(order => {
+                                        const linkedInvoice = invoices.find(inv => inv.order === order._id || (inv.order?._id === order._id));
+                                        return (
+                                            <tr key={order._id} className="hover:bg-gray-50/50 transition-colors group">
+                                                <td className="px-8 py-5">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-bold text-gray-900 italic tracking-tighter capitalize">#{order?._id?.slice(-6).toUpperCase()}</span>
+                                                        <span className={`text-[9px] font-black w-fit px-1.5 py-0.5 rounded mt-1 uppercase tracking-tighter ${order.orderType === 'Food' ? 'bg-blue-50 text-blue-600' : 'bg-blue-50 text-blue-600'}`}>
+                                                            {order.orderType || 'Fish'}
                                                         </span>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-6 text-right">
-                                                <div className="flex gap-2 justify-end">
-                                                    {linkedInvoice ? (
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-5">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-9 h-9 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center font-bold text-sm">
+                                                            {order.customer?.name?.[0] || 'C'}
+                                                        </div>
+                                                        <span className="font-bold text-gray-700 uppercase tracking-tight text-sm">{order.customer?.name}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-5">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-bold text-gray-900 text-sm">{order.fishType}</span>
+                                                        <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">{order.quantity} Units</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-5">
+                                                    <div className="text-lg font-black text-gray-900 flex items-center gap-1">
+                                                        <IndianRupee size={16} className="text-gray-300" />
+                                                        {order.totalAmount}
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-5">
+                                                    <div className="flex flex-col gap-1.5">
+                                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit ${order.status === 'Completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
+                                                            {order.status === 'Completed' ? <CheckCircle2 size={12} /> : <Clock size={12} />}
+                                                            {order.status}
+                                                        </span>
+                                                        {linkedInvoice && (
+                                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[9px] font-black uppercase tracking-widest w-fit">
+                                                                <Receipt size={10} /> Bill Generated
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-5 text-right">
+                                                    <div className="flex gap-2 justify-end">
+                                                        {linkedInvoice ? (
+                                                            <button
+                                                                onClick={() => handleViewInvoice(linkedInvoice)}
+                                                                className="p-2.5 bg-gray-900 text-white rounded-xl hover:bg-black transition-all shadow-sm"
+                                                                title="View Invoice"
+                                                            >
+                                                                <Eye size={16} />
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => jumpToInvoice(order)}
+                                                                className="p-2.5 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-all font-bold text-[10px] uppercase tracking-widest flex items-center gap-2"
+                                                                title="Generate Bill"
+                                                            >
+                                                                <Receipt size={16} />
+                                                            </button>
+                                                        )}
                                                         <button
-                                                            onClick={() => handleViewInvoice(linkedInvoice)}
-                                                            className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-md shadow-blue-100"
+                                                            onClick={() => handleEditOrderClick(order)}
+                                                            className="p-2.5 bg-gray-50 text-gray-400 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
                                                         >
-                                                            <Eye size={14} /> View
+                                                            <Pencil size={14} />
                                                         </button>
-                                                    ) : (
                                                         <button
-                                                            onClick={() => jumpToInvoice(order)}
-                                                            className="p-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-all font-black text-[10px] uppercase tracking-widest flex items-center gap-2"
+                                                            onClick={() => handleDeleteOrder(order._id)}
+                                                            className="p-2.5 bg-gray-50 text-gray-400 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm"
                                                         >
-                                                            <Receipt size={14} /> Bill
+                                                            <Trash2 size={14} />
                                                         </button>
-                                                    )}
-                                                    <button
-                                                        onClick={() => handleEditOrderClick(order)}
-                                                        className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-gray-900 hover:text-white transition-all shadow-sm"
-                                                    >
-                                                        <Pencil size={14} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteOrder(order._id)}
-                                                        className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm"
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
-                                                    {order.status === 'Pending' && (
-                                                        <button
-                                                            onClick={() => handleStatusUpdate(order._id, 'Completed')}
-                                                            className="p-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all font-black text-[10px] uppercase tracking-widest shadow-md shadow-emerald-100"
-                                                        >
-                                                            Done
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             )}
+
 
             {activeTab === 'creator' && (
                 <div className="flex flex-col gap-6 no-print">
@@ -823,7 +843,7 @@ const KoiSales = () => {
                                 placeholder="Search invoices..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-12 pr-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none transition-all font-semibold"
+                                className="w-full pl-12 pr-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-semibold"
                             />
                         </div>
                     </div>
@@ -856,7 +876,7 @@ const KoiSales = () => {
                                             <div className="text-[10px] text-gray-400 font-black italic mt-0.5">{inv.customer?.phone}</div>
                                         </td>
                                         <td className="px-8 py-6">
-                                            <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${inv.type === 'Fish' ? 'bg-orange-50 text-orange-600 border border-orange-100' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
+                                            <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${inv.type === 'Fish' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
                                                 {inv.type}
                                             </span>
                                         </td>
@@ -870,7 +890,7 @@ const KoiSales = () => {
                                             <div className="flex gap-2 justify-end no-print">
                                                 <button
                                                     onClick={() => handleViewInvoice(inv)}
-                                                    className="p-3 bg-gray-50 hover:bg-orange-50 hover:text-orange-600 text-gray-400 rounded-2xl transition-all shadow-sm"
+                                                    className="p-3 bg-gray-50 hover:bg-blue-50 hover:text-blue-600 text-gray-400 rounded-2xl transition-all shadow-sm"
                                                 >
                                                     <Eye size={18} />
                                                 </button>
@@ -911,7 +931,7 @@ const KoiSales = () => {
                                 key={t}
                                 type="button"
                                 onClick={() => setOrderFormData({ ...orderFormData, orderType: t, fishType: '', price: 0, totalAmount: 0 })}
-                                className={`px-6 py-2 rounded-xl text-[10px] font-black tracking-widest transition-all ${orderFormData.orderType === t ? 'bg-orange-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-600'
+                                className={`px-6 py-2 rounded-xl text-[10px] font-black tracking-widest transition-all ${orderFormData.orderType === t ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-600'
                                     }`}
                             >
                                 {t.toUpperCase()}
@@ -940,7 +960,7 @@ const KoiSales = () => {
                                     setOrderFormData({ ...orderFormData, enquiry: '', customer: '', fishType: '', price: 0, totalAmount: 0 });
                                 }
                             }}
-                            className="w-full px-6 py-4 bg-orange-50/50 border-2 border-orange-100 border-dashed rounded-3xl focus:ring-4 focus:ring-orange-500/20 transition-all font-bold text-xs uppercase tracking-widest appearance-none disabled:opacity-50"
+                            className="w-full px-6 py-4 bg-blue-50/50 border-2 border-blue-100 border-dashed rounded-3xl focus:ring-4 focus:ring-blue-500/20 transition-all font-bold text-xs uppercase tracking-widest appearance-none disabled:opacity-50"
                         >
                             <option value="">{orderFormData.orderType === 'Food' ? 'N/A for Food' : 'New Direct Order (No Enquiry)'}</option>
                             {enquiries.filter(e => e.status !== 'Converted').map(enq => (
@@ -956,7 +976,7 @@ const KoiSales = () => {
                                 <button
                                     type="button"
                                     onClick={() => setIsCustomerModalOpen(true)}
-                                    className="text-[10px] font-black text-orange-600 uppercase tracking-widest hover:underline"
+                                    className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline"
                                 >
                                     + New Customer
                                 </button>
@@ -965,7 +985,7 @@ const KoiSales = () => {
                                 required
                                 value={orderFormData.customer}
                                 onChange={(e) => setOrderFormData({ ...orderFormData, customer: e.target.value })}
-                                className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 transition-all font-bold text-sm"
+                                className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-bold text-sm"
                             >
                                 <option value="">Select Customer</option>
                                 {customers.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
@@ -988,7 +1008,7 @@ const KoiSales = () => {
                                             totalAmount: orderFormData.quantity * (item?.sellingPrice || 0)
                                         });
                                     }}
-                                    className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 transition-all font-bold text-sm"
+                                    className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-bold text-sm"
                                 >
                                     <option value="">Select from Stock</option>
                                     {inventory.filter(i => i.category !== 'Fish').map(item => (
@@ -1012,7 +1032,7 @@ const KoiSales = () => {
                                                 totalAmount: orderFormData.quantity * (invItem ? invItem.sellingPrice : orderFormData.price)
                                             });
                                         }}
-                                        className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 transition-all font-bold text-sm uppercase"
+                                        className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-bold text-sm uppercase"
                                         placeholder="Enter Specification..."
                                     />
                                     <datalist id="order-inventory-list">
@@ -1033,7 +1053,7 @@ const KoiSales = () => {
                                 required
                                 value={orderFormData.quantity}
                                 onChange={(e) => setOrderFormData({ ...orderFormData, quantity: e.target.value, totalAmount: e.target.value * orderFormData.price })}
-                                className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 text-center font-bold"
+                                className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 text-center font-bold"
                                 placeholder="0"
                             />
                         </div>
@@ -1044,13 +1064,13 @@ const KoiSales = () => {
                                 required
                                 value={orderFormData.price}
                                 onChange={(e) => setOrderFormData({ ...orderFormData, price: e.target.value, totalAmount: orderFormData.quantity * e.target.value })}
-                                className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 text-center font-bold"
+                                className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 text-center font-bold"
                                 placeholder="0.00"
                             />
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 italic">Total Amount</label>
-                            <div className="w-full px-6 py-4 bg-orange-600 text-white rounded-2xl text-center font-black text-lg shadow-lg">
+                            <div className="w-full px-6 py-4 bg-blue-600 text-white rounded-2xl text-center font-black text-lg shadow-lg">
                                 ₹{orderFormData.totalAmount || 0}
                             </div>
                         </div>
@@ -1058,7 +1078,7 @@ const KoiSales = () => {
 
                     <div className="flex gap-6 pt-4">
                         <button type="button" onClick={() => setIsOrderModalOpen(false)} className="flex-1 py-5 bg-gray-100 text-gray-500 rounded-[2rem] font-black uppercase tracking-[0.3em] text-[10px] hover:bg-gray-200 transition-all">Cancel</button>
-                        <button type="submit" className="flex-1 py-5 bg-gray-900 text-white rounded-[2rem] font-black uppercase tracking-[0.3em] text-[10px] hover:shadow-2xl hover:shadow-orange-200 transition-all active:scale-95">Verify & Create</button>
+                        <button type="submit" className="flex-1 py-5 bg-gray-900 text-white rounded-[2rem] font-black uppercase tracking-[0.3em] text-[10px] hover:shadow-2xl hover:shadow-blue-200 transition-all active:scale-95">Verify & Create</button>
                     </div>
                 </form>
             </Modal>
@@ -1079,7 +1099,7 @@ const KoiSales = () => {
                                 required
                                 value={customerFormData.name}
                                 onChange={(e) => setCustomerFormData({ ...customerFormData, name: e.target.value })}
-                                className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 font-bold"
+                                className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 font-bold"
                                 placeholder="Enter Name"
                             />
                         </div>
@@ -1090,7 +1110,7 @@ const KoiSales = () => {
                                 required
                                 value={customerFormData.phone}
                                 onChange={(e) => setCustomerFormData({ ...customerFormData, phone: e.target.value })}
-                                className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 font-bold"
+                                className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 font-bold"
                                 placeholder="Contact Number"
                             />
                         </div>
@@ -1101,7 +1121,7 @@ const KoiSales = () => {
                             type="text"
                             value={customerFormData.gstNo}
                             onChange={(e) => setCustomerFormData({ ...customerFormData, gstNo: e.target.value })}
-                            className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 font-bold uppercase"
+                            className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 font-bold uppercase"
                             placeholder="GSTIN"
                         />
                     </div>
@@ -1110,13 +1130,13 @@ const KoiSales = () => {
                         <textarea
                             value={customerFormData.address}
                             onChange={(e) => setCustomerFormData({ ...customerFormData, address: e.target.value })}
-                            className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 font-bold min-h-[100px]"
+                            className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 font-bold min-h-[100px]"
                             placeholder="Complete Address"
                         />
                     </div>
                     <div className="flex gap-4 pt-4">
                         <button type="button" onClick={() => setIsCustomerModalOpen(false)} className="flex-1 py-4 bg-gray-100 text-gray-500 rounded-2xl font-black uppercase text-[10px] tracking-widest">Cancel</button>
-                        <button type="submit" className="flex-1 py-4 bg-orange-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-orange-100">Add & Select</button>
+                        <button type="submit" className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-blue-100">Add & Select</button>
                     </div>
                 </form>
             </Modal>
@@ -1287,7 +1307,7 @@ const KoiSales = () => {
                                 jumpToInvoice(justCreatedOrder);
                                 setIsSuccessModalOpen(false);
                             }}
-                            className="w-full py-4 bg-orange-600 text-white rounded-2xl font-black uppercase text-xs tracking-[0.3em] shadow-xl shadow-orange-100 hover:bg-orange-700 transition-all"
+                            className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs tracking-[0.3em] shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all"
                         >
                             Generate Invoice
                         </button>

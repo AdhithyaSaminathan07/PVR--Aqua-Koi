@@ -94,7 +94,7 @@ const KoiOrders = () => {
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white px-6 py-4 rounded-2xl font-bold transition-all shadow-xl shadow-orange-100 hover:-translate-y-1 active:scale-95"
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-2xl font-bold transition-all shadow-xl shadow-blue-100 hover:-translate-y-1 active:scale-95"
                 >
                     <Plus size={20} />
                     <span>CREATE ORDER</span>
@@ -131,13 +131,13 @@ const KoiOrders = () => {
                                 <tr key={order._id} className="hover:bg-gray-50/30 transition-all group">
                                     <td className="px-8 py-6">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-600 shadow-sm group-hover:bg-orange-600 group-hover:text-white transition-all duration-300">
+                                            <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 shadow-sm group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
                                                 <ShoppingCart size={22} />
                                             </div>
                                             <div>
                                                 <div className="text-sm font-black text-gray-900 font-display">#{order._id.slice(-6).toUpperCase()}</div>
                                                 <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-400 mt-1 uppercase tracking-tight">
-                                                    <Tag size={12} className="text-orange-400" />
+                                                    <Tag size={12} className="text-blue-400" />
                                                     {order.fishType} ({order.quantity} qty)
                                                 </div>
                                             </div>
@@ -164,7 +164,7 @@ const KoiOrders = () => {
                                     <td className="px-8 py-6">
                                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${order.status === 'Completed' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
                                                 order.status === 'Cancelled' ? 'bg-red-50 text-red-600 border border-red-100' :
-                                                    'bg-orange-50 text-orange-600 border border-orange-100'
+                                                    'bg-blue-50 text-blue-600 border border-blue-100'
                                             }`}>
                                             {order.status === 'Completed' ? <CheckCircle2 size={12} /> :
                                                 order.status === 'Cancelled' ? <X size={12} /> : <Clock size={12} />}
@@ -211,7 +211,7 @@ const KoiOrders = () => {
                                 required
                                 value={formData.customer}
                                 onChange={(e) => setFormData({ ...formData, customer: e.target.value })}
-                                className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 transition-all font-semibold appearance-none"
+                                className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-semibold appearance-none"
                             >
                                 <option value="">Select Customer</option>
                                 {customers.map(c => <option key={c._id} value={c._id}>{c.name} - {c.phone}</option>)}
@@ -229,7 +229,7 @@ const KoiOrders = () => {
                                         setFormData({ ...formData, enquiry: e.target.value });
                                     }
                                 }}
-                                className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 transition-all font-semibold appearance-none"
+                                className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-semibold appearance-none"
                             >
                                 <option value="">Independent Order</option>
                                 {enquiries.map(e => <option key={e._id} value={e._id}>{e.customerName} - {e.requirement}</option>)}
@@ -244,7 +244,7 @@ const KoiOrders = () => {
                             required
                             value={formData.fishType}
                             onChange={(e) => setFormData({ ...formData, fishType: e.target.value })}
-                            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 transition-all font-semibold"
+                            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-semibold"
                             placeholder="e.g. Kohaku Koi, Sinking Food"
                         />
                     </div>
@@ -257,7 +257,7 @@ const KoiOrders = () => {
                                 required
                                 value={formData.quantity}
                                 onChange={(e) => setFormData({ ...formData, quantity: e.target.value, totalAmount: e.target.value * formData.price })}
-                                className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 transition-all font-semibold"
+                                className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-semibold"
                                 placeholder="0"
                             />
                         </div>
@@ -268,13 +268,13 @@ const KoiOrders = () => {
                                 required
                                 value={formData.price}
                                 onChange={(e) => setFormData({ ...formData, price: e.target.value, totalAmount: formData.quantity * e.target.value })}
-                                className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 transition-all font-semibold"
+                                className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-semibold"
                                 placeholder="0.00"
                             />
                         </div>
                         <div className="space-y-2">
                             <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1 italic">Total Amount</label>
-                            <div className="w-full px-5 py-4 bg-orange-50 text-orange-600 rounded-2xl font-black text-xl flex items-center gap-2">
+                            <div className="w-full px-5 py-4 bg-blue-50 text-blue-600 rounded-2xl font-black text-xl flex items-center gap-2">
                                 <IndianRupee size={20} />
                                 {formData.quantity * formData.price || 0}
                             </div>
@@ -291,7 +291,7 @@ const KoiOrders = () => {
                         </button>
                         <button
                             type="submit"
-                            className="flex-1 py-4 bg-orange-600 text-white rounded-2xl font-bold uppercase tracking-widest hover:bg-orange-700 transition-all shadow-lg shadow-orange-100"
+                            className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
                         >
                             Confirm Order
                         </button>

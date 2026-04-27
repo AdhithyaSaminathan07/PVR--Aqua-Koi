@@ -265,24 +265,24 @@ const KoiInvoices = () => {
             <div className="flex gap-8 border-b border-gray-100 no-print">
                 <button
                     onClick={() => setViewMode('creator')}
-                    className={`pb-4 text-sm font-bold transition-all relative ${viewMode === 'creator' ? 'text-[#2988FF]' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`pb-4 text-sm font-bold transition-all relative ${viewMode === 'creator' ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
                 >
                     Advanced Invoice
-                    {viewMode === 'creator' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#2988FF] rounded-full" />}
+                    {viewMode === 'creator' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-full" />}
                 </button>
                 <button
                     onClick={() => setViewMode('history')}
-                    className={`pb-4 text-sm font-bold transition-all relative ${viewMode === 'history' ? 'text-[#2988FF]' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`pb-4 text-sm font-bold transition-all relative ${viewMode === 'history' ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
                 >
                     Invoice History
-                    {viewMode === 'history' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#2988FF] rounded-full" />}
+                    {viewMode === 'history' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-full" />}
                 </button>
                 <button
                     onClick={() => setViewMode('delete_history')}
-                    className={`pb-4 text-sm font-bold transition-all relative ${viewMode === 'delete_history' ? 'text-[#2988FF]' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`pb-4 text-sm font-bold transition-all relative ${viewMode === 'delete_history' ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
                 >
                     Delete History
-                    {viewMode === 'delete_history' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#2988FF] rounded-full" />}
+                    {viewMode === 'delete_history' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-full" />}
                 </button>
             </div>
 
@@ -610,7 +610,7 @@ const KoiInvoices = () => {
                                             <div className="text-[10px] text-gray-400 font-medium italic">{inv.customer?.phone}</div>
                                         </td>
                                         <td className="px-8 py-6">
-                                            <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${inv.type === 'Fish' ? 'bg-orange-50 text-orange-600 border border-orange-100' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
+                                            <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${inv.type === 'Fish' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
                                                 {inv.type}
                                             </span>
                                         </td>
@@ -745,7 +745,6 @@ const KoiInvoices = () => {
                                         <thead>
                                             <tr style={{ background: '#1e3a8a', color: 'white' }}>
                                                 <th style={{ padding: '10px', border: '1px solid #3b5daa' }}>SL</th>
-
                                                 <th style={{ padding: '10px', border: '1px solid #3b5daa', textAlign: 'left' }}>ITEM DESCRIPTION</th>
                                                 <th style={{ padding: '10px', border: '1px solid #3b5daa' }}>QTY</th>
                                                 <th style={{ padding: '10px', border: '1px solid #3b5daa', textAlign: 'right' }}>PRICE</th>
@@ -805,7 +804,7 @@ const KoiInvoices = () => {
                                     </div>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', borderTop: '1px solid #b0b8cc' }}>
                                         <div style={{ padding: '15px', borderRight: '1px solid #b0b8cc' }}>
-                                            <div style={{ background: '#dde5f5', padding: '5px 10px', fontSize: '10px', fontWeight: 'bold', color: '#1e3a8a', marginBottom: '10px' }}>BANK DETAILS</div>
+                                            <div style={{ background: '#eef2fb', padding: '5px 10px', fontSize: '10px', fontWeight: 'bold', color: '#1e3a8a', marginBottom: '10px' }}>BANK DETAILS</div>
 
                                             <p style={{ margin: '2px 0', color: '#333' }}><b>Account:</b> {selectedInvoice.bankDetails?.accountNo}</p>
                                             <p style={{ margin: '2px 0', color: '#333' }}><b>IFSC:</b> {selectedInvoice.bankDetails?.ifscCode}</p>

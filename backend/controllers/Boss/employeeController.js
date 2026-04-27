@@ -2,7 +2,9 @@ const Employee = require('../../models/Boss/Employee');
 
 exports.getEmployees = async (req, res) => {
     try {
-        const employees = await Employee.find().sort({ createdAt: -1 });
+        const branch = req.query.branch || 'Aqua';
+        const query = branch === 'All' ? {} : { branch };
+        const employees = await Employee.find(query).sort({ createdAt: -1 });
         res.json(employees);
     } catch (err) {
         res.status(500).json({ message: err.message });

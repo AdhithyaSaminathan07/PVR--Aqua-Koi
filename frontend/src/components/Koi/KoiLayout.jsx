@@ -10,6 +10,7 @@ import {
     CheckSquare,
     LogOut,
     Bell,
+    Clock,
     Search,
     Menu,
     X,
@@ -18,45 +19,75 @@ import {
     CreditCard,
     ChevronRight,
     Shield,
-    Plus
+    Plus,
+    Contact,
+    Settings
 } from 'lucide-react';
 
-const SidebarIcon = ({ icon: Icon, path, label, active, onClick, expanded }) => (
+
+const SidebarIcon = ({ icon: Icon, path, label, active, onClick, expanded, color }) => (
     <Link
         to={path}
         onClick={onClick}
-        className={`relative group flex items-center ${expanded ? 'justify-start px-4 gap-4 w-[90%]' : 'justify-center w-12'} h-12 rounded-2xl transition-all duration-300 ${active
-            ? 'bg-white text-[#2988FF] shadow-lg'
-            : 'text-white hover:bg-white/10'}`}
+        className="relative group flex items-center h-12 w-full px-5 mb-1 no-underline transition-colors duration-500"
     >
-        <Icon size={24} strokeWidth={2} className="shrink-0" />
-        <AnimatePresence>
-            {expanded && (
-                <motion.span
-                    initial={{ opacity: 0, width: 0, x: -10 }}
-                    animate={{ opacity: 1, width: 'auto', x: 0 }}
-                    exit={{ opacity: 0, width: 0, x: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="text-sm font-bold whitespace-nowrap overflow-hidden"
-                >
-                    {label}
-                </motion.span>
-            )}
-        </AnimatePresence>
-        {active && !expanded && (
+        <div
+            className={`
+                flex items-center h-12 w-12 shrink-0 justify-center rounded-xl transition-all duration-700
+                ${active
+                    ? 'shadow-sm'
+                    : 'hover:bg-[#F8FAFC]'}
+            `}
+            style={{
+                backgroundColor: active ? `${color}15` : 'transparent',
+                color: active ? color : '#64748B'
+            }}
+        >
+            <Icon
+                size={20}
+                strokeWidth={active ? 2.5 : 2}
+                className="shrink-0 transition-colors duration-300"
+                style={{ color: active ? color : (expanded ? color : '#64748B') }}
+            />
+        </div>
+
+        <div className="flex-1 overflow-hidden">
+            <AnimatePresence mode="wait">
+                {expanded && (
+                    <motion.div
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
+                        className="flex items-center justify-between ml-4"
+                    >
+                        <span
+                            className="text-[13px] font-semibold whitespace-nowrap transition-colors duration-300"
+                            style={{ color: active ? '#0F172A' : '#64748B' }}
+                        >
+                            {label}
+                        </span>
+                        {active && <ChevronRight size={14} style={{ color: color }} />}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+
+        {active && (
             <motion.div
-                layoutId="activeSideKoi"
-                className="absolute -right-4 w-1.5 h-8 bg-white rounded-l-full"
+                layoutId="activeIndicator"
+                className="absolute right-0 w-1.5 h-6 rounded-l-full"
+                style={{ backgroundColor: color }}
             />
         )}
     </Link>
 );
 
-const KoiLayout = () => {
+const KoiLayout = ({ role: initialRole, allocatedModules: initialModules }) => {
     const [isHovered, setIsHovered] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const location = useLocation();
-    const role = localStorage.getItem('role');
+    const role = initialRole || localStorage.getItem('role');
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
@@ -64,6 +95,7 @@ const KoiLayout = () => {
     }, [location.pathname]);
 
     const getAllocatedModules = () => {
+        if (initialModules) return initialModules;
         try {
             return JSON.parse(localStorage.getItem('allocatedModules') || '[]');
         } catch (e) {
@@ -74,18 +106,21 @@ const KoiLayout = () => {
     const allocatedModules = getAllocatedModules();
 
     const menuItems = [
-        { icon: LayoutDashboard, label: 'Dashboard', path: '/koi/dashboard' },
-        { icon: MessageSquare, label: 'Enquiries', path: '/koi/enquiries' },
-        { icon: ShoppingCart, label: 'Sales & Billing', path: '/koi/orders' },
-        { icon: CreditCard, label: 'Payments', path: '/koi/payments' },
-        { icon: Package, label: 'Inventory', path: '/koi/inventory' },
-        { icon: Users, label: 'Customers', path: '/koi/customers' },
-        { icon: FileText, label: 'Invoices', path: '/koi/invoices' },
+        { icon: Fish, label: 'Dashboard', path: '/koi/dashboard', color: '#F97316' },
+        { icon: Clock, label: 'Attendance', path: '/koi/attendance', color: '#8B5CF6' },
+        { icon: Contact, label: 'Employees', path: '/koi/employees', color: '#10B981' },
+        { icon: MessageSquare, label: 'Enquiries', path: '/koi/enquiries', color: '#F43F5E' },
+        { icon: ShoppingCart, label: 'Sales & Billing', path: '/koi/orders', color: '#06B6D4' },
+        { icon: CreditCard, label: 'Payments', path: '/koi/payments', color: '#F97316' },
+        { icon: Package, label: 'Inventory', path: '/koi/inventory', color: '#EC4899' },
+        { icon: Users, label: 'Customers', path: '/koi/customers', color: '#F59E0B' },
+        { icon: FileText, label: 'Invoices', path: '/koi/invoices', color: '#14B8A6' },
     ].filter(item => {
+        if (role === 'BOSS' || role === 'MANAGER' || role === 'KOI_MANAGER' || role === 'BRANCH_MANAGER' || role === 'admin') return true;
 
-        if (role === 'BOSS' || role === 'MANAGER' || role === 'KOI_MANAGER' || role === 'BRANCH_MANAGER') return true;
         return allocatedModules.includes(`Koi:${item.label}`);
     });
+
 
     const handleLogout = () => {
         localStorage.removeItem('isAuthenticated');
@@ -94,7 +129,7 @@ const KoiLayout = () => {
     };
 
     return (
-        <div className="flex h-screen bg-[#F0F7FF] overflow-hidden font-sans relative">
+        <div className="flex h-screen bg-[#FFF7ED] overflow-hidden font-sans relative">
             {/* Mobile Menu Backdrop */}
             <AnimatePresence>
                 {isMobileMenuOpen && (
@@ -108,100 +143,150 @@ const KoiLayout = () => {
                 )}
             </AnimatePresence>
 
-            {/* Sidebar (Expandable Blue Bar) */}
+            {/* Sidebar (Modern White Design) */}
             <motion.aside
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
                 initial={false}
                 animate={{
-                    width: (isHovered || isMobileMenuOpen) ? 240 : 96,
-                    x: isMobileMenuOpen ? 0 : (window.innerWidth < 1024 ? -240 : 0)
+                    width: (isHovered || isMobileMenuOpen) ? 260 : 88,
+                    x: isMobileMenuOpen ? 0 : (window.innerWidth < 1024 ? -260 : 0)
                 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className={`fixed lg:relative bg-[#2988FF] flex flex-col items-center py-8 gap-8 z-[70] shadow-2xl no-print h-full ${isMobileMenuOpen ? 'w-[240px]' : ''}`}
+                transition={{ duration: 1.0, ease: [0.32, 0.72, 0, 1] }}
+                className={`fixed lg:relative bg-white flex flex-col items-center py-6 z-[70] border-r border-[#F1F5F9] no-print h-full ${isMobileMenuOpen ? 'w-[260px]' : ''}`}
             >
-                <motion.div
-                    layout
-                    className="flex flex-col items-center gap-4 transition-all duration-300 relative group"
-                >
-                    <div className={`
-                        ${(isHovered || isMobileMenuOpen) ? 'w-24 h-24' : 'w-16 h-16'} 
-                        bg-white rounded-full p-3 flex items-center justify-center shadow-2xl transition-all duration-500 transform hover:scale-110 relative
-                    `}>
-                        <div className="logo-gradient-ring"></div>
-                        <img src="/PVR.png" alt="PVR" className="w-full h-full object-contain relative z-10" />
-                    </div>
-
-                    <AnimatePresence>
+                {/* Logo Section */}
+                <div className="w-full flex flex-col items-center justify-center mb-10 h-auto overflow-hidden transition-all duration-300">
+                    <Link to="/koi/dashboard" className="shrink-0 transition-transform duration-300 hover:scale-110 mb-2">
+                        <img
+                            src="/PVR.png"
+                            alt="PVR"
+                            className="w-14 h-14 object-contain"
+                        />
+                    </Link>
+                    <AnimatePresence mode="wait">
                         {(isHovered || isMobileMenuOpen) && (
                             <motion.div
-                                initial={{ opacity: 0, y: -10 }}
+                                initial={{ opacity: 0, y: -5 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                className="flex flex-col items-center"
+                                exit={{ opacity: 0, y: -5 }}
+                                transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}
+                                className="flex flex-col items-center min-w-0"
                             >
-                                <span className="text-white font-black tracking-[0.2em] text-lg uppercase text-center">
-                                    KOI
+                                <span
+                                    className="font-black text-xl tracking-tighter truncate bg-clip-text text-transparent"
+                                    style={{
+                                        backgroundImage: 'linear-gradient(to right, #f97316, #c2410c)',
+                                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                                    }}
+                                >
+                                    PVR KOI
                                 </span>
-                                <span className="text-white text-[10px] font-bold tracking-[0.3em] uppercase">
-                                    Panel
-                                </span>
+                                <div className="h-1 w-12 bg-gradient-to-r from-orange-500 to-orange-700 rounded-full mt-1" />
                             </motion.div>
                         )}
                     </AnimatePresence>
-                </motion.div>
+                </div>
 
+                {/* Navigation Items */}
+                <div className="flex-1 w-full overflow-y-auto custom-scrollbar no-print">
+                    <div className="space-y-4">
+                        <div>
+                            {(isHovered || isMobileMenuOpen) && (
+                                <motion.h3
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-[0.15em] mb-4 px-8"
+                                >
+                                    KOI BRANCH
+                                </motion.h3>
+                            )}
+                            <div className="flex flex-col">
+                                {menuItems.map((item, idx) => (
+                                    <SidebarIcon
+                                        key={idx}
+                                        icon={item.icon}
+                                        path={item.path}
+                                        label={item.label}
+                                        color={item.color}
+                                        active={location.pathname === item.path}
+                                        expanded={isHovered || isMobileMenuOpen}
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                    />
+                                ))}
+                            </div>
+                        </div>
 
-                <div className="flex-1 flex flex-col items-center gap-2 w-full overflow-y-auto custom-scrollbar px-2">
-                    {menuItems.map((item, idx) => (
-                        <SidebarIcon
-                            key={idx}
-                            icon={item.icon}
-                            path={item.path}
-                            label={item.label}
-                            active={location.pathname === item.path}
-                            expanded={isHovered || isMobileMenuOpen}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        />
-                    ))}
-
-                    <div className="w-full flex flex-col items-center gap-2 mt-4 border-t border-white/10 pt-6">
-                        <SidebarIcon icon={Users} path="#" label="Staff" active={false} expanded={isHovered || isMobileMenuOpen} onClick={() => setIsMobileMenuOpen(false)} />
-                        <SidebarIcon icon={Shield} path="#" label="Security" active={false} expanded={isHovered || isMobileMenuOpen} onClick={() => setIsMobileMenuOpen(false)} />
-                        <SidebarIcon icon={Plus} path="#" label="Add New" active={false} expanded={isHovered || isMobileMenuOpen} onClick={() => setIsMobileMenuOpen(false)} />
+                        {(role === 'BOSS' || role === 'MANAGER' || role === 'KOI_MANAGER' || role === 'BRANCH_MANAGER' || role === 'admin') && (
+                            <div className="pt-2">
+                                {(isHovered || isMobileMenuOpen) && (
+                                    <motion.h3
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-[0.1em] mb-4 px-2 ml-2"
+                                    >
+                                        ADMINISTRATION
+                                    </motion.h3>
+                                )}
+                                <div className="space-y-1">
+                                    <SidebarIcon
+                                        icon={Settings}
+                                        path="/koi/settings"
+                                        label="Settings"
+                                        color="#64748B"
+                                        active={location.pathname === '/koi/settings'}
+                                        expanded={isHovered || isMobileMenuOpen}
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                <button
-                    onClick={handleLogout}
-                    className={`flex items-center ${(isHovered || isMobileMenuOpen) ? 'justify-start px-6 gap-4 w-[85%]' : 'justify-center w-12'} h-12 rounded-2xl text-white hover:bg-white/10 transition-all mb-4`}
-                >
-                    <LogOut size={24} className="shrink-0" />
-                    <AnimatePresence>
-                        {(isHovered || isMobileMenuOpen) && (
-                            <motion.span
-                                initial={{ opacity: 0, width: 0 }}
-                                animate={{ opacity: 1, width: 'auto' }}
-                                exit={{ opacity: 0, width: 0 }}
-                                className="text-sm font-bold overflow-hidden"
-                            >
-                                Logout
-                            </motion.span>
-                        )}
-                    </AnimatePresence>
-                </button>
+                {/* User Profile Section */}
+                <div className="w-full px-4 pt-4 mt-auto border-t border-[#F8FAFC]">
+                    <div className={`flex items-center ${(isHovered || isMobileMenuOpen) ? 'px-2 gap-3' : 'justify-center'} h-16 rounded-xl hover:bg-[#F8FAFC] transition-colors cursor-pointer relative group`}>
+                        <div className="w-10 h-10 rounded-full bg-[#f97316] flex items-center justify-center text-white text-sm font-bold shadow-sm shrink-0 border-2 border-white">
+                            {role?.charAt(0) || 'K'}
+                        </div>
+                        <AnimatePresence>
+                            {(isHovered || isMobileMenuOpen) && (
+                                <motion.div
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -10 }}
+                                    transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+                                    className="flex-1 flex items-center justify-between overflow-hidden"
+                                >
+                                    <div className="flex flex-col min-w-0">
+                                        <p className="text-[#0F172A] font-bold text-[13px] leading-tight truncate">
+                                            {role?.replace('_', ' ') || 'Koi Officer'}
+                                        </p>
+                                        <p className="text-[#94A3B8] text-[11px] truncate">
+                                            {role?.toLowerCase()}@pvr.systems
+                                        </p>
+                                    </div>
+                                    <button onClick={handleLogout} title="Logout">
+                                        <LogOut size={16} className="text-[#94A3B8] hover:text-[#F43F5E] transition-colors" />
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                </div>
             </motion.aside>
 
             {/* Content Wrapper */}
-            <div className="flex-1 flex bg-[#F0F7FF] relative overflow-hidden">
-                <div className="flex-1 flex flex-col overflow-hidden bg-white m-0 lg:m-4 lg:rounded-[3rem] shadow-xl shadow-blue-900/5 relative">
+            <div className="flex-1 flex bg-[#FFF7ED] relative overflow-hidden">
+                <div className="flex-1 flex flex-col overflow-hidden bg-white m-0 lg:m-4 lg:rounded-2xl shadow-xl shadow-orange-900/5 relative">
                     <header className="h-20 flex items-center px-4 lg:px-12 gap-4 lg:gap-8 no-print border-b border-gray-50">
                         <div className="flex-1 relative max-w-xl group hidden md:block">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2988FF] transition-colors" size={20} />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f97316] transition-colors" size={20} />
                             <input
                                 type="text"
                                 placeholder="Search Koi database..."
-                                className="w-full bg-[#F5F9FC] border-none rounded-2xl py-3 pl-12 pr-6 focus:ring-2 focus:ring-[#2988FF]/50 transition-all text-sm font-medium"
+                                className="w-full bg-[#FFFBF0] border-none rounded-2xl py-3 pl-12 pr-6 focus:ring-2 focus:ring-[#f97316]/50 transition-all text-sm font-medium"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
@@ -213,14 +298,14 @@ const KoiLayout = () => {
                                 <p className="text-xs lg:text-sm font-bold text-gray-900 leading-tight whitespace-nowrap">{role?.replace('_', ' ') || 'Koi Officer'}</p>
                                 <p className="text-[9px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-widest">Koi Centre</p>
                             </div>
-                            <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-[#2988FF] flex items-center justify-center text-white text-xs lg:text-sm font-bold shadow-sm shrink-0">
+                            <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-[#f97316] flex items-center justify-center text-white text-xs lg:text-sm font-bold shadow-sm shrink-0">
                                 {role?.charAt(0) || 'K'}
                             </div>
                         </div>
                     </header>
 
                     <main className="flex-1 overflow-y-auto custom-scrollbar px-4 sm:px-8 lg:px-12 pb-8 sm:pb-12">
-                        <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2988FF]"></div></div>}>
+                        <React.Suspense fallback={<div className="flex items-center justify-center h-full"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#f97316]"></div></div>}>
                             <Outlet />
                         </React.Suspense>
                     </main>
@@ -230,7 +315,7 @@ const KoiLayout = () => {
             {/* Persistent Mobile Toggle Button (Right Side) */}
             <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="fixed top-1/2 right-0 -translate-y-1/2 bg-[#2988FF] text-white p-4 rounded-l-2xl shadow-2xl z-[100] lg:hidden active:scale-95 transition-all duration-300 flex items-center justify-center border-l border-t border-b border-white/20 no-print"
+                className="fixed top-1/2 right-0 -translate-y-1/2 bg-[#f97316] text-white p-4 rounded-l-2xl shadow-2xl z-[100] lg:hidden active:scale-95 transition-all duration-300 flex items-center justify-center border-l border-t border-b border-white/20 no-print"
             >
                 {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
             </button>

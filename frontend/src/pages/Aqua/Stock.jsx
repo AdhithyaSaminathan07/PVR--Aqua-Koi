@@ -125,15 +125,15 @@ const Stock = () => {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 font-display">Inventory Management</h1>
-                    <p className="text-gray-500 mt-1">Manage your products, track stock and low stock alerts.</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 font-display">Inventory Management</h1>
+                    <p className="text-gray-500 mt-1 text-sm sm:text-base">Manage your products, track stock and low stock alerts.</p>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex gap-3 w-full sm:w-auto">
                     <button
                         onClick={() => { setEditingProduct(null); setFormData(emptyForm); setIsModalOpen(true); }}
-                        className="btn-primary"
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-xl font-bold hover:shadow-lg transition-all"
                     >
                         <Plus size={18} />
                         <span>Add Product</span>
@@ -191,90 +191,92 @@ const Stock = () => {
                         <p className="text-gray-400 font-medium italic">Loading inventory...</p>
                     </div>
                 ) : (
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-gray-50 border-b border-gray-100">
-                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase w-6"></th>
-                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Product Name</th>
-                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Category</th>
-                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Min. Stock</th>
-                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Current Stock</th>
-                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Price (INR)</th>
-                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {filteredProducts.map((product) => (
-                                <React.Fragment key={product._id}>
-                                    <tr className="hover:bg-gray-50 group">
-                                        <td className="px-4 py-4">
-                                            {(product.specifications?.length > 0 || product.description) && (
-                                                <button
-                                                    onClick={() => setExpandedRow(expandedRow === product._id ? null : product._id)}
-                                                    className="text-gray-400 hover:text-primary-600 transition-all"
-                                                >
-                                                    {expandedRow === product._id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                                                </button>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 font-semibold text-gray-900">
-                                            <div className="flex items-center gap-2">
-                                                {product.name}
-                                                {product.specifications?.length > 0 && (
-                                                    <span className="text-[10px] bg-blue-50 text-blue-600 border border-blue-100 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
-                                                        {product.specifications.length} specs
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">{product.category}</td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-sm font-medium text-gray-500 italic">{product.minStock || 0} {product.unit}</span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`text-sm font-black ${product.stock <= product.minStock ? 'text-red-600' : 'text-gray-700'}`}>{product.stock} {product.unit}</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm font-bold text-gray-900">₹{(product.price || 0).toLocaleString()}</td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <button onClick={() => handleEdit(product)} className="p-1.5 text-gray-400 hover:text-primary-600 transition-all"><Edit2 size={16} /></button>
-                                                <button onClick={() => handleDelete(product._id)} className="p-1.5 text-gray-400 hover:text-red-600 transition-all"><Trash2 size={16} /></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {expandedRow === product._id && (
-                                        <tr className="bg-blue-50/40">
-                                            <td colSpan={7} className="px-8 pb-5 pt-3">
-                                                {product.description && (
-                                                    <p className="text-sm text-gray-600 mb-3 italic">{product.description}</p>
-                                                )}
-                                                {product.specifications?.length > 0 && (
-                                                    <div>
-                                                        <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 flex items-center gap-1.5">
-                                                            <ListChecks size={12} /> Technical Specifications
-                                                        </p>
-                                                        <div className="flex flex-wrap gap-2">
-                                                            {product.specifications.map((spec, i) => (
-                                                                <div key={i} className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-xs shadow-sm">
-                                                                    <span className="font-bold text-gray-500 uppercase tracking-wide">{spec.label}:</span>
-                                                                    <span className="font-semibold text-gray-800">{spec.value}</span>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse min-w-[800px] lg:min-w-full">
+                            <thead>
+                                <tr className="bg-gray-50 border-b border-gray-100">
+                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase w-6"></th>
+                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Product Name</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Category</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Min. Stock</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Current Stock</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Price (INR)</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {filteredProducts.map((product) => (
+                                    <React.Fragment key={product._id}>
+                                        <tr className="hover:bg-gray-50 group">
+                                            <td className="px-4 py-4">
+                                                {(product.specifications?.length > 0 || product.description) && (
+                                                    <button
+                                                        onClick={() => setExpandedRow(expandedRow === product._id ? null : product._id)}
+                                                        className="text-gray-400 hover:text-primary-600 transition-all"
+                                                    >
+                                                        {expandedRow === product._id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                                    </button>
                                                 )}
                                             </td>
+                                            <td className="px-6 py-4 font-semibold text-gray-900">
+                                                <div className="flex items-center gap-2">
+                                                    {product.name}
+                                                    {product.specifications?.length > 0 && (
+                                                        <span className="text-[10px] bg-blue-50 text-blue-600 border border-blue-100 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
+                                                            {product.specifications.length} specs
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-500">{product.category}</td>
+                                            <td className="px-6 py-4">
+                                                <span className="text-sm font-medium text-gray-500 italic">{product.minStock || 0} {product.unit}</span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`text-sm font-black ${product.stock <= product.minStock ? 'text-red-600' : 'text-gray-700'}`}>{product.stock} {product.unit}</span>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm font-bold text-gray-900">₹{(product.price || 0).toLocaleString()}</td>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button onClick={() => handleEdit(product)} className="p-1.5 text-gray-400 hover:text-primary-600 transition-all"><Edit2 size={16} /></button>
+                                                    <button onClick={() => handleDelete(product._id)} className="p-1.5 text-gray-400 hover:text-red-600 transition-all"><Trash2 size={16} /></button>
+                                                </div>
+                                            </td>
                                         </tr>
-                                    )}
-                                </React.Fragment>
-                            ))}
-                            {filteredProducts.length === 0 && (
-                                <tr>
-                                    <td colSpan="7" className="px-6 py-12 text-center text-gray-400 font-medium italic">No products found.</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                                        {expandedRow === product._id && (
+                                            <tr className="bg-blue-50/40">
+                                                <td colSpan={7} className="px-8 pb-5 pt-3">
+                                                    {product.description && (
+                                                        <p className="text-sm text-gray-600 mb-3 italic">{product.description}</p>
+                                                    )}
+                                                    {product.specifications?.length > 0 && (
+                                                        <div>
+                                                            <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 flex items-center gap-1.5">
+                                                                <ListChecks size={12} /> Technical Specifications
+                                                            </p>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {product.specifications.map((spec, i) => (
+                                                                    <div key={i} className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-xs shadow-sm">
+                                                                        <span className="font-bold text-gray-500 uppercase tracking-wide">{spec.label}:</span>
+                                                                        <span className="font-semibold text-gray-800">{spec.value}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </React.Fragment>
+                                ))}
+                                {filteredProducts.length === 0 && (
+                                    <tr>
+                                        <td colSpan="7" className="px-6 py-12 text-center text-gray-400 font-medium italic">No products found.</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
             </div>
 

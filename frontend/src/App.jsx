@@ -27,12 +27,18 @@ const KoiInventory = lazy(() => import('./pages/Koi/KoiInventory'));
 const KoiCustomers = lazy(() => import('./pages/Koi/KoiCustomers'));
 const KoiInvoices = lazy(() => import('./pages/Koi/KoiInvoices'));
 
+// Lazy load Shared pages
+const Attendance = lazy(() => import('./pages/Shared/Attendance'));
+const Settings = lazy(() => import('./components/Settings/Settings'));
+
+
 
 // Lazy load other pages
 const Login = lazy(() => import('./pages/Login'));
 const StaffDashboard = lazy(() => import('./pages/Staff/StaffDashboard'));
 const BossDashboard = lazy(() => import('./pages/Boss/BossDashboard'));
 const UserManagement = lazy(() => import('./pages/Boss/UserManagement'));
+const ModuleAllocation = lazy(() => import('./pages/Boss/ModuleAllocation'));
 const BossReports = lazy(() => import('./pages/Boss/Reports'));
 
 const LoadingFallback = () => (
@@ -64,8 +70,8 @@ function App() {
     const getHomePath = (userRole) => {
         if (userRole === 'BOSS' || userRole === 'MANAGER') return "/boss-dashboard";
         if (userRole === 'KOI_MANAGER') return "/koi/dashboard";
-        if (userRole === 'STAFF') return "/staff/dashboard";
-        return "/";
+        if (userRole === 'STAFF') return "/aqua";
+        return "/aqua";
     };
 
     return (
@@ -73,6 +79,12 @@ function App() {
             <TopLoadingBar />
             <Suspense fallback={<LoadingFallback />}>
                 <Routes>
+                    {/* Root Redirector */}
+                    <Route
+                        path="/"
+                        element={<Navigate to={isAuthenticated ? getHomePath(role) : "/login"} replace />}
+                    />
+
                     {/* Public Route */}
                     <Route
                         path="/login"
@@ -83,12 +95,31 @@ function App() {
                         }} />}
                     />
 
+                    {/* Koi Branch Experience */}
+                    <Route
+                        path="/koi"
+                        element={isAuthenticated && (role === 'admin' || role === 'KOI_MANAGER' || role === 'STAFF' || role === 'BRANCH_MANAGER') ? <KoiLayout role={role} allocatedModules={allocatedModules} /> : (isAuthenticated && (role === 'BOSS' || role === 'MANAGER') ? <Navigate to="/boss-dashboard" /> : <Navigate to="/login" />)}
+                    >
+                        <Route path="dashboard" element={<KoiDashboard />} />
+                        <Route path="attendance" element={<Attendance />} />
+                        <Route path="employees" element={<Employees />} />
+                        <Route path="enquiries" element={<KoiEnquiries />} />
+                        <Route path="orders" element={<KoiSales />} />
+                        <Route path="invoices" element={<KoiInvoices />} />
+
+                        <Route path="payments" element={<KoiPayments />} />
+                        <Route path="inventory" element={<KoiInventory />} />
+                        <Route path="customers" element={<KoiCustomers />} />
+                        <Route path="settings" element={<Settings type="Koi" />} />
+                    </Route>
+
                     {/* Aqua Branch Experience */}
                     <Route
-                        path="/"
-                        element={isAuthenticated && (role === 'admin' || role === 'STAFF' || role === 'BRANCH_MANAGER') ? <AquaLayout /> : (isAuthenticated && (role === 'BOSS' || role === 'MANAGER') ? <Navigate to="/boss-dashboard" /> : <Navigate to="/login" />)}
+                        path="/aqua"
+                        element={isAuthenticated && (role === 'admin' || role === 'STAFF' || role === 'BRANCH_MANAGER') ? <AquaLayout role={role} allocatedModules={allocatedModules} /> : (isAuthenticated && (role === 'BOSS' || role === 'MANAGER') ? <Navigate to="/boss-dashboard" /> : <Navigate to="/login" />)}
                     >
                         <Route index element={<Dashboard />} />
+                        <Route path="attendance" element={<Attendance />} />
                         <Route path="customers" element={<Customers />} />
                         <Route path="inventory" element={<Stock />} />
                         <Route path="complaints" element={<Complaints />} />
@@ -97,18 +128,23 @@ function App() {
                         <Route path="services" element={<Services />} />
                         <Route path="employees" element={<Employees />} />
                         <Route path="invoices" element={<Invoices />} />
+                        <Route path="settings" element={<Settings type="Aqua" />} />
                     </Route>
+
 
                     {/* BOSS & MANAGER UNIFIED EXPERIENCE */}
                     <Route
-                        element={isAuthenticated && (role === 'BOSS' || role === 'MANAGER') ? <BossLayout /> : <Navigate to="/login" />}
+                        element={isAuthenticated && (role === 'BOSS' || role === 'MANAGER') ? <BossLayout role={role} allocatedModules={allocatedModules} /> : <Navigate to="/login" />}
                     >
                         <Route path="/boss-dashboard" element={<BossDashboard />} />
                         <Route path="/boss/users" element={<UserManagement />} />
+                        <Route path="/boss/modules" element={<ModuleAllocation />} />
                         <Route path="/boss/reports" element={<BossReports />} />
 
                         {/* Unified Access to Branch Modules for Boss/GM */}
-                        <Route path="/aqua-dashboard" element={<Dashboard />} />
+                        <Route path="/boss/aqua/dashboard" element={<Dashboard />} />
+                        <Route path="/boss/aqua/attendance" element={<Attendance />} />
+                        <Route path="/boss/attendance" element={<Attendance />} />{/* Keep for legacy if needed */}
                         <Route path="/boss/customers" element={<Customers />} />
                         <Route path="/boss/inventory" element={<Stock />} />
                         <Route path="/boss/complaints" element={<Complaints />} />
@@ -117,8 +153,11 @@ function App() {
                         <Route path="/boss/services" element={<Services />} />
                         <Route path="/boss/employees" element={<Employees />} />
                         <Route path="/boss/invoices" element={<Invoices />} />
+                        <Route path="/boss/aqua/settings" element={<Settings type="Aqua" />} />
 
                         <Route path="/boss/koi/dashboard" element={<KoiDashboard />} />
+                        <Route path="/boss/koi/attendance" element={<Attendance />} />
+                        <Route path="/boss/koi/employees" element={<Employees />} />
                         <Route path="/boss/koi/enquiries" element={<KoiEnquiries />} />
                         <Route path="/boss/koi/orders" element={<KoiSales />} />
                         <Route path="/boss/koi/invoices" element={<KoiInvoices />} />
@@ -126,27 +165,14 @@ function App() {
                         <Route path="/boss/koi/payments" element={<KoiPayments />} />
                         <Route path="/boss/koi/inventory" element={<KoiInventory />} />
                         <Route path="/boss/koi/customers" element={<KoiCustomers />} />
+                        <Route path="/boss/koi/settings" element={<Settings type="Koi" />} />
                     </Route>
 
-                    {/* Koi Branch Experience */}
-                    <Route
-                        path="/koi"
-                        element={isAuthenticated && (role === 'KOI_MANAGER' || role === 'STAFF' || role === 'BRANCH_MANAGER') ? <KoiLayout /> : (isAuthenticated && (role === 'BOSS' || role === 'MANAGER') ? <Navigate to="/boss-dashboard" /> : <Navigate to="/login" />)}
-                    >
-                        <Route path="dashboard" element={<KoiDashboard />} />
-                        <Route path="enquiries" element={<KoiEnquiries />} />
-                        <Route path="orders" element={<KoiSales />} />
-                        <Route path="invoices" element={<KoiInvoices />} />
-
-                        <Route path="payments" element={<KoiPayments />} />
-                        <Route path="inventory" element={<KoiInventory />} />
-                        <Route path="customers" element={<KoiCustomers />} />
-                    </Route>
 
                     {/* Staff Experience */}
                     <Route
                         path="/staff"
-                        element={isAuthenticated && role === 'STAFF' ? <AquaLayout /> : <Navigate to="/login" />}
+                        element={isAuthenticated && role === 'STAFF' ? <AquaLayout role={role} allocatedModules={allocatedModules} /> : <Navigate to="/login" />}
                     >
                         <Route path="dashboard" element={<StaffDashboard />} />
                     </Route>

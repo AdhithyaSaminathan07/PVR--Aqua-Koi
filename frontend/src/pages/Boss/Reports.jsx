@@ -1,27 +1,45 @@
-import React from 'react';
-import { BarChart3, TrendingUp, DollarSign, Package, ShoppingCart, MessageSquare, AlertCircle, Calendar, Download, Filter } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { BarChart3, TrendingUp, DollarSign, Package, ShoppingCart, MessageSquare, AlertCircle, Calendar, Download, Filter, Loader2 } from 'lucide-react';
+import { getBossStats } from '../../services/api';
 
 const BossReports = () => {
+    const [stats, setStats] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchStats();
+    }, []);
+
+    const fetchStats = async () => {
+        try {
+            const res = await getBossStats();
+            setStats(res.data);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+                <Loader2 className="animate-spin text-indigo-600" size={40} />
+                <p className="text-gray-400 font-bold italic animate-pulse">Generating Global Analytics...</p>
+            </div>
+        );
+    }
+
     return (
         <div className="py-6">
             <div className="max-w-7xl mx-auto">
-                <div className="flex justify-between items-end mb-10">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8 lg:mb-10">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3">
                             <BarChart3 className="text-indigo-600" size={32} />
                             Strategic Global Reports
                         </h1>
-                        <p className="text-gray-500 mt-1">Real-time business intelligence across all branches</p>
-                    </div>
-                    <div className="flex gap-4">
-                        <button className="bg-white border border-gray-200 px-4 py-2.5 rounded-xl font-bold text-gray-600 flex items-center gap-2 hover:bg-gray-50 shadow-sm">
-                            <Calendar size={18} />
-                            Last 30 Days
-                        </button>
-                        <button className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100">
-                            <Download size={18} />
-                            Export PDF
-                        </button>
+                        <p className="text-gray-500 mt-1 text-sm sm:text-base">Real-time business intelligence across all branches</p>
                     </div>
                 </div>
 
@@ -32,10 +50,10 @@ const BossReports = () => {
                             <DollarSign size={80} />
                         </div>
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Total Revenue (Net)</p>
-                        <h3 className="text-3xl font-bold text-gray-900">₹45,28,000</h3>
+                        <h3 className="text-3xl font-bold text-gray-900">₹{(stats?.totalRevenue / 100000).toFixed(2)}L</h3>
                         <div className="mt-4 flex items-center gap-2 text-emerald-500 font-bold text-sm">
                             <TrendingUp size={16} />
-                            +12.4% vs last month
+                            Active Stream
                         </div>
                     </div>
                     <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm relative overflow-hidden group">
@@ -43,17 +61,17 @@ const BossReports = () => {
                             <ShoppingCart size={80} />
                         </div>
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Combined Orders</p>
-                        <h3 className="text-3xl font-bold text-gray-900">842</h3>
-                        <p className="mt-4 text-gray-400 text-sm font-medium">Aqua: 512 | Koi: 330</p>
+                        <h3 className="text-3xl font-bold text-gray-900">{stats?.totalOrders}</h3>
+                        <p className="mt-4 text-gray-400 text-sm font-medium">Aqua: {stats?.branches.aqua.orders} | Koi: {stats?.branches.koi.orders}</p>
                     </div>
                     <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                             <MessageSquare size={80} />
                         </div>
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Resolution Rate</p>
-                        <h3 className="text-3xl font-bold text-gray-900">94.2%</h3>
+                        <h3 className="text-3xl font-bold text-gray-900">{stats?.resolutionRate}%</h3>
                         <div className="mt-4 w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                            <div className="bg-indigo-500 h-full w-[94.2%]"></div>
+                            <div className="bg-indigo-500 h-full" style={{ width: `${stats?.resolutionRate}%` }}></div>
                         </div>
                     </div>
                 </div>
@@ -64,25 +82,18 @@ const BossReports = () => {
                         <div className="flex justify-between items-center mb-8">
                             <h2 className="text-xl font-bold flex items-center gap-2">
                                 <Package size={20} className="text-indigo-600" />
-                                Inventory Health
+                                Stock Alerts
                             </h2>
-                            <button className="text-xs font-bold text-indigo-600 hover:underline">Full Audit</button>
                         </div>
                         <div className="space-y-6">
-                            {[
-                                { name: 'Premium Fish Feed', stock: '24kg', status: 'Optimal', color: 'text-emerald-500' },
-                                { name: 'Water Filter Cartridges', stock: '12 units', status: 'Low Stock', color: 'text-orange-500' },
-                                { name: 'Aquarium Lighting Kit', stock: '2 units', status: 'Critical', color: 'text-red-500' },
-                                { name: 'Koi Pellets (Growth)', stock: '45kg', status: 'Optimal', color: 'text-emerald-500' },
-                            ].map((item, i) => (
-                                <div key={i} className="flex justify-between items-center p-4 rounded-2xl bg-gray-50 border border-transparent hover:border-gray-200 transition-all">
-                                    <span className="font-semibold text-gray-700">{item.name}</span>
-                                    <div className="flex items-center gap-6">
-                                        <span className="text-sm text-gray-500 font-bold">{item.stock}</span>
-                                        <span className={`text-[10px] font-bold uppercase tracking-widest ${item.color}`}>{item.status}</span>
-                                    </div>
-                                </div>
-                            ))}
+                            <div className="flex justify-between items-center p-4 rounded-2xl bg-red-50 border border-red-100">
+                                <span className="font-semibold text-red-700 uppercase text-xs tracking-tighter">Aqua Low Stock</span>
+                                <span className="text-xl font-black text-red-700">{stats?.branches.aqua.lowStock} Items</span>
+                            </div>
+                            <div className="flex justify-between items-center p-4 rounded-2xl bg-orange-50 border border-orange-100">
+                                <span className="font-semibold text-orange-700 uppercase text-xs tracking-tighter">Koi Low Stock</span>
+                                <span className="text-xl font-black text-orange-700">{stats?.branches.koi.lowStock} Items</span>
+                            </div>
                         </div>
                     </div>
 
@@ -91,15 +102,13 @@ const BossReports = () => {
                         <div className="flex justify-between items-center mb-8">
                             <h2 className="text-xl font-bold flex items-center gap-2">
                                 <TrendingUp size={20} className="text-indigo-600" />
-                                Branch Efficiency
+                                Revenue Split
                             </h2>
-                            <Filter size={18} className="text-gray-400 cursor-pointer" />
                         </div>
                         <div className="space-y-8 mt-4">
                             {[
-                                { branch: 'Aqua Culture', metric: 'Sales Conversion', value: 78 },
-                                { branch: 'Koi Centre', metric: 'Customer Satisfaction', value: 92 },
-                                { branch: 'Services Dept', metric: 'Resolution Speed', value: 65 },
+                                { branch: 'Aqua Culture', metric: 'Revenue Share', value: stats?.totalRevenue > 0 ? ((stats.branches.aqua.revenue / stats.totalRevenue) * 100).toFixed(0) : 0 },
+                                { branch: 'Koi Centre', metric: 'Revenue Share', value: stats?.totalRevenue > 0 ? ((stats.branches.koi.revenue / stats.totalRevenue) * 100).toFixed(0) : 0 },
                             ].map((item, i) => (
                                 <div key={i}>
                                     <div className="flex justify-between items-end mb-2">
@@ -108,16 +117,12 @@ const BossReports = () => {
                                     </div>
                                     <div className="w-full bg-gray-100 h-3 rounded-full overflow-hidden">
                                         <div
-                                            className="bg-gradient-to-r from-indigo-500 to-primary-500 h-full transition-all duration-1000 ease-out"
+                                            className="bg-gradient-to-r from-indigo-500 to-indigo-600 h-full transition-all duration-1000 ease-out"
                                             style={{ width: `${item.value}%` }}
                                         ></div>
                                     </div>
                                 </div>
                             ))}
-                        </div>
-                        <div className="mt-10 p-6 bg-indigo-50 rounded-2xl flex items-center gap-4">
-                            <AlertCircle className="text-indigo-600" size={24} />
-                            <p className="text-sm font-medium text-indigo-700">Services Dept efficiency has dropped by 4% since last week. Consideration for additional training recommended.</p>
                         </div>
                     </div>
                 </div>
