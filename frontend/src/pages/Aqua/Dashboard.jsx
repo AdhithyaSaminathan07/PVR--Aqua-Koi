@@ -14,9 +14,10 @@ import {
     Wrench,
     Loader2,
     ArrowRight,
-    Droplets
+    Droplets,
+    MessageSquare
 } from 'lucide-react';
-import { getCustomers, getOrders, getTasks, getProducts } from '../../services/api';
+import { getCustomers, getOrders, getTasks, getProducts, getEnquiries } from '../../services/api';
 
 const StatCard = ({ title, value, icon: Icon, color, loading, delay }) => (
     <motion.div
@@ -44,6 +45,7 @@ const Dashboard = () => {
         balance: 0,
         tasks: 0,
         lowStock: 0,
+        enquiries: 0,
         recentTasks: []
     });
     const [loading, setLoading] = useState(true);
@@ -55,8 +57,8 @@ const Dashboard = () => {
     const fetchStats = async () => {
         try {
             setLoading(true);
-            const [custRes, ordRes, taskRes, prodRes] = await Promise.all([
-                getCustomers(), getOrders(), getTasks(), getProducts()
+            const [custRes, ordRes, taskRes, prodRes, enqRes] = await Promise.all([
+                getCustomers(), getOrders(), getTasks(), getProducts(), getEnquiries()
             ]);
 
             const balance = ordRes.data.reduce((acc, o) => acc + ((o.totalAmount || 0) - (o.paidAmount || 0)), 0);
@@ -68,6 +70,7 @@ const Dashboard = () => {
                 balance,
                 tasks: taskRes.data.filter(t => t.status !== 'Completed').length,
                 lowStock,
+                enquiries: enqRes.data.length,
                 recentTasks: taskRes.data.slice(0, 3)
             });
         } catch (err) {
@@ -79,31 +82,6 @@ const Dashboard = () => {
 
     return (
         <div className="py-4 lg:py-6">
-            {/* Banner */}
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="relative bg-[#E6F0FF] rounded-2xl lg:rounded-[3rem] p-6 sm:p-8 lg:p-12 overflow-hidden mb-8 lg:mb-12"
-            >
-                <div className="relative z-10 max-w-lg text-center sm:text-left">
-                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1a365d] mb-4 leading-tight">
-                        Aqua Hub <br />
-                        <span className="text-[#2988FF]">Operations Manager</span>
-                    </h1>
-                    <p className="text-[#1a365d]/60 text-sm sm:text-base font-medium mb-6 lg:mb-8 text-balance">
-                        Monitor aquaculture operations, inventory health, and field task distribution.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center sm:justify-start">
-                        <button className="bg-[#1a365d] text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-sm font-bold shadow-lg shadow-blue-900/20 hover:opacity-90 transition-all active:scale-95 flex items-center justify-center gap-2">
-                            New Task <ArrowRight size={16} />
-                        </button>
-                    </div>
-                </div>
-
-                <div className="absolute right-0 top-0 w-1/2 h-full hidden lg:flex items-center justify-center opacity-20">
-                    <Droplets size={240} className="text-[#2988FF]" />
-                </div>
-            </motion.div>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8 lg:mb-12">
@@ -138,6 +116,14 @@ const Dashboard = () => {
                     color="bg-indigo-500"
                     loading={loading}
                     delay={0.4}
+                />
+                <StatCard
+                    title="New Enquiries"
+                    value={stats.enquiries}
+                    icon={MessageSquare}
+                    color="bg-purple-500"
+                    loading={loading}
+                    delay={0.5}
                 />
             </div>
 

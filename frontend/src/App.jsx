@@ -1,6 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import TopLoadingBar from './components/TopLoadingBar';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Lazy load layout components
 const AquaLayout = lazy(() => import('./components/Aqua/AquaLayout'));
@@ -35,9 +36,12 @@ const Settings = lazy(() => import('./components/Settings/Settings'));
 
 // Lazy load other pages
 const Login = lazy(() => import('./pages/Login'));
+const StaffLayout = lazy(() => import('./components/Staff/StaffLayout'));
 const StaffDashboard = lazy(() => import('./pages/Staff/StaffDashboard'));
+const StaffTasks = lazy(() => import('./pages/Staff/StaffTasks'));
+const StaffAttendance = lazy(() => import('./pages/Staff/StaffAttendance'));
 const BossDashboard = lazy(() => import('./pages/Boss/BossDashboard'));
-const UserManagement = lazy(() => import('./pages/Boss/UserManagement'));
+const PersonnelHub = lazy(() => import('./pages/Boss/PersonnelHub'));
 const ModuleAllocation = lazy(() => import('./pages/Boss/ModuleAllocation'));
 const BossReports = lazy(() => import('./pages/Boss/Reports'));
 
@@ -47,11 +51,14 @@ const LoadingFallback = () => (
     </div>
 );
 
+// Helper for consistent role comparison
+const normalizeRole = (r) => (r || '').toUpperCase().trim().replace(/[\s_-]/g, '');
+
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(
         localStorage.getItem('isAuthenticated') === 'true'
     );
-    const [role, setRole] = useState(localStorage.getItem('role') || 'admin');
+    const [role, setRole] = useState(normalizeRole(localStorage.getItem('role') || 'ADMIN'));
     const [allocatedModules, setAllocatedModules] = useState(
         JSON.parse(localStorage.getItem('allocatedModules') || '[]')
     );
@@ -59,7 +66,7 @@ function App() {
     useEffect(() => {
         const handleStorageChange = () => {
             setIsAuthenticated(localStorage.getItem('isAuthenticated') === 'true');
-            setRole(localStorage.getItem('role') || 'admin');
+            setRole(normalizeRole(localStorage.getItem('role') || 'ADMIN'));
             setAllocatedModules(JSON.parse(localStorage.getItem('allocatedModules') || '[]'));
         };
         window.addEventListener('storage', handleStorageChange);
@@ -68,9 +75,19 @@ function App() {
 
     // Helper for redirection mapping
     const getHomePath = (userRole) => {
-        if (userRole === 'BOSS' || userRole === 'MANAGER') return "/boss-dashboard";
-        if (userRole === 'KOI_MANAGER') return "/koi/dashboard";
-        if (userRole === 'STAFF') return "/aqua";
+        const r = normalizeRole(userRole || localStorage.getItem('role'));
+        
+        console.log('App: Redirecting based on normalized role:', r);
+        
+        if (r === 'BOSS' || r === 'MANAGER') return "/boss-dashboard";
+        
+        // Check allocated modules first for portal access
+        if (allocatedModules.includes('Staff:Portal')) return "/staff/dashboard";
+
+        if (r.includes('KOI')) return "/koi/dashboard";
+        // Support dynamic staff roles
+        if (r.includes('STAFF') || r.includes('EMPLOYEE') || r === 'EMP') return "/staff/dashboard";
+        if (r.includes('AQUA') || r === 'ADMIN') return "/aqua";
         return "/aqua";
     };
 
@@ -88,9 +105,10 @@ function App() {
                     {/* Public Route */}
                     <Route
                         path="/login"
-                        element={isAuthenticated ? <Navigate to={getHomePath(role)} /> : <Login onLogin={(userRole, userModules) => {
+                        element={isAuthenticated ? <Navigate to={getHomePath(role)} replace /> : <Login onLogin={(userRole, userModules) => {
+                            const normalizedRole = normalizeRole(userRole || 'STAFF');
                             setIsAuthenticated(true);
-                            setRole(userRole);
+                            setRole(normalizedRole);
                             setAllocatedModules(userModules || []);
                         }} />}
                     />
@@ -98,7 +116,15 @@ function App() {
                     {/* Koi Branch Experience */}
                     <Route
                         path="/koi"
-                        element={isAuthenticated && (role === 'admin' || role === 'KOI_MANAGER' || role === 'STAFF' || role === 'BRANCH_MANAGER') ? <KoiLayout role={role} allocatedModules={allocatedModules} /> : (isAuthenticated && (role === 'BOSS' || role === 'MANAGER') ? <Navigate to="/boss-dashboard" /> : <Navigate to="/login" />)}
+                        element={
+                            <ProtectedRoute 
+                                isAuthenticated={isAuthenticated} 
+                                role={role} 
+                                allowedRoles={['ADMIN', 'KOI', 'KOIMANAGER', 'KOI_MANAGER', 'STAFF', 'BRANCHMANAGER', 'BOSS', 'MANAGER', 'AQUAMANAGER', 'GENERAL_STAFF', 'GENERALSTAFF', 'GENERAL_EMPLOYEE', 'GENERALEMPLOYEE']}
+                            >
+                                {isAuthenticated && (role === 'BOSS' || role === 'MANAGER') ? <Navigate to="/boss-dashboard" replace /> : <KoiLayout role={role} allocatedModules={allocatedModules} />}
+                            </ProtectedRoute>
+                        }
                     >
                         <Route path="dashboard" element={<KoiDashboard />} />
                         <Route path="attendance" element={<Attendance />} />
@@ -116,7 +142,15 @@ function App() {
                     {/* Aqua Branch Experience */}
                     <Route
                         path="/aqua"
-                        element={isAuthenticated && (role === 'admin' || role === 'STAFF' || role === 'BRANCH_MANAGER') ? <AquaLayout role={role} allocatedModules={allocatedModules} /> : (isAuthenticated && (role === 'BOSS' || role === 'MANAGER') ? <Navigate to="/boss-dashboard" /> : <Navigate to="/login" />)}
+                        element={
+                            <ProtectedRoute 
+                                isAuthenticated={isAuthenticated} 
+                                role={role} 
+                                allowedRoles={['ADMIN', 'AQUA', 'AQUAMANAGER', 'AQUA_MANAGER', 'STAFF', 'BRANCHMANAGER', 'BOSS', 'MANAGER', 'GENERAL_STAFF', 'GENERALSTAFF', 'GENERAL_EMPLOYEE', 'GENERALEMPLOYEE']}
+                            >
+                                {isAuthenticated && (role === 'BOSS' || role === 'MANAGER') ? <Navigate to="/boss-dashboard" replace /> : <AquaLayout role={role} allocatedModules={allocatedModules} />}
+                            </ProtectedRoute>
+                        }
                     >
                         <Route index element={<Dashboard />} />
                         <Route path="attendance" element={<Attendance />} />
@@ -134,10 +168,16 @@ function App() {
 
                     {/* BOSS & MANAGER UNIFIED EXPERIENCE */}
                     <Route
-                        element={isAuthenticated && (role === 'BOSS' || role === 'MANAGER') ? <BossLayout role={role} allocatedModules={allocatedModules} /> : <Navigate to="/login" />}
+                        element={
+                            <ProtectedRoute isAuthenticated={isAuthenticated} role={role} allowedRoles={['BOSS', 'MANAGER']}>
+                                <BossLayout role={role} allocatedModules={allocatedModules} />
+                            </ProtectedRoute>
+                        }
                     >
                         <Route path="/boss-dashboard" element={<BossDashboard />} />
-                        <Route path="/boss/users" element={<UserManagement />} />
+                        <Route path="/boss/personnel" element={<PersonnelHub />} />
+                        <Route path="/boss/users" element={<Navigate to="/boss/personnel" replace />} />
+                        <Route path="/boss/roles" element={<Navigate to="/boss/personnel" replace />} />
                         <Route path="/boss/modules" element={<ModuleAllocation />} />
                         <Route path="/boss/reports" element={<BossReports />} />
 
@@ -172,9 +212,19 @@ function App() {
                     {/* Staff Experience */}
                     <Route
                         path="/staff"
-                        element={isAuthenticated && role === 'STAFF' ? <AquaLayout role={role} allocatedModules={allocatedModules} /> : <Navigate to="/login" />}
+                        element={
+                            <ProtectedRoute 
+                                isAuthenticated={isAuthenticated} 
+                                role={role} 
+                                allowedRoles={['STAFF', 'ADMIN', 'BOSS', 'MANAGER', 'GENERAL_STAFF', 'GENERALSTAFF', 'GENERAL_EMPLOYEE', 'GENERALEMPLOYEE', 'EMP', 'EMPLOYEE']}
+                            >
+                                <StaffLayout />
+                            </ProtectedRoute>
+                        }
                     >
                         <Route path="dashboard" element={<StaffDashboard />} />
+                        <Route path="tasks" element={<StaffTasks />} />
+                        <Route path="attendance" element={<StaffAttendance />} />
                     </Route>
 
                     {/* Redirect any unknown routes */}

@@ -223,6 +223,25 @@ exports.getAttendanceData = async (req, res) => {
     }
 };
 
+exports.getMyAttendanceData = async (req, res) => {
+    try {
+        const employeeId = req.query.employeeId || req.user.employeeId;
+        if (!employeeId) return res.status(400).json({ message: 'Employee ID is required' });
+
+        const now = new Date();
+        const startOfRange = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 60); // Last 60 days
+
+        const attendance = await Attendance.find({
+            worker: employeeId,
+            checkIn: { $gte: startOfRange }
+        }).sort({ checkIn: -1 }).lean();
+
+        res.json(attendance);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+};
+
 exports.getEmployeesWithFace = async (req, res) => {
     try {
         const branch = req.query.branch || 'Aqua';

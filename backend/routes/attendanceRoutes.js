@@ -5,6 +5,7 @@ const { protect, authorize } = require('../middleware/authMiddleware');
 
 const ADMIN_ROLES = ['BOSS', 'MANAGER', 'admin', 'KOI_MANAGER', 'STAFF', 'BRANCH_MANAGER'];
 
+router.get('/my-attendance', protect, attendanceController.getMyAttendanceData);
 router.get('/', protect, authorize(...ADMIN_ROLES), attendanceController.getAttendanceData);
 router.post('/rfid-attendance', protect, authorize(...ADMIN_ROLES), attendanceController.recordRFIDAttendance);
 router.post('/enroll-face', protect, authorize(...ADMIN_ROLES), attendanceController.enrollFace);

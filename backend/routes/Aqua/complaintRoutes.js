@@ -6,6 +6,7 @@ router.get('/', getComplaints);
 router.post('/', createComplaint);
 router.put('/:id', updateComplaint);
 router.patch('/:id/status', updateComplaintStatus);
+router.post('/:id/convert', convertToTask);
 router.delete('/:id', deleteComplaint);
 
 module.exports = router;

@@ -13,9 +13,10 @@ import {
     Package,
     Fish,
     ArrowRight,
-    CreditCard
+    CreditCard,
+    MessageSquare
 } from 'lucide-react';
-import { getKoiOrders, getPendingKoiPayments, getLowKoiStock, getKoiCustomers } from '../../services/api';
+import { getKoiOrders, getPendingKoiPayments, getLowKoiStock, getKoiCustomers, getKoiEnquiries } from '../../services/api';
 
 const StatCard = ({ title, value, icon: Icon, color, delay }) => (
     <motion.div
@@ -40,23 +41,26 @@ const KoiDashboard = () => {
         pendingPayments: 0,
         lowStockItems: 0,
         totalCustomers: 0,
+        totalEnquiries: 0,
         recentOrders: []
     });
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const [orders, pending, lowStock, customers] = await Promise.all([
+                const [orders, pending, lowStock, customers, enquiries] = await Promise.all([
                     getKoiOrders(),
                     getPendingKoiPayments(),
                     getLowKoiStock(),
-                    getKoiCustomers()
+                    getKoiCustomers(),
+                    getKoiEnquiries()
                 ]);
                 setStats({
                     totalOrders: orders.data.length,
                     pendingPayments: pending.data.length,
                     lowStockItems: lowStock.data.length,
                     totalCustomers: customers.data.length,
+                    totalEnquiries: enquiries.data.length,
                     recentOrders: orders.data.slice(0, 5)
                 });
             } catch (err) {
@@ -68,31 +72,6 @@ const KoiDashboard = () => {
 
     return (
         <div className="py-6">
-            {/* Banner */}
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="relative bg-[#FFF7ED] rounded-2xl p-8 sm:p-12 overflow-hidden mb-8 lg:mb-12"
-            >
-                <div className="relative z-10 max-w-lg text-center sm:text-left">
-                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-orange-950 mb-4 leading-tight">
-                        Koi Hub <br />
-                        <span className="text-[#f97316]">Centre Operations</span>
-                    </h1>
-                    <p className="text-orange-900/60 text-sm sm:text-base font-medium mb-6 lg:mb-8">
-                        Track premium koi inventory, manage high-value sales & enquiries.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center sm:justify-start">
-                        <button className="bg-orange-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-sm font-bold shadow-lg shadow-orange-900/20 hover:opacity-90 transition-all active:scale-95 flex items-center justify-center gap-2">
-                            New Sale <ArrowRight size={16} />
-                        </button>
-                    </div>
-                </div>
-
-                <div className="absolute right-0 top-0 w-1/2 h-full hidden lg:flex items-center justify-center opacity-20">
-                    <Fish size={240} className="text-[#f97316]" />
-                </div>
-            </motion.div>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
@@ -123,6 +102,13 @@ const KoiDashboard = () => {
                     icon={Users}
                     color="bg-indigo-500"
                     delay={0.4}
+                />
+                <StatCard
+                    title="Live Enquiries"
+                    value={stats.totalEnquiries}
+                    icon={MessageSquare}
+                    color="bg-blue-500"
+                    delay={0.5}
                 />
             </div>
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
+import useWindowSize from '../../hooks/useWindowSize';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard,
@@ -87,8 +88,9 @@ const KoiLayout = ({ role: initialRole, allocatedModules: initialModules }) => {
     const [isHovered, setIsHovered] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const location = useLocation();
-    const role = initialRole || localStorage.getItem('role');
+    const role = (initialRole || localStorage.getItem('role') || '').toUpperCase();
     const [searchQuery, setSearchQuery] = useState('');
+    const { width } = useWindowSize();
 
     useEffect(() => {
         setIsMobileMenuOpen(false);
@@ -116,7 +118,7 @@ const KoiLayout = ({ role: initialRole, allocatedModules: initialModules }) => {
         { icon: Users, label: 'Customers', path: '/koi/customers', color: '#F59E0B' },
         { icon: FileText, label: 'Invoices', path: '/koi/invoices', color: '#14B8A6' },
     ].filter(item => {
-        if (role === 'BOSS' || role === 'MANAGER' || role === 'KOI_MANAGER' || role === 'BRANCH_MANAGER' || role === 'admin') return true;
+        if (['BOSS', 'MANAGER', 'KOI', 'KOIMANAGER', 'BRANCHMANAGER', 'ADMIN'].includes(role)) return true;
 
         return allocatedModules.includes(`Koi:${item.label}`);
     });
@@ -150,7 +152,7 @@ const KoiLayout = ({ role: initialRole, allocatedModules: initialModules }) => {
                 initial={false}
                 animate={{
                     width: (isHovered || isMobileMenuOpen) ? 260 : 88,
-                    x: isMobileMenuOpen ? 0 : (window.innerWidth < 1024 ? -260 : 0)
+                    x: isMobileMenuOpen ? 0 : (width < 1024 ? -260 : 0)
                 }}
                 transition={{ duration: 1.0, ease: [0.32, 0.72, 0, 1] }}
                 className={`fixed lg:relative bg-white flex flex-col items-center py-6 z-[70] border-r border-[#F1F5F9] no-print h-full ${isMobileMenuOpen ? 'w-[260px]' : ''}`}
@@ -217,7 +219,7 @@ const KoiLayout = ({ role: initialRole, allocatedModules: initialModules }) => {
                             </div>
                         </div>
 
-                        {(role === 'BOSS' || role === 'MANAGER' || role === 'KOI_MANAGER' || role === 'BRANCH_MANAGER' || role === 'admin') && (
+                        {(['BOSS', 'MANAGER', 'KOI', 'KOIMANAGER', 'BRANCHMANAGER', 'ADMIN'].includes(role)) && (
                             <div className="pt-2">
                                 {(isHovered || isMobileMenuOpen) && (
                                     <motion.h3
@@ -280,7 +282,14 @@ const KoiLayout = ({ role: initialRole, allocatedModules: initialModules }) => {
             {/* Content Wrapper */}
             <div className="flex-1 flex bg-[#FFF7ED] relative overflow-hidden">
                 <div className="flex-1 flex flex-col overflow-hidden bg-white m-0 lg:m-4 lg:rounded-2xl shadow-xl shadow-orange-900/5 relative">
-                    <header className="h-20 flex items-center px-4 lg:px-12 gap-4 lg:gap-8 no-print border-b border-gray-50">
+                    <header className="h-20 flex items-center px-4 md:px-8 lg:px-12 gap-4 no-print border-b border-gray-50 text-orange-900/80">
+                        {/* Mobile Menu Toggle (Left Side) */}
+                        <button
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            className="lg:hidden p-2 text-gray-400 hover:bg-gray-100 rounded-xl transition-colors shrink-0"
+                        >
+                            <Menu size={24} />
+                        </button>
                         <div className="flex-1 relative max-w-xl group hidden md:block">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f97316] transition-colors" size={20} />
                             <input
@@ -293,12 +302,12 @@ const KoiLayout = ({ role: initialRole, allocatedModules: initialModules }) => {
                         </div>
 
                         {/* Profile Info */}
-                        <div className="flex items-center gap-2 sm:gap-4 pl-2 sm:pl-4 border-l border-gray-100 ml-auto">
-                            <div className="flex flex-col items-end hidden sm:flex">
+                        <div className="flex items-center gap-2 sm:gap-4 pl-4 border-l border-gray-100 ml-auto">
+                            <div className="flex flex-col items-end hidden xs:flex">
                                 <p className="text-xs lg:text-sm font-bold text-gray-900 leading-tight whitespace-nowrap">{role?.replace('_', ' ') || 'Koi Officer'}</p>
                                 <p className="text-[9px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-widest">Koi Centre</p>
                             </div>
-                            <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-[#f97316] flex items-center justify-center text-white text-xs lg:text-sm font-bold shadow-sm shrink-0">
+                            <div className="w-9 h-9 lg:w-11 lg:h-11 rounded-full bg-gradient-to-tr from-orange-500 to-orange-700 flex items-center justify-center text-white text-xs lg:text-sm font-bold shadow-md shrink-0 border-2 border-white">
                                 {role?.charAt(0) || 'K'}
                             </div>
                         </div>
@@ -312,13 +321,6 @@ const KoiLayout = ({ role: initialRole, allocatedModules: initialModules }) => {
                 </div>
             </div>
 
-            {/* Persistent Mobile Toggle Button (Right Side) */}
-            <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="fixed top-1/2 right-0 -translate-y-1/2 bg-[#f97316] text-white p-4 rounded-l-2xl shadow-2xl z-[100] lg:hidden active:scale-95 transition-all duration-300 flex items-center justify-center border-l border-t border-b border-white/20 no-print"
-            >
-                {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-            </button>
         </div>
     );
 };

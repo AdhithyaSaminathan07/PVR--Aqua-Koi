@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
     CheckSquare,
     Clock,
@@ -9,7 +10,12 @@ import {
     ClipboardList,
     Loader2,
     ChevronRight,
-    User
+    User,
+    ShoppingCart,
+    Sparkles,
+    ArrowRight,
+    Droplets,
+    Fish
 } from 'lucide-react';
 import * as api from '../../services/api';
 import Modal from '../../components/Modal';
@@ -24,7 +30,9 @@ const StaffDashboard = () => {
         customerId: '',
         description: '', // for complaint
         details: '', // for enquiry
-        type: 'Installation' // for task if relevant
+        orderNote: '', // for order note
+        type: 'Installation', // for task if relevant
+        branch: 'Aqua' // for dynamic routing
     });
 
     useEffect(() => {
@@ -34,12 +42,16 @@ const StaffDashboard = () => {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [taskRes, custRes] = await Promise.all([
+            const [taskRes, aquaCustRes, koiCustRes] = await Promise.all([
                 api.getAssignedTasks(),
-                api.getCustomers()
+                api.getCustomers(),
+                api.getKoiCustomers()
             ]);
             setTasks(taskRes.data);
-            setCustomers(custRes.data);
+            setCustomers({
+                Aqua: aquaCustRes.data,
+                Koi: koiCustRes.data
+            });
         } catch (err) {
             console.error('Error fetching staff data:', err);
         } finally {
@@ -62,17 +74,26 @@ const StaffDashboard = () => {
             if (activeModal === 'complaint') {
                 await api.createComplaint({ customerId: formData.customerId, description: formData.description });
             } else if (activeModal === 'enquiry') {
-                await api.createEnquiry({ customerId: formData.customerId, details: formData.details });
+                if (formData.branch === 'Koi') {
+                    await api.createKoiEnquiry({ customerId: formData.customerId, details: formData.details });
+                } else {
+                    await api.createEnquiry({ customerId: formData.customerId, details: formData.details });
+                }
             } else if (activeModal === 'order') {
-                // For order, we just redirect or show a message that it should start as enquiry
-                // or we can implement a simple order creation if the user wants.
-                // Looking at Orders.jsx, they start as enquiries usually.
-                alert('Orders should be created by converting Enquiries in the manager panel. For now, please raise an Enquiry.');
-                return;
+                if (formData.branch === 'Koi') {
+                    await api.createKoiOrder({ customerId: formData.customerId, details: formData.orderNote, items: [], totalAmount: 0 });
+                } else {
+                    await api.createOrder({ 
+                        customerId: formData.customerId, 
+                        items: [{ name: formData.orderNote || 'Staff Field Order', quantity: 1, price: 0 }], 
+                        totalAmount: 0,
+                        status: 'Pending'
+                    });
+                }
             }
             setActiveModal(null);
-            setFormData({ customerId: '', description: '', details: '' });
-            alert(`${activeModal.charAt(0).toUpperCase() + activeModal.slice(1)} raised successfully!`);
+            setFormData({ ...formData, customerId: '', description: '', details: '', orderNote: '' });
+            alert(`${activeModal.charAt(0).toUpperCase() + activeModal.slice(1)} raised for ${formData.branch} successfully!`);
         } catch (err) {
             alert(`Error raising ${activeModal}: ` + (err.response?.data?.message || err.message));
         }
@@ -82,10 +103,9 @@ const StaffDashboard = () => {
         switch (status) {
             case 'Travelling': return 'bg-yellow-100 text-yellow-700';
             case 'Arrived': return 'bg-sky-100 text-sky-700';
-            case 'In Progress': return 'bg-blue-100 text-blue-700';
-            case 'Completed': return 'bg-green-100 text-green-700';
-            case 'Returned': return 'bg-purple-100 text-purple-700';
-            default: return 'bg-gray-100 text-gray-700';
+            case 'Work completed': return 'bg-green-100 text-green-700';
+            case 'Returned home': return 'bg-gray-100 text-gray-700';
+            default: return 'bg-slate-100 text-slate-700';
         }
     };
 
@@ -94,8 +114,13 @@ const StaffDashboard = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-extrabold text-gray-900 font-display tracking-tight">Staff Portal</h1>
-                    <p className="text-gray-500 mt-2 text-lg">Manage your field operations and assist customers on the go.</p>
+                    <h1 className="text-4xl font-extrabold text-gray-900 font-display tracking-tight flex items-center gap-3">
+                        Welcome Back 
+                        <span className="text-blue-600 inline-flex items-center gap-2">
+                             Staff Operations <Sparkles className="text-amber-400" size={32} />
+                        </span>
+                    </h1>
+                    <p className="text-gray-500 mt-2 text-lg font-medium italic">Your command center for field operations and customer excellence.</p>
                 </div>
                 
                 <div className="flex flex-wrap gap-3">
@@ -112,6 +137,13 @@ const StaffDashboard = () => {
                     >
                         <MessageSquare size={20} />
                         <span>New Enquiry</span>
+                    </button>
+                    <button 
+                        onClick={() => setActiveModal('order')}
+                        className="flex items-center gap-2 px-5 py-3 bg-emerald-50 text-emerald-600 rounded-2xl font-bold hover:bg-emerald-100 transition-all shadow-sm border border-emerald-100"
+                    >
+                        <ShoppingCart size={20} className="lucide lucide-shopping-cart" />
+                        <span>Raise Order</span>
                     </button>
                 </div>
             </div>
@@ -144,74 +176,85 @@ const StaffDashboard = () => {
                 </div>
             </div>
 
-            {/* Assigned Tasks */}
-            <div className="space-y-6">
-                <div className="flex items-center gap-3">
-                    <div className="w-1.5 h-8 bg-blue-600 rounded-full"></div>
-                    <h2 className="text-2xl font-bold text-gray-900 tracking-tight italic">Assigned Responsibilities</h2>
-                </div>
+            {/* Quick Actions & Recent Tasks */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Pending Tasks Preview */}
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-1.5 h-8 bg-blue-600 rounded-full"></div>
+                            <h2 className="text-2xl font-bold text-gray-900 tracking-tight italic">Assigned Responsibilities</h2>
+                        </div>
+                        <Link to="/staff/tasks" className="text-blue-600 font-bold text-xs uppercase tracking-widest hover:underline">View All Tasks</Link>
+                    </div>
 
-                <div className="space-y-4">
-                    {loading ? (
-                        <div className="flex flex-col items-center justify-center py-20 gap-4 bg-white rounded-[2rem] border border-dashed border-gray-200">
-                            <Loader2 className="animate-spin text-blue-500" size={40} />
-                            <p className="text-gray-400 font-medium italic">Fetching your schedule...</p>
-                        </div>
-                    ) : tasks.length === 0 ? (
-                        <div className="bg-white p-16 rounded-[2rem] border border-dashed border-gray-200 text-center">
-                            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
-                                <ClipboardList size={40} />
+                    <div className="space-y-4">
+                        {loading ? (
+                            <div className="flex flex-col items-center justify-center py-20 gap-4 bg-white rounded-[2rem] border border-dashed border-gray-200">
+                                <Loader2 className="animate-spin text-blue-500" size={40} />
                             </div>
-                            <p className="text-gray-500 font-bold text-xl italic tracking-tight">No tasks assigned for you currently.</p>
-                            <p className="text-gray-400 mt-1">Enjoy your break or check back later!</p>
-                        </div>
-                    ) : (
-                        tasks.map((task) => (
-                            <div key={task._id} className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 hover:shadow-xl hover:shadow-gray-200/50 hover:border-blue-100 transition-all group">
-                                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-                                    <div className="flex gap-6 items-start">
-                                        <div className={`p-5 rounded-2xl ${getStatusColor(task.status)} group-hover:scale-105 transition-transform`}>
-                                            <CheckSquare size={32} />
+                        ) : tasks.length === 0 ? (
+                            <div className="bg-white p-12 rounded-[2rem] border border-dashed border-gray-200 text-center">
+                                <p className="text-gray-400 font-bold italic">No active tasks assigned.</p>
+                            </div>
+                        ) : (
+                            tasks.slice(0, 3).map((task) => (
+                                <div key={task._id} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:border-blue-100 transition-all flex items-center justify-between group">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`p-3 rounded-xl ${getStatusColor(task.status)} group-hover:scale-105 transition-transform`}>
+                                            <CheckSquare size={20} />
                                         </div>
-                                        <div className="space-y-2">
-                                            <div className="flex items-center gap-3">
-                                                <h3 className="text-xl font-bold text-gray-900 leading-tight">{task.description}</h3>
-                                                <span className="px-3 py-1 bg-gray-100 text-gray-500 text-[10px] font-black uppercase rounded-lg border border-gray-100 tracking-widest">{task.type}</span>
-                                            </div>
-                                            <div className="flex flex-wrap gap-5">
-                                                <div className="flex items-center gap-2 text-sm font-bold text-gray-500 italic">
-                                                    <User size={16} className="text-blue-500" />
-                                                    <span>{task.customerId?.name || 'Walk-in Client'}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-sm font-bold text-gray-400">
-                                                    <MapPin size={16} className="text-rose-500" />
-                                                    <span>{task.customerId?.address || 'Site Visit'}</span>
-                                                </div>
-                                            </div>
+                                        <div>
+                                            <h3 className="font-bold text-gray-900 text-sm">{task.description}</h3>
+                                            <p className="text-[10px] text-gray-400 font-medium">{task.customerId?.name || 'Walk-in'}</p>
                                         </div>
                                     </div>
-
-                                    <div className="flex items-center gap-4 bg-gray-50/50 p-2 rounded-2xl">
-                                        <select
-                                            value={task.status}
-                                            onChange={(e) => handleStatusChange(task._id, e.target.value)}
-                                            className={`pl-6 pr-12 py-3 rounded-xl text-xs font-black uppercase tracking-widest border-none outline-none cursor-pointer appearance-none bg-no-repeat bg-[right_1rem_center] ${getStatusColor(task.status)}`}
-                                            style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'currentColor\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\' /%3E%3C/svg%3E")' }}
-                                        >
-                                            <option value="Travelling">Travelling</option>
-                                            <option value="Arrived">Arrived</option>
-                                            <option value="In Progress">Working</option>
-                                            <option value="Completed">Completed</option>
-                                            <option value="Returned">Returned</option>
-                                        </select>
-                                        <div className="p-3 bg-white rounded-xl text-gray-300 group-hover:text-blue-500 transition-colors">
-                                            <ChevronRight size={24} />
-                                        </div>
+                                    <div className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${getStatusColor(task.status)}`}>
+                                        {task.status}
                                     </div>
                                 </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+
+                {/* Customer Assistance Quick Stats */}
+                <div className="space-y-6">
+                    <div className="bg-gradient-to-br from-indigo-600 to-blue-700 p-8 rounded-[2.5rem] text-white shadow-xl shadow-blue-200 relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+                            <Plus size={80} />
+                        </div>
+                        <h3 className="text-xl font-bold mb-2">Service Mode</h3>
+                        <p className="text-blue-100 text-xs font-medium mb-6">Assisting a customer? Raise a request instantly.</p>
+                        <div className="space-y-3">
+                            <button onClick={() => setActiveModal('complaint')} className="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl border border-white/10 text-xs font-bold transition-all text-left px-4 flex items-center justify-between">
+                                Complaint <ChevronRight size={14} />
+                            </button>
+                            <button onClick={() => setActiveModal('enquiry')} className="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl border border-white/10 text-xs font-bold transition-all text-left px-4 flex items-center justify-between">
+                                Enquiry <ChevronRight size={14} />
+                            </button>
+                            <button onClick={() => setActiveModal('order')} className="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl border border-white/10 text-xs font-bold transition-all text-left px-4 flex items-center justify-between">
+                                Order <ChevronRight size={14} />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-[2rem] border border-gray-100 flex flex-col gap-4">
+                        <div className="flex items-center justify-between">
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Attendance Status</p>
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+                                <Clock size={20} />
                             </div>
-                        ))
-                    )}
+                            <div>
+                                <p className="font-bold text-gray-900 text-sm">Checked In</p>
+                                <p className="text-[10px] text-gray-400">Regular Shift</p>
+                            </div>
+                        </div>
+                        <Link to="/staff/attendance" className="w-full py-3 bg-gray-50 text-gray-500 rounded-xl text-[10px] font-black uppercase tracking-widest text-center hover:bg-gray-100">View History</Link>
+                    </div>
                 </div>
             </div>
 
@@ -222,24 +265,60 @@ const StaffDashboard = () => {
                 title={`Raise New ${activeModal?.charAt(0).toUpperCase() + activeModal?.slice(1)}`}
             >
                 <form onSubmit={handleSubmit} className="space-y-6 p-2">
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 italic">Select Customer</label>
-                        <select
-                            required className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-4 focus:ring-blue-100 font-bold transition-all"
-                            value={formData.customerId} onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
-                        >
-                            <option value="">Choose a customer...</option>
-                            {customers.map(c => <option key={c._id} value={c._id}>{c.name} ({c.phone})</option>)}
-                        </select>
+                    {(activeModal === 'enquiry' || activeModal === 'order') && (
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 italic">Target Department</label>
+                            <div className="grid grid-cols-2 gap-3 p-1.5 bg-gray-100 rounded-3xl">
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, branch: 'Aqua', customerId: '' })}
+                                    className={`flex items-center justify-center gap-2 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${formData.branch === 'Aqua' ? 'bg-white text-blue-600 shadow-md scale-[1.02]' : 'text-gray-400 hover:text-gray-600'}`}
+                                >
+                                    <Droplets size={16} />
+                                    Aqua Branch
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, branch: 'Koi', customerId: '' })}
+                                    className={`flex items-center justify-center gap-2 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${formData.branch === 'Koi' ? 'bg-white text-orange-600 shadow-md scale-[1.02]' : 'text-gray-400 hover:text-gray-600'}`}
+                                >
+                                    <Fish size={16} />
+                                    Koi Centre
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="space-y-2 text-center lg:text-left">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 italic flex items-center gap-2">
+                            <User size={12} className="text-gray-300" />
+                            Select Business Customer ({formData.branch})
+                        </label>
+                        <div className="relative group">
+                            <select
+                                required 
+                                className="w-full px-6 py-5 bg-gray-50 border-2 border-transparent rounded-[2rem] focus:border-blue-500/20 focus:bg-white outline-none font-bold transition-all appearance-none text-gray-900 shadow-inner"
+                                value={formData.customerId} onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
+                            >
+                                <option value="">Select established client...</option>
+                                {(customers[formData.branch] || []).map(c => <option key={c._id} value={c._id}>{c.name} ({c.phone || c.whatsapp})</option>)}
+                            </select>
+                            <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-300">
+                                <ChevronRight size={20} className="rotate-90" />
+                            </div>
+                        </div>
                     </div>
 
                     {activeModal === 'complaint' && (
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 italic">Describe the Problem</label>
-                            <textarea
-                                placeholder="What is the issue?" required className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-4 focus:ring-blue-100 font-bold min-h-[150px] transition-all"
-                                value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                            />
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 italic">Describe the Problem</label>
+                                <textarea
+                                    placeholder="What is the issue?" required 
+                                    className="w-full px-6 py-5 bg-gray-50 border-2 border-transparent rounded-[2rem] focus:border-blue-500/20 focus:bg-white outline-none font-bold min-h-[180px] transition-all text-gray-900 placeholder:text-gray-300 shadow-inner"
+                                    value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                />
+                            </div>
                         </div>
                     )}
 
@@ -247,14 +326,26 @@ const StaffDashboard = () => {
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 italic">Enquiry Details</label>
                             <textarea
-                                placeholder="What is the customer looking for?" required className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-4 focus:ring-blue-100 font-bold min-h-[150px] transition-all"
+                                placeholder="What is the customer looking for?" required 
+                                className="w-full px-6 py-5 bg-gray-50 border-2 border-transparent rounded-[2rem] focus:border-blue-500/20 focus:bg-white outline-none font-bold min-h-[180px] transition-all text-gray-900 placeholder:text-gray-300 shadow-inner"
                                 value={formData.details} onChange={(e) => setFormData({ ...formData, details: e.target.value })}
                             />
                         </div>
                     )}
+                    {activeModal === 'order' && (
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 italic">Order Note / Brief</label>
+                            <textarea
+                                placeholder="Describe what the customer wants to order..." required 
+                                className="w-full px-6 py-5 bg-gray-50 border-2 border-transparent rounded-[2rem] focus:border-blue-500/20 focus:bg-white outline-none font-bold min-h-[180px] transition-all text-gray-900 placeholder:text-gray-300 shadow-inner"
+                                value={formData.orderNote} onChange={(e) => setFormData({ ...formData, orderNote: e.target.value })}
+                            />
+                        </div>
+                    )}
 
-                    <button type="submit" className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-sm tracking-widest uppercase shadow-xl shadow-blue-200 hover:bg-blue-700 hover:-translate-y-1 transition-all">
+                    <button type="submit" className="w-full py-5 bg-blue-600 hover:bg-blue-700 text-white rounded-[1.5rem] font-black text-xs tracking-widest uppercase shadow-xl shadow-blue-200 hover:shadow-blue-300 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 mt-4">
                         Submit {activeModal}
+                        <ArrowRight size={18} />
                     </button>
                     <p className="text-[10px] text-center text-gray-400 font-bold uppercase tracking-widest italic pt-2">This will be notified to the branch manager</p>
                 </form>

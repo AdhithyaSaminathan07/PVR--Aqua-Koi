@@ -80,7 +80,7 @@ const KoiSales = () => {
         billingInfo: { name: '', address: '', phone: '', gstNo: '' },
         companyInfo: {
             name: 'PVR KOI CENTRE',
-            address: '123 Aqua Street, Chennai, TN\nContact: +91 90000 00000',
+            address: '123 Koi Street, Chennai, TN\nContact: +91 90000 00000',
             contact: 'pvrkoi@gmail.com | www.pvrkoi.com',
             gstin: '33AAAAA0000A1Z5'
         },

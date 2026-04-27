@@ -6,7 +6,71 @@ const Role = require('../../models/Boss/Role');
 exports.getRoles = async (req, res) => {
     try {
         console.log('Fetching roles...');
-        const roles = await Role.find();
+        let roles = await Role.find();
+        
+        // Seed critical roles if none exist or if specific ones are missing
+        if (roles.length === 0) {
+            console.log('No roles found, seeding defaults...');
+            const defaultRoles = [
+                {
+                    name: 'Boss',
+                    key: 'BOSS',
+                    modules: [
+                        'Aqua:Dashboard', 'Aqua:Attendance', 'Aqua:Employees', 'Aqua:Customers', 'Aqua:Inventory', 'Aqua:Complaints', 'Aqua:Orders', 'Aqua:Tasks', 'Aqua:Services', 'Aqua:Invoices',
+                        'Koi:Dashboard', 'Koi:Attendance', 'Koi:Employees', 'Koi:Enquiries', 'Koi:Sales & Billing', 'Koi:Payments', 'Koi:Inventory', 'Koi:Customers', 'Koi:Invoices'
+                    ],
+                    description: 'Full System Access'
+                },
+                {
+                    name: 'General Manager',
+                    key: 'MANAGER',
+                    modules: [
+                        'Aqua:Dashboard', 'Aqua:Attendance', 'Aqua:Employees', 'Aqua:Customers', 'Aqua:Inventory', 'Aqua:Complaints', 'Aqua:Orders', 'Aqua:Tasks', 'Aqua:Services', 'Aqua:Invoices',
+                        'Koi:Dashboard', 'Koi:Attendance', 'Koi:Employees', 'Koi:Enquiries', 'Koi:Sales & Billing', 'Koi:Payments', 'Koi:Inventory', 'Koi:Customers', 'Koi:Invoices'
+                    ],
+                    description: 'Full System Access'
+                },
+                {
+                    name: 'General Staff',
+                    key: 'GENERAL_STAFF',
+                    modules: ['Aqua:Dashboard', 'Aqua:Tasks', 'Aqua:Complaints', 'Aqua:Orders', 'Koi:Enquiries', 'Staff:Portal'],
+                    description: 'Field staff for tasks and complaint handling'
+                },
+                {
+                    name: 'General Employee',
+                    key: 'GENERAL_EMPLOYEE',
+                    modules: ['Aqua:Dashboard', 'Aqua:Tasks', 'Aqua:Complaints', 'Aqua:Orders', 'Koi:Enquiries', 'Staff:Portal'],
+                    description: 'Support staff for operations'
+                }
+            ];
+            
+            await Role.insertMany(defaultRoles);
+            roles = await Role.find();
+        } else {
+            // Check for missing critical staff roles
+            const hasGeneralStaff = roles.some(r => r.key === 'GENERAL_STAFF');
+            const hasGeneralEmployee = roles.some(r => r.key === 'GENERAL_EMPLOYEE');
+            
+            if (!hasGeneralStaff || !hasGeneralEmployee) {
+                const missingRoles = [];
+                if (!hasGeneralStaff) missingRoles.push({
+                    name: 'General Staff',
+                    key: 'GENERAL_STAFF',
+                    modules: ['Aqua:Dashboard', 'Aqua:Tasks', 'Aqua:Complaints', 'Staff:Portal'],
+                    description: 'Field staff for tasks and complaint handling'
+                });
+                if (!hasGeneralEmployee) missingRoles.push({
+                    name: 'General Employee',
+                    key: 'GENERAL_EMPLOYEE',
+                    modules: ['Aqua:Dashboard', 'Aqua:Tasks', 'Aqua:Complaints', 'Staff:Portal'],
+                    description: 'Support staff for operations'
+                });
+                
+                await Role.insertMany(missingRoles);
+                roles = await Role.find();
+            }
+        }
+
         console.log(`Found ${roles.length} roles`);
         res.status(200).json(roles);
     } catch (error) {

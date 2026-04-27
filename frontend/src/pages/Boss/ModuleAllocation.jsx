@@ -119,8 +119,8 @@ const ModuleAllocation = () => {
         (user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     );
 
-    const aquaModules = ['Dashboard', 'Customers', 'Inventory', 'Complaints', 'Enquiry & Orders', 'Tasks', 'Services', 'Employees', 'Invoices'];
-    const koiModules = ['Dashboard', 'Enquiries', 'Orders', 'Invoices', 'Payments', 'Inventory', 'Customers', 'Employees'];
+    const aquaModules = ['Dashboard', 'Attendance', 'Employees', 'Customers', 'Inventory', 'Complaints', 'Orders', 'Tasks', 'Services', 'Invoices'];
+    const koiModules = ['Dashboard', 'Attendance', 'Employees', 'Enquiries', 'Sales & Billing', 'Payments', 'Inventory', 'Customers', 'Invoices'];
 
     return (
         <div className="py-6 min-h-screen bg-[#F0F7FF]">

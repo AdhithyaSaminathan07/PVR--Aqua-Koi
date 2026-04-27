@@ -273,9 +273,11 @@ const Tasks = () => {
                                         onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value })}
                                     >
                                         <option value="">Select Employee...</option>
-                                        {employees.filter(e => e.status === 'Active').map(emp => (
-                                            <option key={emp._id} value={emp._id}>{emp.name} · {emp.designation}</option>
-                                        ))}
+                                        {employees
+                                            .filter(e => e.status === 'Active' && /general (employee|staff)/i.test(e.designation))
+                                            .map(emp => (
+                                                <option key={emp._id} value={emp._id}>{emp.name} · {emp.designation}</option>
+                                            ))}
                                     </select>
                                 </div>
                                 <div className="space-y-1.5">

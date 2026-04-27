@@ -5,6 +5,11 @@ const api = axios.create({
     baseURL: '/api',
 });
 
+export const handleLogout = () => {
+    localStorage.clear();
+    window.location.href = '/login';
+};
+
 // Add a request interceptor to include the auth token
 api.interceptors.request.use(
     (config) => {
@@ -65,6 +70,7 @@ export const createComplaint = (data) => api.post('/complaints', data);
 export const updateComplaint = (id, data) => api.put(`/complaints/${id}`, data);
 export const deleteComplaint = (id) => api.delete(`/complaints/${id}`);
 export const updateComplaintStatus = (id, status) => api.patch(`/complaints/${id}/status`, { status });
+export const convertToTask = (id, assignedTo) => api.post(`/complaints/${id}/convert`, { assignedTo });
 
 // Orders / Enquiries
 export const getEnquiries = () => api.get('/orders/enquiries');
@@ -171,3 +177,4 @@ export const updateSettings = (data, branch = 'Aqua') => api.put(`/settings?bran
 
 export default api;
 
+export const getMyAttendance = (params) => api.get('/attendance/my-attendance', { params });

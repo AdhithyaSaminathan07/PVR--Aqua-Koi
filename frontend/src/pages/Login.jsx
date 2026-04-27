@@ -13,7 +13,12 @@ const Login = ({ onLogin }) => {
         e.preventDefault();
         try {
             const response = await login({ email: loginId, password });
-            const { token, role, user } = response.data;
+            const { token, user } = response.data;
+            const originalRole = response.data.role || 'STAFF';
+            const role = originalRole.toUpperCase();
+            
+            // For internal logic, normalize key by removing spaces/underscores
+            const roleKey = role.trim().replace(/[\s_]/g, '');
 
             localStorage.setItem('token', token);
             localStorage.setItem('role', role);
@@ -26,11 +31,15 @@ const Login = ({ onLogin }) => {
 
             if (onLogin) onLogin(role, user?.allocatedModules || []);
 
-            // Role-based redirection
-            if (role === 'BOSS') {
+            // Role-based redirection using robust key
+            if (roleKey === 'BOSS' || roleKey === 'MANAGER') {
                 navigate('/boss-dashboard');
-            } else if (role === 'KOI_MANAGER') {
+            } else if (roleKey.includes('KOI')) {
                 navigate('/koi/dashboard');
+            } else if (roleKey.includes('AQUA') || roleKey === 'ADMIN') {
+                navigate('/aqua');
+            } else if (roleKey === 'STAFF') {
+                navigate('/staff/dashboard');
             } else {
                 navigate('/');
             }
@@ -68,8 +77,8 @@ const Login = ({ onLogin }) => {
                 <div className="flex-1 bg-white relative p-6 md:p-14 lg:p-16 flex flex-col justify-center items-center md:-ml-24 md:rounded-l-[5rem] z-20 shadow-[-40px_0_80px_rgba(0,0,0,0.03)] border-l border-white/5 overflow-hidden">
                     <div className="max-w-md w-full">
                         {/* PVR Logo - Centered Focal Point */}
-                        <div className="flex justify-center mb-12 transition-all duration-500 hover:scale-105 select-none pt-4">
-                            <img src="/PVR.png" alt="PVR Logo" className="h-32 md:h-40 w-auto object-contain drop-shadow-2xl" />
+                        <div className="flex justify-center mb-8 md:mb-12 transition-all duration-500 hover:scale-105 select-none md:pt-4">
+                            <img src="/PVR.png" alt="PVR Logo" className="h-24 md:h-40 w-auto object-contain drop-shadow-2xl" />
                         </div>
 
                         <form onSubmit={handleLogin} className="space-y-5 md:space-y-6">

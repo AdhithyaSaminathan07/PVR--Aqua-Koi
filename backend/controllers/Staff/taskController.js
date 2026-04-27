@@ -41,7 +41,7 @@ exports.updateTaskStatus = async (req, res) => {
         task.status = status;
         task.timeline.push({ status });
 
-        if (status === 'Completed' && task.materialsUsed.length > 0) {
+        if ((status === 'Completed' || status === 'Work completed') && task.materialsUsed.length > 0) {
             // Auto stock deduction
             for (let material of task.materialsUsed) {
                 await Product.findByIdAndUpdate(material.productId, {
