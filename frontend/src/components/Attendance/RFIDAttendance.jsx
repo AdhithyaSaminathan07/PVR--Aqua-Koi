@@ -13,6 +13,7 @@ const RFIDAttendance = ({ onAttendanceRecorded, branch = 'Aqua' }) => {
     // Location related states
     const [settings, setSettings] = useState(null);
     const [currentLocation, setCurrentLocation] = useState(null);
+    const [locationError, setLocationError] = useState(null);
 
     const calculateDistance = (lat1, lon1, lat2, lon2) => {
         const R = 6371e3; // metres
@@ -32,6 +33,7 @@ const RFIDAttendance = ({ onAttendanceRecorded, branch = 'Aqua' }) => {
     const checkLocation = useCallback((position) => {
         const { latitude, longitude, accuracy } = position.coords;
         setCurrentLocation({ latitude, longitude, accuracy });
+        setLocationError(null);
     }, []);
 
     const formatDuration = (checkIn, checkOut) => {
@@ -76,9 +78,16 @@ const RFIDAttendance = ({ onAttendanceRecorded, branch = 'Aqua' }) => {
                         checkLocation,
                         (error) => {
                             console.error('Location error:', error);
+                            let errorMsg = 'LOCATION ERROR';
+                            if (error.code === 1) errorMsg = 'LOCATION PERMISSION DENIED';
+                            else if (error.code === 2) errorMsg = 'LOCATION UNAVAILABLE';
+                            else if (error.code === 3) errorMsg = 'LOCATION TIMEOUT';
+                            setLocationError(errorMsg);
                         },
-                        { enableHighAccuracy: true }
+                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                     );
+                } else {
+                    setLocationError('GEOLOCATION NOT SUPPORTED');
                 }
             } catch (err) {
                 console.error('Error initializing RFID settings:', err);
@@ -155,20 +164,25 @@ const RFIDAttendance = ({ onAttendanceRecorded, branch = 'Aqua' }) => {
                     <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className={`mb-6 p-4 rounded-2xl border text-center transition-colors ${isWithinRange ? 'bg-green-50/50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}
+                        className={`mb-6 p-4 rounded-2xl border text-center transition-colors ${locationError ? 'bg-orange-50 border-orange-100 text-orange-700' : isWithinRange ? 'bg-green-50/50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}
                     >
                         <div className="flex items-center justify-center gap-2 mb-1">
-                            {isWithinRange ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                            {locationError ? <AlertCircle size={16} className="text-orange-600" /> : isWithinRange ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
                             <span className="font-bold text-xs uppercase tracking-wider">
-                                {isWithinRange ? 'Area Verified' : 'Outside Attendance Area'}
+                                {locationError ? locationError : isWithinRange ? 'Area Verified' : 'Outside Attendance Area'}
                             </span>
                         </div>
-                        {currentLocation && (
+                        {locationError && (
+                            <p className="text-[10px] font-medium opacity-70">
+                                PLEASE ENSURE GPS IS ENABLED AND PERMISSION IS GRANTED
+                            </p>
+                        )}
+                        {!locationError && currentLocation && (
                             <p className="text-[10px] font-medium opacity-70">
                                 {isWithinRange ? 'Your location is within the registered branch coordinates' : `You are ${Math.round(distance - settings.locationRestriction.radius)}m away from the allowed area`}
                             </p>
                         )}
-                        {!currentLocation && (
+                        {!locationError && !currentLocation && (
                             <p className="text-[10px] font-medium opacity-70 animate-pulse">Detecting your location...</p>
                         )}
                     </motion.div>

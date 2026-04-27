@@ -101,11 +101,17 @@ const Settings = ({ type = 'Aqua' }) => {
                     }
                 });
                 console.log('Location captured:', latitude, longitude);
+                notify.success('Location captured successfully');
             },
             (error) => {
                 console.error('Geolocation error:', error);
-                notify.error('Failed to capture location');
-            }
+                let errorMsg = 'Failed to capture location';
+                if (error.code === 1) errorMsg = 'Location permission denied. Please allow access in browser settings.';
+                else if (error.code === 2) errorMsg = 'Location unavailable. Ensure GPS is enabled.';
+                else if (error.code === 3) errorMsg = 'Location request timed out. Please try again.';
+                notify.error(errorMsg);
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     };
 
@@ -270,11 +276,31 @@ const Settings = ({ type = 'Aqua' }) => {
                         Capture Current Location
                     </button>
 
+                    {/* Permission Denied Guide */}
+                    <AnimatePresence>
+                        {window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+                                className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex gap-3 items-start"
+                            >
+                                <ShieldAlert className="text-amber-600 shrink-0 mt-0.5" size={18} />
+                                <div className="space-y-1">
+                                    <p className="text-[10px] text-amber-700 font-black uppercase tracking-wide">Secure Context Required</p>
+                                    <p className="text-[10px] text-amber-600 font-bold leading-relaxed uppercase tracking-tight">
+                                        Geolocation requires HTTPS. Use a secure connection or access via localhost for testing.
+                                    </p>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
                     <div className="bg-blue-50/50 p-4 rounded-2xl flex gap-3 items-start border border-blue-100/50">
                         <Info className="text-blue-600 shrink-0 mt-0.5" size={18} />
-                        <p className="text-[10px] text-blue-700 font-bold leading-relaxed uppercase tracking-wide">
-                            <span className="font-black">Tip:</span> Enable location restriction to ensure workers can only mark attendance when they are physically present at the designated location.
-                        </p>
+                        <div className="space-y-1">
+                            <p className="text-[10px] text-blue-700 font-bold leading-relaxed uppercase tracking-wide">
+                                <span className="font-black">How to fix permission:</span> If you see "Permission Denied", click the <span className="underline">Lock Icon</span> or <span className="underline">Settings Icon</span> left of the URL in your browser and set <span className="font-black">Location</span> to <span className="font-black">"Allow"</span>.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </motion.div>

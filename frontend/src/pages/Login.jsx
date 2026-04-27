@@ -14,7 +14,7 @@ const Login = ({ onLogin }) => {
             const { token, user } = response.data;
             const originalRole = response.data.role || 'STAFF';
             const role = originalRole.toUpperCase();
-            
+
             // For internal logic, normalize key by removing spaces/underscores
             const roleKey = role.trim().replace(/[\s_]/g, '');
 

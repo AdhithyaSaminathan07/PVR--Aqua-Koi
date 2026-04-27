@@ -17,6 +17,7 @@ const FaceAttendance = ({ onAttendanceRecorded, branch = 'Aqua' }) => {
     // Location related states
     const [settings, setSettings] = useState(null);
     const [currentLocation, setCurrentLocation] = useState(null);
+    const [locationError, setLocationError] = useState(null);
     const [registeredCount, setRegisteredCount] = useState(0);
 
     const webcamRef = useRef(null);
@@ -45,6 +46,7 @@ const FaceAttendance = ({ onAttendanceRecorded, branch = 'Aqua' }) => {
     const checkLocation = useCallback((position) => {
         const { latitude, longitude, accuracy } = position.coords;
         setCurrentLocation({ latitude, longitude, accuracy });
+        setLocationError(null);
     }, []);
 
     // Derived location state
@@ -93,9 +95,16 @@ const FaceAttendance = ({ onAttendanceRecorded, branch = 'Aqua' }) => {
                         checkLocation,
                         (error) => {
                             console.error('Location error:', error);
+                            let errorMsg = 'LOCATION ERROR';
+                            if (error.code === 1) errorMsg = 'LOCATION PERMISSION DENIED';
+                            else if (error.code === 2) errorMsg = 'LOCATION UNAVAILABLE';
+                            else if (error.code === 3) errorMsg = 'LOCATION TIMEOUT';
+                            setLocationError(errorMsg);
                         },
-                        { enableHighAccuracy: true }
+                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                     );
+                } else {
+                    setLocationError('GEOLOCATION NOT SUPPORTED');
                 }
             } catch (err) {
                 setStatus('error');
@@ -196,20 +205,25 @@ const FaceAttendance = ({ onAttendanceRecorded, branch = 'Aqua' }) => {
                 {settings?.locationRestriction?.isEnabled && (
                     <motion.div
                         initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-                        className={`mb-4 p-3 rounded-xl border text-center ${isWithinRange ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}
+                        className={`mb-4 p-3 rounded-xl border text-center ${locationError ? 'bg-orange-50 border-orange-100 text-orange-700' : isWithinRange ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}
                     >
                         <div className="flex items-center justify-center gap-2 mb-0.5">
-                            {isWithinRange ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                            {locationError ? <AlertCircle size={16} className="text-orange-600" /> : isWithinRange ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
                             <span className="font-bold text-xs">
-                                {isWithinRange ? 'YOU ARE WITHIN THE ALLOWED ATTENDANCE AREA' : 'OUTSIDE ALLOWED ATTENDANCE AREA'}
+                                {locationError ? locationError : isWithinRange ? 'YOU ARE WITHIN THE ALLOWED ATTENDANCE AREA' : 'OUTSIDE ALLOWED ATTENDANCE AREA'}
                             </span>
                         </div>
-                        {currentLocation && (
+                        {locationError && (
+                            <p className="text-[10px] font-medium opacity-80 mt-1">
+                                PLEASE ENSURE GPS IS ENABLED AND PERMISSION IS GRANTED
+                            </p>
+                        )}
+                        {!locationError && currentLocation && (
                             <p className="text-[10px] font-medium opacity-80">
                                 CURRENT LOCATION: {currentLocation.latitude.toFixed(6)}, {currentLocation.longitude.toFixed(6)}(±{Math.round(currentLocation.accuracy)}m)
                             </p>
                         )}
-                        {!currentLocation && (
+                        {!locationError && !currentLocation && (
                             <p className="text-[10px] font-medium opacity-80 animate-pulse">DETECTING LOCATION...</p>
                         )}
                     </motion.div>
