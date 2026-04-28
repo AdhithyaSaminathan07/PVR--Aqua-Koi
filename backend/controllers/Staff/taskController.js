@@ -1,5 +1,7 @@
 const Task = require('../../models/Staff/Task');
 const Product = require('../../models/Aqua/Product');
+const Service = require('../../models/Aqua/Service');
+const Customer = require('../../models/Aqua/Customer');
 
 exports.createTask = async (req, res) => {
     try {
@@ -50,7 +52,46 @@ exports.updateTaskStatus = async (req, res) => {
             }
         }
 
+        // AUTO SERVICE RESET: If this was a service task, reset the cycle in the Service module
+        if ((status === 'Completed' || status === 'Work completed') && task.type === 'Service' && task.customerId) {
+            const service = await Service.findOne({ customerId: task.customerId });
+            if (service) {
+                const visitDate = new Date();
+                const newExpiry = new Date();
+                newExpiry.setDate(newExpiry.getDate() + 60);
+
+                // Add log entry
+                service.logs.push({
+                    visitDate,
+                    notes: `Automatically reset from Task Management: ${task.description}`,
+                    visitedBy: task.assignedTo,
+                    replacedItems: task.materialsUsed || []
+                });
+
+                service.serviceExpiryDate = newExpiry;
+                await service.save();
+
+                // Update customer dates
+                await Customer.findByIdAndUpdate(task.customerId, {
+                    lastServiceDate: visitDate,
+                    nextServiceDate: newExpiry
+                });
+            }
+        }
+
         await task.save();
+        res.json(task);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+};
+
+exports.updateTask = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const task = await Task.findByIdAndUpdate(id, req.body, { new: true })
+            .populate('customerId')
+            .populate('assignedTo');
         res.json(task);
     } catch (err) {
         res.status(400).json({ message: err.message });

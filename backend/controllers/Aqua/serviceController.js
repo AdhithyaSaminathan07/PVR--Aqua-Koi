@@ -1,5 +1,40 @@
 const Service = require('../../models/Aqua/Service');
 const Customer = require('../../models/Aqua/Customer');
+const Product = require('../../models/Aqua/Product');
+const Task = require('../../models/Staff/Task');
+
+// Helper to ensure a Service record has a corresponding Task
+const syncServiceToTask = async (service) => {
+    try {
+        if (!service.customerId || !service.serviceExpiryDate) return;
+
+        const description = `Routine Service & Maintenance visit for ${service.customerId.name || 'Client'}`;
+        
+        // Find existing uncompleted service task for this customer
+        let task = await Task.findOne({
+            customerId: service.customerId,
+            type: 'Service',
+            status: { $ne: 'Completed' }
+        });
+
+        if (task) {
+            task.dueDate = service.serviceExpiryDate;
+            task.description = description;
+            await task.save();
+        } else {
+            await Task.create({
+                customerId: service.customerId,
+                type: 'Service',
+                dueDate: service.serviceExpiryDate,
+                description: description,
+                priority: 'Medium',
+                status: 'Travelling' // Default starting state
+            });
+        }
+    } catch (err) {
+        console.error("Task sync failed:", err);
+    }
+};
 
 exports.getAllServices = async (req, res) => {
     try {
@@ -16,7 +51,11 @@ exports.getAllServices = async (req, res) => {
 exports.createService = async (req, res) => {
     try {
         const service = new Service(req.body);
-        if (req.body.installationDate) {
+        
+        // Manual vs Automatic expiry calculation
+        if (req.body.serviceExpiryDate) {
+            service.serviceExpiryDate = new Date(req.body.serviceExpiryDate);
+        } else if (req.body.installationDate) {
             const expiry = new Date(req.body.installationDate);
             expiry.setDate(expiry.getDate() + 60);
             service.serviceExpiryDate = expiry;
@@ -39,6 +78,9 @@ exports.createService = async (req, res) => {
                 nextServiceDate: service.serviceExpiryDate
             });
         }
+
+        // Sync to Task Management
+        await syncServiceToTask(service);
 
         res.status(201).json(service);
     } catch (err) {
@@ -109,7 +151,18 @@ exports.addServiceLog = async (req, res) => {
 
         service.logs.push({ visitDate: visitDate || new Date(), notes, visitedBy, replacedItems: replacedItems || [] });
 
-        // Reset the 60-day cycle from this visit
+        // Auto stock deduction for replaced items
+        if (replacedItems && replacedItems.length > 0) {
+            for (let item of replacedItems) {
+                if (item.productId && item.quantity) {
+                    await Product.findByIdAndUpdate(item.productId, {
+                        $inc: { stock: -item.quantity }
+                    });
+                }
+            }
+        }
+
+        // Reset the 60-day cycle from this visit (if not manually overridden in future)
         const newExpiry = new Date(visitDate || Date.now());
         newExpiry.setDate(newExpiry.getDate() + 60);
         service.serviceExpiryDate = newExpiry;
@@ -123,6 +176,9 @@ exports.addServiceLog = async (req, res) => {
                 nextServiceDate: newExpiry
             });
         }
+
+        // Sync new cycle to Task Management
+        await syncServiceToTask(service);
 
         res.json(service);
     } catch (err) {

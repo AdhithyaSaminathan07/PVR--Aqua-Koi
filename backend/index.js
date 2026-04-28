@@ -45,6 +45,7 @@ app.use('/api/tasks', require('./routes/Staff/taskRoutes'));
 app.use('/api/complaints', require('./routes/Aqua/complaintRoutes'));
 app.use('/api/services', require('./routes/Aqua/serviceRoutes'));
 app.use('/api/employees', require('./routes/Boss/employeeRoutes'));
+app.use('/api/invoices', require('./routes/Aqua/invoiceRoutes'));
 app.use('/api/attendance', require('./routes/attendanceRoutes'));
 app.use('/api/system-roles', require('./routes/Boss/roleRoutes'));
 app.use('/api/departments', require('./routes/Boss/departmentRoutes'));
@@ -54,7 +55,7 @@ app.use('/api/settings', require('./routes/settingsRoutes'));
 // Koi Centre Routes
 const { protect, authorize } = require('./middleware/authMiddleware');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
-const KOI_ROLES = ['BOSS', 'MANAGER', 'admin', 'KOI', 'KOIMANAGER', 'KOI_MANAGER', 'STAFF', 'BRANCH_MANAGER', 'GENERAL_STAFF', 'GENERAL_EMPLOYEE'];
+const KOI_ROLES = ['BOSS', 'MANAGER', 'admin', 'KOI', 'KOIMANAGER', 'KOI_MANAGER', 'STAFF', 'BRANCH_MANAGER', 'GENERAL_STAFF', 'GENERAL_EMPLOYEE', 'EMP', 'employee'];
 
 app.use('/api/koi/enquiries', protect, authorize(...KOI_ROLES), require('./routes/Koi/koiEnquiryRoutes'));
 app.use('/api/koi/orders', protect, authorize(...KOI_ROLES), require('./routes/Koi/koiOrderRoutes'));

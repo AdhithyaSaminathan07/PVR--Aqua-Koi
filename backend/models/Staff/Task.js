@@ -10,8 +10,8 @@ const taskSchema = new mongoose.Schema({
     dueDate: { type: Date },
     status: {
         type: String,
-        enum: ['Travelling', 'Arrived', 'In Progress', 'Completed', 'Returned'],
-        default: 'In Progress'
+        enum: ['Pending', 'Travelling', 'Arrived', 'In Progress', 'Work completed', 'Completed', 'Returned', 'Returned home'],
+        default: 'Pending'
     },
     timeline: [{
         status: String,

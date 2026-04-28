@@ -5,51 +5,9 @@ const Employee = require('../../models/Boss/Employee');
 
 exports.createComplaint = async (req, res) => {
     try {
-        const { customerId, description, category, priority, assignedTo: manualAssignedTo } = req.body;
+        const { customerId, description, category, priority } = req.body;
         const complaint = await Complaint.create({ customerId, description, category, priority });
         
-        // Auto-create task for the complaint
-        const customer = await Customer.findById(customerId);
-        if (!customer) {
-            return res.status(404).json({ message: 'Customer not found' });
-        }
-
-        // Assignment logic: use manual selection if provided, otherwise find first available General staff/employee
-        let assignedTo = manualAssignedTo || null;
-        
-        if (!assignedTo) {
-            const employee = await Employee.findOne({ 
-                branch: 'Aqua', 
-                designation: { $regex: /general (employee|staff)/i } 
-            });
-            if (employee) {
-                assignedTo = employee._id;
-            }
-        }
-
-        const taskData = {
-            title: `Complaint: ${category || 'General'} — ${customer.name}`,
-            description: description,
-            type: 'Client Issue',
-            customerId: customerId,
-            priority: priority || 'Medium',
-            status: 'In Progress'
-        };
-
-        // Only add assignedTo if we found an employee
-        if (assignedTo) {
-            taskData.assignedTo = assignedTo;
-        }
-
-        try {
-            const task = await Task.create(taskData);
-            complaint.taskId = task._id;
-            await complaint.save();
-        } catch (taskErr) {
-            console.error('Task auto-creation failed (non-critical):', taskErr.message);
-            // Complaint is still created even if task creation fails
-        }
-
         const populated = await Complaint.findById(complaint._id).populate('customerId').populate('taskId');
         res.status(201).json(populated);
     } catch (err) {
@@ -123,6 +81,17 @@ exports.convertToTask = async (req, res) => {
         if (!complaint) return res.status(404).json({ message: 'Complaint not found' });
         if (complaint.taskId) return res.status(400).json({ message: 'Complaint already has a task' });
 
+        let finalAssignedTo = assignedTo || null;
+        if (!finalAssignedTo) {
+            const employee = await Employee.findOne({ 
+                branch: 'Aqua', 
+                designation: { $regex: /general (employee|staff)/i } 
+            });
+            if (employee) {
+                finalAssignedTo = employee._id;
+            }
+        }
+
         const task = await Task.create({
             title: `Complaint: ${complaint.category || 'General'} — ${complaint.customerId?.name || 'Unknown'}`,
             description: complaint.description,
@@ -130,7 +99,7 @@ exports.convertToTask = async (req, res) => {
             customerId: complaint.customerId?._id,
             priority: complaint.priority || 'Medium',
             status: 'In Progress',
-            assignedTo: assignedTo || null
+            assignedTo: finalAssignedTo
         });
 
         complaint.taskId = task._id;

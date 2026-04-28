@@ -1,11 +1,18 @@
 const Order = require('../../models/Aqua/Order');
 const Enquiry = require('../../models/Aqua/Enquiry');
 const Product = require('../../models/Aqua/Product');
+const Task = require('../../models/Staff/Task');
 
 exports.createEnquiry = async (req, res) => {
     try {
-        const { customerId, items, status } = req.body;
-        const enquiry = await Enquiry.create({ customerId, items, status });
+        const { customerId, details, leadName, leadPhone, status } = req.body;
+        const enquiry = await Enquiry.create({ 
+            customerId, 
+            details, 
+            leadName, 
+            leadPhone, 
+            status 
+        });
         res.status(201).json(enquiry);
     } catch (err) {
         res.status(400).json({ message: err.message });
@@ -23,8 +30,35 @@ exports.getEnquiries = async (req, res) => {
 
 exports.createOrderFromQuotation = async (req, res) => {
     try {
-        const { customerId, enquiryId, items, totalAmount, paidAmount, status, quotationFile, autoCADFiles, siteImages, invoiceId, isAdvancePaid, taxPhase, transportCharges, salesPerson, billingInfo } = req.body;
-        const order = await Order.create({ customerId, enquiryId, items, totalAmount, paidAmount, status, quotationFile, autoCADFiles, siteImages, invoiceId, isAdvancePaid, taxPhase, transportCharges, salesPerson, billingInfo });
+        let { customerId, enquiryId, items, totalAmount, ...rest } = req.body;
+
+        // If no customerId but we have an enquiry, check if it's a lead
+        if (!customerId && enquiryId) {
+            const enquiry = await Enquiry.findById(enquiryId);
+            if (enquiry && enquiry.leadName && enquiry.leadPhone) {
+                // Create the customer first
+                const Customer = require('../../models/Aqua/Customer');
+                let customer = await Customer.findOne({ phone: enquiry.leadPhone });
+                if (!customer) {
+                    customer = await Customer.create({
+                        name: enquiry.leadName,
+                        phone: enquiry.leadPhone,
+                        address: 'Field Conversion' // Default address
+                    });
+                }
+                customerId = customer._id;
+            }
+        }
+
+        if (!customerId) throw new Error('Customer ID is required to create an order');
+
+        const order = await Order.create({ 
+            customerId, 
+            enquiryId, 
+            items, 
+            totalAmount, 
+            ...rest 
+        });
         
         // Stock deduction for direct orders
         if (order.status === 'Dispatched' || order.status === 'Completed') {
@@ -38,8 +72,19 @@ exports.createOrderFromQuotation = async (req, res) => {
         }
 
         // Update enquiry status if exists
-        if (req.body.enquiryId) {
-            await Enquiry.findByIdAndUpdate(req.body.enquiryId, { status: 'Converted' });
+        if (enquiryId) {
+            await Enquiry.findByIdAndUpdate(enquiryId, { status: 'Converted' });
+        }
+
+        // Automated Task Creation for Completed Orders
+        if (order.status === 'Completed') {
+            await Task.create({
+                type: 'Installation',
+                customerId: order.customerId,
+                description: `Installation Task for Order #${order._id.toString().slice(-6)} - Auto Generated`,
+                priority: 'Medium',
+                status: 'Pending'
+            });
         }
         res.status(201).json(order);
     } catch (err) {
@@ -112,6 +157,17 @@ exports.updateOrderStatus = async (req, res) => {
             }
         }
 
+        // Automated Task Creation for Completed status
+        if (status === 'Completed' && order.status !== 'Completed') {
+            await Task.create({
+                type: 'Installation',
+                customerId: order.customerId,
+                description: `Installation Task for Order #${order._id.toString().slice(-6)} - Auto Generated`,
+                priority: 'Medium',
+                status: 'Pending'
+            });
+        }
+
         order.status = status;
         await order.save();
         res.json(order);
@@ -120,3 +176,49 @@ exports.updateOrderStatus = async (req, res) => {
     }
 };
 
+exports.updateEnquiryStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        const enquiry = await Enquiry.findByIdAndUpdate(id, { status }, { new: true });
+        res.json(enquiry);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+};
+
+exports.deleteEnquiry = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await Enquiry.findByIdAndDelete(id);
+        res.json({ message: 'Enquiry deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+exports.convertEnquiryToCustomer = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const enquiry = await Enquiry.findById(id);
+        if (!enquiry) return res.status(404).json({ message: 'Enquiry not found' });
+        if (enquiry.customerId) return res.status(400).json({ message: 'Lead already associated with a customer' });
+        if (!enquiry.leadName || !enquiry.leadPhone) return res.status(400).json({ message: 'Lead details (name/phone) missing' });
+
+        const Customer = require('../../models/Aqua/Customer');
+        let customer = await Customer.findOne({ phone: enquiry.leadPhone });
+        if (!customer) {
+            customer = await Customer.create({
+                name: enquiry.leadName,
+                phone: enquiry.leadPhone,
+                address: 'Converted from Enquiry'
+            });
+        }
+
+        enquiry.customerId = customer._id;
+        await enquiry.save();
+
+        res.json({ message: 'Lead promoted to Customer successfully', customer, enquiry });
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+};

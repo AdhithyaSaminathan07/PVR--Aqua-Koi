@@ -16,6 +16,7 @@ import {
     ArrowLeft,
     ClipboardList
 } from 'lucide-react';
+import * as api from '../../services/api';
 
 const SidebarIcon = ({ icon: Icon, path, label, active, onClick, expanded, color }) => (
     <Link
@@ -77,6 +78,7 @@ const SidebarIcon = ({ icon: Icon, path, label, active, onClick, expanded, color
 const StaffLayout = () => {
     const [isHovered, setIsHovered] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [pendingTaskCount, setPendingTaskCount] = useState(0);
     const location = useLocation();
     const navigate = useNavigate();
     const role = (localStorage.getItem('role') || '').toUpperCase();
@@ -85,6 +87,24 @@ const StaffLayout = () => {
     useEffect(() => {
         setIsMobileMenuOpen(false);
     }, [location.pathname]);
+
+    useEffect(() => {
+        const fetchPendingTasks = async () => {
+            try {
+                const res = await api.getAssignedTasks();
+                const active = (res.data || []).filter(
+                    t => t.status !== 'Completed' && t.status !== 'Returned home'
+                );
+                setPendingTaskCount(active.length);
+            } catch (err) {
+                // Silently fail – badge just won't show
+            }
+        };
+        fetchPendingTasks();
+        // Refresh every 60s so the badge stays current
+        const interval = setInterval(fetchPendingTasks, 60000);
+        return () => clearInterval(interval);
+    }, []);
 
     const handleLogout = () => {
         localStorage.clear();
@@ -173,6 +193,19 @@ const StaffLayout = () => {
                                 <span>Exit to Boss</span>
                             </button>
                         )}
+                        {/* Task Notification Bell */}
+                        <Link
+                            to="/staff/tasks"
+                            className="relative p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                            title={`${pendingTaskCount} active task${pendingTaskCount !== 1 ? 's' : ''}`}
+                        >
+                            <Bell size={22} />
+                            {pendingTaskCount > 0 && (
+                                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center px-1 shadow-sm animate-pulse">
+                                    {pendingTaskCount > 9 ? '9+' : pendingTaskCount}
+                                </span>
+                            )}
+                        </Link>
                         <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold border-2 border-white shadow-sm">
                             {role.charAt(0)}
                         </div>

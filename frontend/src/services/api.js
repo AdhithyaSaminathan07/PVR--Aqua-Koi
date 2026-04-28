@@ -75,16 +75,26 @@ export const convertToTask = (id, assignedTo) => api.post(`/complaints/${id}/con
 // Orders / Enquiries
 export const getEnquiries = () => api.get('/orders/enquiries');
 export const createEnquiry = (data) => api.post('/orders/enquiries', data);
+export const updateEnquiryStatus = (id, status) => api.patch(`/orders/enquiries/${id}/status`, { status });
+export const deleteEnquiry = (id) => api.delete(`/orders/enquiries/${id}`);
+export const convertEnquiryToCustomer = (id) => api.post(`/orders/enquiries/${id}/convert-customer`);
 export const getOrders = () => api.get('/orders');
 export const createOrder = (data) => api.post('/orders', data);
 export const updatePayment = (id, amount) => api.patch(`/orders/${id}/payment`, { amount });
 export const updateOrderStatus = (id, status) => api.patch(`/orders/${id}/status`, { status });
+
+// Invoices
+export const getAquaInvoices = () => api.get('/invoices');
+export const createAquaInvoice = (data) => api.post('/invoices', data);
+export const getAquaInvoiceById = (id) => api.get(`/invoices/${id}`);
+export const deleteAquaInvoice = (id) => api.delete(`/invoices/${id}`);
 
 // Tasks
 export const getTasks = () => api.get('/tasks');
 export const getAssignedTasks = () => api.get('/tasks/assigned');
 export const createTask = (data) => api.post('/tasks', data);
 export const updateTaskStatus = (id, status) => api.patch(`/tasks/${id}/status`, { status });
+export const updateTask = (id, data) => api.patch(`/tasks/${id}`, data);
 
 // Services
 export const getServices = () => api.get('/services');

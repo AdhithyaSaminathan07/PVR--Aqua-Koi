@@ -17,6 +17,7 @@ const Orders = lazy(() => import('./pages/Aqua/Orders'));
 const Tasks = lazy(() => import('./pages/Aqua/Tasks'));
 const Services = lazy(() => import('./pages/Aqua/Services'));
 const Employees = lazy(() => import('./pages/Aqua/Employees'));
+const Enquiries = lazy(() => import('./pages/Aqua/Enquiries'));
 const Invoices = lazy(() => import('./pages/Aqua/Invoices'));
 
 // Lazy load Koi pages
@@ -157,6 +158,7 @@ function App() {
                         <Route path="customers" element={<Customers />} />
                         <Route path="inventory" element={<Stock />} />
                         <Route path="complaints" element={<Complaints />} />
+                        <Route path="enquiries" element={<Enquiries />} />
                         <Route path="orders" element={<Orders />} />
                         <Route path="tasks" element={<Tasks />} />
                         <Route path="services" element={<Services />} />
@@ -188,6 +190,7 @@ function App() {
                         <Route path="/boss/customers" element={<Customers />} />
                         <Route path="/boss/inventory" element={<Stock />} />
                         <Route path="/boss/complaints" element={<Complaints />} />
+                        <Route path="/boss/enquiries" element={<Enquiries />} />
                         <Route path="/boss/orders" element={<Orders />} />
                         <Route path="/boss/tasks" element={<Tasks />} />
                         <Route path="/boss/services" element={<Services />} />

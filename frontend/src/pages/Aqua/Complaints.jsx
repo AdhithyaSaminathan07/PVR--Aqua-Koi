@@ -122,8 +122,31 @@ const Complaints = () => {
         }
     };
 
+    const handleWhatsAppDispatch = (task) => {
+        if (!task || !task.assignedTo) return alert('Task or Employee data missing');
+        const empPhone = typeof task.assignedTo === 'object' ? task.assignedTo.phone : null;
+        if (!empPhone) return alert('Employee phone number not found');
+        
+        const mapLink = task.customerId?.location?.googleMapsLink || 'Not provided';
+        const message = `*PVR AQUA - NEW COMPLAINT TASK*\n\n` +
+                        `*Work:* ${task.description || task.title}\n` +
+                        `*Branch:* Aqua\n` +
+                        `*Client:* ${task.customerId?.name || 'Customer'}\n` +
+                        `*Priority:* ${task.priority}\n\n` +
+                        `*📍 Map Location:* ${mapLink}`;
+        
+        const encoded = encodeURIComponent(message);
+        let phone = empPhone.replace(/\D/g, '');
+        if (phone.length === 10) phone = '91' + phone;
+        
+        window.open(`https://wa.me/${phone}?text=${encoded}`, '_blank');
+    };
+
     const filtered = useMemo(() => {
         return complaints.filter(c => {
+            // Hide ANY complaint that has been converted to a task
+            if (c.taskId) return false;
+
             const matchesSearch =
                 (c.description?.toLowerCase().includes(searchTerm.toLowerCase())) ||
                 (c.customerId?.name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -133,12 +156,16 @@ const Complaints = () => {
         });
     }, [complaints, searchTerm, filterStatus]);
 
-    const stats = useMemo(() => ({
-        open: complaints.filter(c => c.status === 'Open').length,
-        inProgress: complaints.filter(c => c.status === 'In Progress').length,
-        resolved: complaints.filter(c => c.status === 'Resolved').length,
-        today: complaints.filter(c => new Date(c.createdAt).toLocaleDateString() === new Date().toLocaleDateString()).length,
-    }), [complaints]);
+    const stats = useMemo(() => {
+        // Stats should also only count untracked complaints to match the visible list
+        const activeComplaints = complaints.filter(c => !c.taskId);
+        return {
+            open: activeComplaints.filter(c => c.status === 'Open').length,
+            inProgress: activeComplaints.filter(c => c.status === 'In Progress').length,
+            resolved: activeComplaints.filter(c => c.status === 'Resolved').length,
+            today: activeComplaints.filter(c => new Date(c.createdAt).toLocaleDateString() === new Date().toLocaleDateString()).length,
+        };
+    }, [complaints]);
 
     const formatDate = (d) => new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
     const formatTime = (d) => new Date(d).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
@@ -284,14 +311,14 @@ const Complaints = () => {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setDetailComplaint(complaint);
+                                                        handleConvertToTask(complaint._id, null);
                                                     }}
                                                     className="p-2 bg-orange-50 hover:bg-orange-100 text-orange-500 rounded-xl transition-all hover:scale-110 active:scale-95 group relative"
-                                                    title="Track as Task"
+                                                    title="Convert to Task"
                                                 >
                                                     <Sparkles size={16} className="animate-pulse" />
                                                     <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity pointer-events-none shadow-xl">
-                                                        Track as Task
+                                                        Convert to Task
                                                     </span>
                                                 </button>
                                             )}
@@ -330,26 +357,6 @@ const Complaints = () => {
                                 <option key={c._id} value={c._id}>{c.name} — {c.phone}</option>
                             ))}
                         </select>
-                    </div>
-
-                    {/* Employee Selector (Assignment) */}
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                            <MapPin size={12} /> Assign Task To (Staff)
-                        </label>
-                        <select
-                            value={formData.assignedTo}
-                            onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value })}
-                            className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-blue-500/30 focus:border-blue-200 outline-none transition-all appearance-none"
-                        >
-                            <option value="">Auto-assign to first available staff</option>
-                            {employees.map(e => (
-                                <option key={e._id} value={e._id}>{e.name} — {e.designation}</option>
-                            ))}
-                        </select>
-                        <p className="text-[10px] text-gray-400 font-medium italic">
-                            Only "General Staff" and "General Employees" are available for task assignment.
-                        </p>
                     </div>
 
                     {/* Category Picker */}
@@ -437,10 +444,6 @@ const Complaints = () => {
                         {submitting ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
                         {submitting ? 'Submitting...' : 'Raise Complaint'}
                     </button>
-
-                    <p className="text-[10px] text-center text-gray-300 font-medium">
-                        A task will be automatically created for tracking this complaint.
-                    </p>
                 </form>
             </Modal>
 
@@ -504,12 +507,20 @@ const Complaints = () => {
                                                 <span className="text-[10px] text-blue-400 font-medium">Synced with complaint</span>
                                             </div>
                                         </div>
-                                        <button 
-                                            onClick={() => navigate('/boss/tasks')}
-                                            className="whitespace-nowrap px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/10 flex items-center gap-2 transition-all active:scale-95"
-                                        >
-                                            Manage Task <ExternalLink size={14} />
-                                        </button>
+                                        <div className="flex flex-col gap-2 shrink-0">
+                                            <button 
+                                                onClick={() => handleWhatsAppDispatch(detailComplaint.taskId)}
+                                                className="whitespace-nowrap px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-500/10 flex items-center gap-2 transition-all active:scale-95"
+                                            >
+                                                <MessageSquare size={14} /> Send WhatsApp
+                                            </button>
+                                            <button 
+                                                onClick={() => navigate('/boss/tasks')}
+                                                className="whitespace-nowrap px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/10 flex items-center gap-2 transition-all active:scale-95"
+                                            >
+                                                Manage Task <ExternalLink size={14} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </motion.div>
                             ) : (
@@ -544,7 +555,7 @@ const Complaints = () => {
                                             className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl text-xs font-black shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 transition-all active:scale-95 group/btn"
                                         >
                                             <Sparkles size={14} className="group-hover/btn:animate-spin" /> 
-                                            <span>Experience Tracking Action</span>
+                                            <span>Convert to Task</span>
                                         </button>
                                     </div>
                                 </motion.div>

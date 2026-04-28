@@ -1,7 +1,9 @@
 const mongoose = require('mongoose');
 
 const enquirySchema = new mongoose.Schema({
-    customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', required: true },
+    customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer' },
+    leadName: String,
+    leadPhone: String,
     details: { type: String, required: true },
     status: { type: String, enum: ['Pending', 'Quotation Sent', 'Converted', 'Closed'], default: 'Pending' },
     followUpDate: Date,
