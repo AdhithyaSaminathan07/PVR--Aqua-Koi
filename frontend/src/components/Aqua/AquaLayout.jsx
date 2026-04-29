@@ -109,9 +109,9 @@ const AquaLayout = ({ role: initialRole, allocatedModules: initialModules }) => 
 
     const menuItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/aqua', color: '#3B82F6' },
+        { icon: Users, label: 'Customers', path: '/aqua/customers', color: '#F59E0B' },
         { icon: Clock, label: 'Attendance', path: '/aqua/attendance', color: '#8B5CF6' },
         { icon: Contact, label: 'Employees', path: '/aqua/employees', color: '#10B981' },
-        { icon: Users, label: 'Customers', path: '/aqua/customers', color: '#F59E0B' },
         { icon: Package, label: 'Inventory', path: '/aqua/inventory', color: '#EC4899' },
         { icon: MessageSquare, label: 'Enquiries', path: '/aqua/enquiries', color: '#6366F1' },
         { icon: Bell, label: 'Complaints', path: '/aqua/complaints', color: '#F43F5E' },

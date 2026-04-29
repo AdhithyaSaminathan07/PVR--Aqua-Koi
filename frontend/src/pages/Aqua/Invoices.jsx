@@ -494,7 +494,7 @@ const Invoices = () => {
                                             </div>
                                         </div>
                                         {/* Sales & Tax */}
-                                        <div style={{ padding: '4px 10px', borderTop: '1px solid #eee', display: 'flex', flexDirection: 'column', gap: '3px', background: '#fcfcfc' }}>
+                                        <div className="no-print" style={{ padding: '4px 10px', borderTop: '1px solid #eee', display: 'flex', flexDirection: 'column', gap: '3px', background: '#fcfcfc' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
                                                 <span style={{ color: '#888', fontWeight: 'bold' }}>TAX CATEGORY:</span>
                                                 <select
@@ -666,10 +666,7 @@ const Invoices = () => {
                                     <div style={{ border: '1px solid #b0b8cc', borderTop: 'none' }}>
                                         <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr' }}>
                                             <div style={{ borderRight: '1px solid #b0b8cc', padding: '12px', display: 'flex', alignItems: 'flex-end' }}>
-                                                <div style={{ fontSize: '10px', color: '#666' }}>
-                                                    <span style={{ fontWeight: 'bold', color: '#1e3a8a' }}>Total In Words: </span>
-                                                    <span style={{ textTransform: 'capitalize' }}>{numberToWords(grandTotal)}</span>
-                                                </div>
+                                                {/* Total In Words removed */}
                                             </div>
                                             <div>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderBottom: '1px solid #f0f0f0', fontSize: '11px' }}>
@@ -1126,11 +1123,7 @@ const Invoices = () => {
                                                         <span style={{ fontWeight: 'bold' }}>GSTIN/UIN:</span> {selectedOrder.billingInfo?.gstNo || selectedOrder.customerId?.gstNo || ''}
                                                     </div>
                                                 </div>
-                                                {/* Tax Category */}
-                                                <div style={{ padding: '6px 12px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'space-between', background: '#fcfcfc', fontSize: '10px' }}>
-                                                    <span style={{ color: '#888', fontWeight: 'bold' }}>TAX CATEGORY:</span>
-                                                    <span style={{ fontWeight: 'bold' }}>{selectedOrder.taxPhase || 'Inside TN'}</span>
-                                                </div>
+
                                             </div>
                                         </div>
 
@@ -1210,10 +1203,7 @@ const Invoices = () => {
                                             <div style={{ border: '1px solid #b0b8cc', borderTop: 'none' }}>
                                                 <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr' }}>
                                                     <div style={{ borderRight: '1px solid #b0b8cc', padding: '12px', display: 'flex', alignItems: 'flex-end' }}>
-                                                        <div style={{ fontSize: '10px', color: '#666' }}>
-                                                            <span style={{ fontWeight: 'bold', color: '#1e3a8a' }}>Total In Words: </span>
-                                                            <span style={{ textTransform: 'capitalize' }}>{numberToWords(selectedOrder.totalAmount)}</span>
-                                                        </div>
+                                                        {/* Total In Words removed */}
                                                     </div>
                                                     <div>
                                                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderBottom: '1px solid #f0f0f0', fontSize: '11px' }}>
@@ -1387,7 +1377,7 @@ const Invoices = () => {
                         top: 0 !important;
                         width: 100% !important;
                         margin: 0 !important;
-                        padding: 0 !important;
+                        padding: 10mm !important;
                         border: none !important;
                         box-shadow: none !important;
                         transform: scale(1) !important;
@@ -1399,11 +1389,8 @@ const Invoices = () => {
                     /* Hide specific UI elements within the printable area if they are part of the original HTML */
                     .no-print,
                     .no-print button,
-                    .no-print-input, /* Inputs/selects in creator mode */
-                    .no-print-select,
                     button,
-                    .lucide,
-                    select:has(option[value=""]) {
+                    .lucide {
                         display: none !important;
                     }
 
@@ -1411,6 +1398,7 @@ const Invoices = () => {
                     input.no-print-input,
                     textarea.no-print-input,
                     select.no-print-select {
+                        display: inline-block !important;
                         border: none !important;
                         background: transparent !important;
                         appearance: none !important;
@@ -1420,7 +1408,6 @@ const Invoices = () => {
                         font-family: inherit !important;
                         font-size: inherit !important;
                         font-weight: bold !important;
-                        width: auto !important;
                         min-width: 0 !important;
                         text-align: inherit !important; /* Inherit text alignment */
                     }
@@ -1452,7 +1439,7 @@ const Invoices = () => {
 
                 @page {
                     size: A4;
-                    margin: 10mm;
+                    margin: 0mm;
                 }
                 `}
             </style>
