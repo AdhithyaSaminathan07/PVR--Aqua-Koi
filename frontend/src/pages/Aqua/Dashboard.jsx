@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
     Users,
@@ -15,7 +15,9 @@ import {
     Loader2,
     ArrowRight,
     Droplets,
-    MessageSquare
+    MessageSquare,
+    Plus,
+    CreditCard
 } from 'lucide-react';
 import { getCustomers, getOrders, getTasks, getProducts, getEnquiries, getServiceReminders } from '../../services/api';
 
@@ -24,14 +26,14 @@ const StatCard = ({ title, value, icon: Icon, color, loading, delay }) => (
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay }}
-        className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-50 flex flex-col gap-4 hover:shadow-md transition-all group"
+        className="bg-white p-6 rounded-2xl shadow-sm border border-gray-50 flex flex-col gap-4 hover:shadow-md transition-all group"
     >
         <div className={`w-12 h-12 rounded-2xl ${color} bg-opacity-10 flex items-center justify-center text-${color.split('-')[1]}-600 group-hover:scale-110 transition-transform`}>
             <Icon size={24} />
         </div>
         <div>
-            <h3 className="text-[#2988FF] text-[10px] font-bold uppercase tracking-widest opacity-70 group-hover:opacity-100 transition-opacity">{title}</h3>
-            <p className="text-2xl font-black text-[#1a365d] mt-1 italic tracking-tight">
+            <h3 className="text-[#2988FF] text-[10px] font-bold uppercase tracking-widest opacity-80">{title}</h3>
+            <p className="text-2xl font-black text-[#1a365d] mt-1 tracking-tight">
                 {loading ? <Loader2 className="animate-spin text-gray-200" size={20} /> : value}
             </p>
         </div>
@@ -39,10 +41,13 @@ const StatCard = ({ title, value, icon: Icon, color, loading, delay }) => (
 );
 
 const Dashboard = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
     const [stats, setStats] = useState({
         customers: 0,
         orders: 0,
         balance: 0,
+        pendingPayments: 0,
         tasks: 0,
         lowStock: 0,
         enquiries: 0,
@@ -64,11 +69,13 @@ const Dashboard = () => {
 
             const balance = ordRes.data.reduce((acc, o) => acc + ((o.totalAmount || 0) - (o.paidAmount || 0)), 0);
             const lowStock = prodRes.data.filter(p => (p.stock || 0) <= (p.lowStockThreshold || 0)).length;
+            const pendingPayments = ordRes.data.filter(o => o.status !== 'Cancelled' && (o.paidAmount || 0) < (o.totalAmount || 0)).length;
 
             setStats({
                 customers: custRes.data.length,
                 orders: ordRes.data.length,
                 balance,
+                pendingPayments,
                 tasks: taskRes.data.filter(t => t.status !== 'Completed').length,
                 lowStock,
                 enquiries: enqRes.data.length,
@@ -84,56 +91,76 @@ const Dashboard = () => {
 
     return (
         <div className="py-4 lg:py-6">
+            {/* Banner */}
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="relative bg-[#E6F0FF] rounded-2xl p-8 sm:p-12 overflow-hidden mb-8 lg:mb-12"
+            >
+                <div className="relative z-10 max-w-lg text-center sm:text-left">
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2988FF] mb-4 leading-tight">
+                        Aqua Hub <br />
+                        <span className="text-[#2988FF]">Centre Operations</span>
+                    </h1>
+                    <p className="text-[#1a365d]/60 text-sm sm:text-base font-medium mb-6 lg:mb-8 text-balance">
+                        Track aqua inventory, manage service requests, sales & enquiries.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center sm:justify-start">
+                        <button 
+                            onClick={() => navigate(location.pathname.startsWith('/boss') ? '/boss/customers' : '/aqua/customers', { state: { openRegisterModal: true } })}
+                            className="bg-[#2988FF] text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-sm font-bold shadow-lg shadow-blue-900/20 hover:bg-[#2988FF]/90 transition-all active:scale-95 flex items-center justify-center gap-2"
+                        >
+                            <Plus size={18} /> Register Client
+                        </button>
+                    </div>
+                </div>
+
+                <div className="absolute right-0 top-0 w-1/2 h-full hidden lg:flex items-center justify-center opacity-20">
+                    <Droplets size={240} className="text-[#2988FF]" />
+                </div>
+            </motion.div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8 lg:mb-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-12">
                 <StatCard
-                    title="Total Customers"
-                    value={stats.customers}
-                    icon={Users}
-                    color="bg-blue-500"
+                    title="Total Orders"
+                    value={stats.orders}
+                    icon={ShoppingCart}
+                    color="bg-orange-500"
                     loading={loading}
                     delay={0.1}
                 />
                 <StatCard
-                    title="Active Orders"
-                    value={stats.orders}
-                    icon={ShoppingCart}
-                    color="bg-cyan-500"
+                    title="Pending Payments"
+                    value={stats.pendingPayments}
+                    icon={CreditCard}
+                    color="bg-red-500"
                     loading={loading}
                     delay={0.2}
                 />
                 <StatCard
-                    title="Pending Payments"
-                    value={`₹${(stats.balance / 1000).toFixed(1)}K`}
-                    icon={Wallet}
-                    color="bg-red-500"
+                    title="Low Stock"
+                    value={stats.lowStock}
+                    icon={AlertCircle}
+                    color="bg-cyan-500"
                     loading={loading}
                     delay={0.3}
                 />
                 <StatCard
-                    title="Ongoing Tasks"
-                    value={stats.tasks}
-                    icon={Clock}
+                    title="Customers"
+                    value={stats.customers}
+                    icon={Users}
                     color="bg-indigo-500"
                     loading={loading}
                     delay={0.4}
                 />
                 <StatCard
-                    title="New Enquiries"
+                    title="Live Enquiries"
                     value={stats.enquiries}
                     icon={MessageSquare}
-                    color="bg-purple-500"
+                    color="bg-blue-500"
                     loading={loading}
                     delay={0.5}
-                />
-                <StatCard
-                    title="Component Alerts"
-                    value={stats.componentAlerts}
-                    icon={Droplets}
-                    color="bg-amber-500"
-                    loading={loading}
-                    delay={0.6}
                 />
             </div>
 

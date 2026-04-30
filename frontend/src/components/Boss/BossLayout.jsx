@@ -132,8 +132,8 @@ const BossLayout = ({ role: initialRole, allocatedModules: initialModules }) => 
         ],
         AQUA: [
             { icon: LayoutDashboard, label: 'Dashboard', path: '/boss/aqua/dashboard', color: '#3B82F6' },
-            { icon: Clock, label: 'Attendance', path: '/boss/aqua/attendance', color: '#8B5CF6' },
             { icon: Users, label: 'Customers', path: '/boss/customers', color: '#F59E0B' },
+            { icon: Clock, label: 'Attendance', path: '/boss/aqua/attendance', color: '#8B5CF6' },
             { icon: Package, label: 'Inventory', path: '/boss/inventory', color: '#EC4899' },
             { icon: MessageSquare, label: 'Enquiries', path: '/boss/enquiries', color: '#6366F1' },
             { icon: Bell, label: 'Complaints', path: '/boss/complaints', color: '#F43F5E' },

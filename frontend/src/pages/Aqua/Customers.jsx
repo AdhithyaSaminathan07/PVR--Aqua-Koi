@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Users,
@@ -19,6 +20,7 @@ import Modal from '../../components/Modal';
 
 
 const Customers = () => {
+    const location = useLocation();
     const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -34,7 +36,10 @@ const Customers = () => {
 
     useEffect(() => {
         fetchCustomers();
-    }, []);
+        if (location.state?.openRegisterModal) {
+            setIsModalOpen(true);
+        }
+    }, [location.state]);
 
     const fetchCustomers = async () => {
         try {
