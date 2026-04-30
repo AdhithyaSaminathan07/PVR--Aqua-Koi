@@ -64,10 +64,10 @@ const Login = ({ onLogin }) => {
                         <p className="text-[#718096] text-sm mt-3 font-medium">For better experience with your systems!</p>
                     </div>
 
-                    {/* Generated Image */}
+                    {/* Local Koi Fish Image */}
                     <div className="relative z-10 flex-grow flex items-center justify-center my-8">
                         <img 
-                            src="https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&q=80&w=800" 
+                            src="/koi%20fish.avif" 
                             alt="Beautiful Koi Fish" 
                             className="w-64 h-64 md:w-80 md:h-80 rounded-full object-cover shadow-2xl border-4 border-white mx-auto transform hover:scale-105 transition-transform duration-500" 
                         />
